@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id              String   @id @default(uuid())
+  name            String
+  api_key         String   @unique
+  github_repo_url String?
+  created_at      DateTime @default(now())
+  events          Event[]
+  subscription    Subscription?
+}
+
+model Event {
+  id               String   @id @default(uuid())
+  project_id       String
+  project          Project  @relation(fields: [project_id], references: [id])
+  stack_trace      String
+  error_message    String
+  route            String?
+  method           String?
+  commit_hash      String?
+  environment_json String?
+  severity         String   @default("error")
+  status           String   @default("new")
+  created_at       DateTime @default(now())
+  analysis         Analysis?
+}
+
+model Analysis {
+  id                 String   @id @default(uuid())
+  event_id           String   @unique
+  event              Event    @relation(fields: [event_id], references: [id])
+  root_cause_summary String
+  suggested_fix_diff String
+  confidence_score   Float
+  llm_model_used     String
+  created_at         DateTime @default(now())
+}
+
+model Subscription {
+  id                        String   @id @default(uuid())
+  project_id                String   @unique
+  project                   Project  @relation(fields: [project_id], references: [id])
+  stripe_customer_id        String?
+  stripe_subscription_id    String?
+  plan                      String   @default("free")
+  status                    String   @default("active")
+  current_period_end        DateTime?
+  analyses_used_this_period Int      @default(0)
+  analyses_limit            Int      @default(50)
+  created_at                DateTime @default(now())
+  updated_at                DateTime @updatedAt
+}
