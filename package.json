@@ -1,0 +1,50 @@
+{
+  "name": "carbon-wallet",
+  "version": "1.0.0",
+  "description": "Carbon Credit Marketplace connecting Landowners and Industries",
+  "main": "electron.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "start:desktop": "electron ."
+  },
+  "keywords": [
+    "carbon",
+    "credits",
+    "marketplace"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@capacitor-firebase/authentication": "^8.3.0",
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/browser": "^8.0.4",
+    "@capacitor/core": "^8.4.1",
+    "@capacitor/ios": "^8.4.1",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capgo/capacitor-updater": "^8.51.0",
+    "@capgo/cli": "^8.28.1",
+    "@supabase/supabase-js": "^2.110.3",
+    "axios": "^1.18.1",
+    "bcryptjs": "^3.0.2",
+    "better-sqlite3": "^12.11.1",
+    "codewatch-sdk": "file:codewatch/sdk",
+    "compression": "^1.8.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-session": "^1.18.1",
+    "firebase-admin": "^14.1.0",
+    "google-auth-library": "^10.9.0",
+    "multer": "^1.4.5-lts.2",
+    "pdf-parse": "^1.1.1",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.4.1",
+    "electron": "^43.1.0"
+  }
+}

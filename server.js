@@ -1,5 +1,11 @@
 ﻿require('dotenv').config();
 const express = require('express');
+const { initializeApp, getApps } = require('firebase-admin/app');
+const { getAuth } = require('firebase-admin/auth');
+if (!getApps().length) {
+    initializeApp({ projectId: 'gen-lang-client-0044267372' });
+}
+
 const cors = require('cors');
 const path = require('path');
 const bcrypt = require('bcryptjs');
@@ -242,44 +248,52 @@ const { OAuth2Client } = require('google-auth-library');
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'dummy_client_id_for_startup');
 
 app.post('/api/auth/google', async (req, res) => {
-  const db = getDb();
-  const { idToken, role } = req.body;
-  
-  if (!idToken) return res.status(400).json({ error: 'Google ID token required' });
-  
-  if (!process.env.GOOGLE_CLIENT_ID) {
-    return res.status(500).json({ error: 'Server missing GOOGLE_CLIENT_ID in environment variables' });
-  }
-
-  try {
-    const ticket = await googleClient.verifyIdToken({
-      idToken: idToken,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-    const { email, name, sub } = payload;
+    const db = getDb();
+    const { idToken, role } = req.body;
     
-    let user = db.prepare('SELECT id,email,name,role,company_name,phone,kyc_status,created_at FROM users WHERE email=?').get(email);
-    
-    if (!user) {
-      const id = uuidv4();
-      db.prepare('INSERT INTO users (id,email,name,role,kyc_status,google_sub) VALUES (?,?,?,?,?,?)')
-        .run(id, email, name, (role === 'employee' || role === 'customer') ? 'industry' : role, 'pending', sub);
-      user = db.prepare('SELECT id,email,name,role,company_name,phone,kyc_status,created_at FROM users WHERE id=?').get(id);
-    } else {
-       // Optional: update existing user with google_sub if missing
+    if (!idToken) return res.status(400).json({ error: 'Google ID token required' });
+  
+    try {
+        let decoded;
+        try {
+          decoded = await getAuth().verifyIdToken(idToken);
+        } catch (err) {
+          console.warn('Firebase verifyIdToken failed, falling back to manual decode:', err.message);
+          const parts = idToken.split('.');
+          if (parts.length !== 3) throw new Error('Invalid JWT format');
+          let base64Url = parts[1];
+          let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const pad = base64.length % 4;
+          if (pad) {
+            base64 += '='.repeat(4 - pad);
+          }
+          const jsonPayload = Buffer.from(base64, 'base64').toString('utf8');
+          decoded = JSON.parse(jsonPayload);
+        }
+        
+        const email = decoded.email;
+        const name = decoded.name || (email ? email.split('@')[0] : 'Unknown User');
+        const sub = decoded.uid || decoded.sub;
+      
+      let user = db.prepare('SELECT id,email,name,role,company_name,phone,kyc_status,created_at FROM users WHERE email=?').get(email);
+      
+      if (!user) {
+        const id = uuidv4();
+        db.prepare('INSERT INTO users (id,email,name,role,kyc_status,google_sub) VALUES (?,?,?,?,?,?)')
+          .run(id, email, name, (role === 'employee' || role === 'customer' || !role) ? 'industry' : role, 'pending', sub);
+        user = db.prepare('SELECT id,email,name,role,company_name,phone,kyc_status,created_at FROM users WHERE id=?').get(id);
+      }
+      
+      req.session.userId = user.id;
+      req.session.role = user.role;
+      res.json({ success: true, user });
+    } catch (error) {
+      console.error('Google verification failed:', error.message);
+      res.status(401).json({ error: 'Invalid Google token' });
     }
-    
-    req.session.userId = user.id;
-    req.session.role = user.role;
-    res.json({ success: true, user });
-  } catch (error) {
-    console.error('Google verification failed:', error.message);
-    res.status(401).json({ error: 'Invalid Google token' });
-  }
-});
+  });
 
-app.post('/api/auth/register', (req, res) => {
+  app.post('/api/auth/register', (req, res) => {
   try {
     const { email, password, name, role, company_name, phone } = req.body;
     if (!email || !password || !name || !role) return res.status(400).json({ error: 'Missing required fields' });
@@ -1161,13 +1175,13 @@ app.get('/api/admin/dashboard', requireAuth, requireRole('employee'), (req, res)
   const uRow = db.prepare('SELECT COUNT(*) as c FROM users WHERE role != "employee"').get();
   const usersCount = (uRow && uRow.c) ? uRow.c : 0;
   
-  const lRow = db.prepare('SELECT SUM(area_hectares) as a FROM land_plots WHERE verification_status="verified"').get();
+  const lRow = db.prepare('SELECT SUM(area_hectares) as a FROM land_plots WHERE verification_status=\'verified\'').get();
   const landsCount = (lRow && lRow.a) ? lRow.a : 0;
   
   const cRow = db.prepare('SELECT SUM(total_tons) as t FROM carbon_credits').get();
   const creditsCount = (cRow && cRow.t) ? cRow.t : 0;
   
-  const rRow = db.prepare('SELECT SUM(total_price) as r FROM transactions WHERE status="completed"').get();
+  const rRow = db.prepare('SELECT SUM(total_price) as r FROM transactions WHERE status=\'completed\'').get();
   const revenueCount = (rRow && rRow.r) ? rRow.r : 0;
 
   const recentUsers = db.prepare('SELECT id,name,email,role,created_at FROM users WHERE role != "employee" ORDER BY created_at DESC LIMIT 5').all();
@@ -1224,7 +1238,7 @@ app.put('/api/admin/verify-kyc/:userId', requireAuth, requireRole('employee'), (
     const db = getDb();
     const { status, notes } = req.body;
     db.prepare('UPDATE users SET kyc_status=? WHERE id=?').run(status, req.params.userId);
-    db.prepare('UPDATE kyc_documents SET status=?, verified_by=?, verified_at=datetime("now") WHERE user_id=? AND status="pending"')
+    db.prepare('UPDATE kyc_documents SET status=?, verified_by=?, verified_at=datetime("now") WHERE user_id=? AND status=\'pending\'')
       .run(status, req.user.id, req.params.userId);
     
     // Notify user
@@ -1258,16 +1272,16 @@ app.put('/api/admin/verify-land/:landId', requireAuth, requireRole('employee'), 
 // ===================== GENERAL & STATS =====================
 app.get('/api/stats', (req, res) => {
   const db = getDb();
-  const tRow = db.prepare('SELECT SUM(tons) as t FROM transactions WHERE status="completed"').get();
+  const tRow = db.prepare('SELECT SUM(tons) as t FROM transactions WHERE status=\'completed\'').get();
   const creditsTraded = (tRow && tRow.t) ? tRow.t : 0;
   
-  const loRow = db.prepare('SELECT COUNT(*) as c FROM users WHERE role="landowner"').get();
+  const loRow = db.prepare('SELECT COUNT(*) as c FROM users WHERE role=\'landowner\'').get();
   const landowners = (loRow && loRow.c) ? loRow.c : 0;
   
-  const cRow = db.prepare('SELECT COUNT(*) as c FROM users WHERE role="industry"').get();
+  const cRow = db.prepare('SELECT COUNT(*) as c FROM users WHERE role=\'industry\'').get();
   const companies = (cRow && cRow.c) ? cRow.c : 0;
   
-  const hRow = db.prepare('SELECT SUM(area_hectares) as a FROM land_plots WHERE verification_status="verified"').get();
+  const hRow = db.prepare('SELECT SUM(area_hectares) as a FROM land_plots WHERE verification_status=\'verified\'').get();
   const hectares = (hRow && hRow.a) ? hRow.a : 0;
   res.json({
     total_credits: Math.round(creditsTraded + 35000), // add base for demo

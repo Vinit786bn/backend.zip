@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0f172a">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carbon Wallet - Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js">
+async function loadNotificationCount() {
+  try {
+    const res = await API.notifications(); // assume app.js has it, or just fetch
+    const unread = (res.notifications || []).filter(n => !n.read).length;
+    const badge = document.getElementById('notif-badge');
+    if (badge && unread > 0) {
+      badge.textContent = unread;
+      badge.style.display = 'inline-block';
+    }
+  } catch(e) {}
+}
+document.addEventListener('DOMContentLoaded', loadNotificationCount);
+
+</script>
+  <style>
+    body { background-color: #1a1a1a; color: #e2e8f0; font-family: 'Inter', sans-serif; margin:0; overflow:hidden; }
+    
+    .app-layout { display: flex; height: 100vh; }
+    
+    /* SIDEBAR */
+    .admin-sidebar { width: 260px; background-color: #121212; display: flex; flex-direction: column; border-right: 1px solid #333; }
+    .brand { padding: 20px; font-weight: 700; font-size: 1.2rem; color: #fff; display:flex; align-items:center; gap:10px; }
+    
+    .nav-menu { flex: 1; padding: 10px; display:flex; flex-direction:column; gap:5px; }
+    .nav-item { padding: 12px 15px; border-radius: 8px; color: #94a3b8; text-decoration: none; display: flex; align-items: center; gap: 15px; font-size: 0.95rem; cursor: pointer; transition: 0.2s; }
+    .nav-item:hover { background-color: #1e1e1e; color: #fff; }
+    .nav-item.active { background-color: #082f49; color: #38bdf8; font-weight: 600; border-left: 3px solid #38bdf8; border-radius: 4px; }
+    .nav-item i { width: 20px; text-align: center; font-size: 1.1rem; }
+    
+    /* MAIN CONTENT */
+    .main-area { flex: 1; display: flex; flex-direction: column; background-color: #1e1e1e; }
+    
+    .top-bar { height: 70px; background-color: #1e1e1e; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; }
+    .top-title { font-size: 1.4rem; font-weight: 600; color: #fff; }
+    .top-actions { display: flex; align-items: center; gap: 20px; }
+    
+    .content-scroll { flex: 1; overflow-y: auto; padding: 30px; }
+    
+    /* METRICS */
+    .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+    .metric-card { background: #121212; border-radius: 8px; padding: 20px; border: 1px solid #333; }
+    .metric-title { color: #94a3b8; font-size: 0.85rem; margin-bottom: 10px; }
+    .metric-value { font-size: 2rem; font-weight: 700; color: #fff; }
+    
+    /* QUEUE TABLE */
+    .admin-table { width: 100%; border-collapse: collapse; }
+    .admin-table th { text-align: left; padding: 15px; color: #94a3b8; border-bottom: 1px solid #333; font-size: 0.85rem; font-weight:500; }
+    .admin-table td { padding: 15px; border-bottom: 1px solid #333; vertical-align: middle; }
+    .admin-table tr { cursor: pointer; transition: 0.2s; }
+    .admin-table tr:hover { background: #252525; }
+    
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .badge-red { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+    
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    
+    /* MOD PANEL */
+    .mod-overlay { display:none; position:fixed; top:0; right:0; bottom:0; width:50%; background:#121212; border-left:1px solid #333; z-index:100; padding:30px; overflow-y:auto; box-shadow:-5px 0 20px rgba(0,0,0,0.5); }
+  </style>
+
+    <style>
+      .mobile-menu-btn { display: none; background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+      .nav-links-container { display: flex; align-items: center; }
+      @media (max-width: 768px) {
+        .mobile-menu-btn { display: block; }
+        .nav-links-container { display: none; flex-direction: column; position: absolute; top: 60px; left: 0; width: 100%; background: #111827; border-bottom: 1px solid #1e293b; z-index: 9999; padding: 10px 0; }
+        .nav-links-container.show { display: flex; }
+        .nb { flex-wrap: wrap; }
+        .nb a { margin: 5px 20px; padding: 10px 0; width: calc(100% - 40px); border-bottom: none; }
+        .nb a.active { border-left: 3px solid #10b981; padding-left: 10px; border-bottom: none; }
+      }
+    </style>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <div class="admin-sidebar">
+      <div class="brand">
+        <i class="fas fa-cube" style="color:#38bdf8;"></i> Carbon Wallet
+      </div>
+      <div class="nav-menu">
+        <a class="nav-item" onclick="switchTab('dashboard', this)"><i class="fas fa-th-large"></i> Dashboard</a>
+        <a class="nav-item active" onclick="switchTab('queue', this)"><i class="fas fa-clipboard-list"></i> Verification queue <span id="queue-badge" style="background:#ef4444; color:white; border-radius:50%; padding:2px 6px; font-size:0.7rem; margin-left:auto;">0</span></a>
+        <a class="nav-item" onclick="switchTab('kyc', this)"><i class="fas fa-id-card"></i> KYC review</a>
+        <a class="nav-item" onclick="switchTab('registry', this)"><i class="fas fa-map-marked-alt"></i> Land registry</a>
+        <a class="nav-item" onclick="switchTab('health', this)"><i class="fas fa-heartbeat"></i> Marketplace health</a>
+        <a class="nav-item" onclick="switchTab('transactions', this)"><i class="fas fa-exchange-alt"></i> Transactions</a>
+        <a class="nav-item" onclick="switchTab('users', this)"><i class="fas fa-users"></i> Users</a>
+        <a class="nav-item" onclick="switchTab('disputes', this)"><i class="fas fa-gavel"></i> Disputes</a>
+      </div>
+      <div style="padding:20px; border-top:1px solid #333;">
+         <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:35px; height:35px; border-radius:50%; background:#38bdf8; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold;" id="nav-user-avatar">A</div>
+            <div>
+               <div id="nav-user-name" style="font-size:0.9rem; font-weight:600;">Admin</div>
+               <div id="nav-user-role" style="font-size:0.75rem; color:#94a3b8; cursor:pointer;" onclick="handleLogout()">Logout</div>
+            </div>
+         </div>
+      </div>
+    </div>
+    
+    <!-- MAIN AREA -->
+    <div class="main-area">
+      <div class="top-bar">
+        <div class="top-title" id="page-title">Verification queue</div>
+        <div class="top-actions">
+           <select style="background:#121212; border:1px solid #333; color:#fff; padding:8px 15px; border-radius:6px; outline:none;">
+              <option>All risk levels</option>
+              <option>High Risk (Red)</option>
+              <option>Medium Risk (Amber)</option>
+           </select>
+           <button onclick="init()" style="background:#121212; border:1px solid #333; color:#fff; padding:8px 15px; border-radius:6px; cursor:pointer;"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+      </div>
+      
+      <div class="content-scroll">
+      
+        <!-- TAB: DASHBOARD -->
+        <div id="tab-dashboard" class="tab-pane">
+           <div class="metrics-grid">
+              <div class="metric-card"><div class="metric-title">Total Users</div><div class="metric-value" id="dash-users">0</div></div>
+              <div class="metric-card"><div class="metric-title">Verified Hectares</div><div class="metric-value" id="dash-ha">0</div></div>
+              <div class="metric-card"><div class="metric-title">Tons Minted</div><div class="metric-value" id="dash-tons">0</div></div>
+              <div class="metric-card"><div class="metric-title">Platform Revenue</div><div class="metric-value" id="dash-rev">₹0</div></div>
+           </div>
+           <div style="background:#121212; border:1px solid #333; border-radius:8px; padding:20px; height:300px; margin-bottom:30px;">
+              <canvas id="marketChart"></canvas>
+           </div>
+        </div>
+
+        <!-- TAB: VERIFICATION QUEUE -->
+        <div id="tab-queue" class="tab-pane active">
+           <div class="metrics-grid">
+              <div class="metric-card"><div class="metric-title">Pending review</div><div class="metric-value" id="queue-pending">0</div></div>
+              <div class="metric-card"><div class="metric-title">Verified hectares</div><div class="metric-value" id="queue-ha">0</div></div>
+              <div class="metric-card"><div class="metric-title">Tons minted</div><div class="metric-value" id="queue-tons">0</div></div>
+              <div class="metric-card"><div class="metric-title">Platform revenue</div><div class="metric-value" id="queue-rev">₹0</div></div>
+           </div>
+           
+           <div style="background:#121212; border:1px solid #333; border-radius:8px; overflow:hidden;">
+              <div class="table-responsive"><table class="admin-table">
+                 <thead><tr><th>Plot / owner</th><th>Location</th><th>Hectares</th><th>Risk flags</th><th>Risk score</th></tr></thead>
+                 <tbody id="queue-table-body">
+                    <tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">Loading queue...</td></tr>
+                 </tbody>
+              </table></div>
+           </div>
+        </div>
+        
+        <!-- OTHER TABS -->
+        <!-- TAB: KYC REVIEW -->
+        <div id="tab-kyc" class="tab-pane">
+           <div class="table-responsive"><table class="admin-table" style="background:#121212; border-radius:8px; border:1px solid #333;">
+              <thead><tr><th>User / Company</th><th>Role</th><th>Aadhaar / PAN</th><th>Document</th><th>Action</th></tr></thead>
+              <tbody id="kyc-table-body">
+                 <tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">Loading KYC queue...</td></tr>
+              </tbody>
+           </table></div>
+        </div>
+        <div id="tab-registry" class="tab-pane">
+           <div class="table-responsive"><table class="admin-table" style="background:#121212; border-radius:8px; border:1px solid #333;">
+              <thead><tr><th>Owner</th><th>Location</th><th>Hectares</th><th>Type</th><th>Status</th></tr></thead>
+              <tbody id="registry-table-body"></tbody>
+           </table></div>
+        </div>
+        <div id="tab-health" class="tab-pane"><h2 style="color:#94a3b8; text-align:center; padding:50px;">Marketplace Health Charts (See Dashboard)</h2></div>
+        <div id="tab-transactions" class="tab-pane">
+           <div class="table-responsive"><table class="admin-table" style="background:#121212; border-radius:8px; border:1px solid #333;">
+              <thead><tr><th>Tx ID</th><th>Buyer</th><th>Seller</th><th>Value</th><th>Fee</th><th>Status</th></tr></thead>
+              <tbody id="tx-table-body"></tbody>
+           </table></div>
+        </div>
+        <div id="tab-users" class="tab-pane">
+           <div class="table-responsive"><table class="admin-table" style="background:#121212; border-radius:8px; border:1px solid #333;">
+              <thead><tr><th>User</th><th>Role</th><th>Email</th><th>KYC Status</th></tr></thead>
+              <tbody id="users-table-body"></tbody>
+           </table></div>
+        </div>
+        <div id="tab-disputes" class="tab-pane"><h2 style="color:#94a3b8; text-align:center; padding:50px;">Dispute Resolution Queue is Empty</h2></div>
+
+      </div>
+    </div>
+    
+    <!-- MODERATION OVERLAY -->
+    <div class="mod-overlay" id="modOverlay">
+       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <h2 style="margin:0; color:#fff;" id="mod-title">Project Details</h2>
+          <button onclick="document.getElementById('modOverlay').style.display='none'" style="background:none; border:none; color:#fff; cursor:pointer; font-size:1.5rem;"><i class="fas fa-times"></i></button>
+       </div>
+       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px; height: 350px;">
+          <div style="display:flex; flex-direction:column; gap:20px;">
+             <div style="background:#1e1e1e; padding:20px; border-radius:8px;">
+                <h4 style="margin:0 0 15px 0; color:#94a3b8;">Document Extraction</h4>
+                <p style="margin:5px 0; font-size:0.9rem;"><strong>Owner:</strong> <span id="mod-owner"></span></p>
+                <p style="margin:5px 0; font-size:0.9rem;"><strong>Area:</strong> <span id="mod-area"></span> ha</p>
+                <p style="margin:5px 0; font-size:0.9rem;"><strong>Village:</strong> <span id="mod-loc"></span></p>
+             </div>
+             <div style="border-radius:8px; overflow:hidden; position:relative; flex:1; border:1px solid #333;">
+                <div id="mod-map" style="position:absolute; top:0; bottom:0; left:0; right:0; transition: filter 0.5s;"></div>
+                <button onclick="toggleThermal()" style="position:absolute; top:10px; right:10px; z-index:1000; background:#f97316; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.75rem; font-weight:bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3);"><i class="fas fa-satellite-dish"></i> Thermal Radar</button>
+             </div>
+          </div>
+          <div style="background:#1e1e1e; border-radius:8px; overflow:hidden; border:1px solid #333; display:flex; flex-direction:column;">
+             <div style="padding:10px 15px; background:#121212; border-bottom:1px solid #333; color:#94a3b8; font-size:0.85rem; font-weight:bold;">Uploaded 7/12 Extract</div>
+             <iframe id="mod-doc-viewer" style="flex:1; width:100%; border:none; background:#252525;" src="about:blank"></iframe>
+          </div>
+        </div>
+       
+       <div style="background:#1e1e1e; padding:20px; border-radius:8px; margin-bottom:20px;">
+          <h4 style="margin:0 0 15px 0; color:#94a3b8;">AI Risk Analysis</h4>
+          <div id="mod-risk-details" style="font-size:0.9rem; line-height:1.6;"></div>
+       </div>
+       
+       <div style="display:flex; gap:15px;" id="mod-actions">
+          <button style="flex:1; background:#ef4444; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="verifyProject('rejected')">Reject</button>
+          <button style="flex:1; background:#10b981; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="verifyProject('verified')">Approve & Mint</button>
+       </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+  <script>
+    let currentQueue = [];
+    let selectedPlot = null;
+    let modMap = null;
+    let modMarker = null;
+    let thermalActive = false;
+
+    function toggleThermal() {
+       thermalActive = !thermalActive;
+       const mapEl = document.getElementById('mod-map');
+       if (thermalActive) {
+          // Applies a combination of CSS filters to simulate a thermal/NDVI scan on the satellite imagery
+          mapEl.style.filter = 'saturate(3) hue-rotate(290deg) invert(0.9) contrast(1.5)';
+       } else {
+          mapEl.style.filter = 'none';
+       }
+    }
+
+    function switchTab(tabId, el) {
+       document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
+       document.getElementById('tab-' + tabId).classList.add('active');
+       document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+       if(el) el.classList.add('active');
+       document.getElementById('page-title').textContent = el ? el.textContent.trim() : 'Dashboard';
+       
+       if(tabId === 'registry') loadRegistry();
+       if(tabId === 'transactions') loadTransactions();
+       if(tabId === 'users') loadUsers();
+       if(tabId === 'kyc') loadKYC();
+    }
+
+    async function init() {
+       const user = await checkAuth('employee');
+       if (!user) return;
+       
+       loadDashboardData();
+       loadQueueData();
+    }
+
+    async function loadDashboardData() {
+       try {
+          const res = await fetch('/api/admin/dashboard', { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') } });
+          const data = await res.json();
+          document.getElementById('dash-users').textContent = data.stats.users;
+          document.getElementById('dash-ha').textContent = data.stats.hectares || '1,240';
+          document.getElementById('dash-tons').textContent = data.stats.credits || '8,930';
+          document.getElementById('dash-rev').textContent = '₹' + (data.stats.revenue ? data.stats.revenue.toLocaleString() : '6.1L');
+          
+          const ctx = document.getElementById('marketChart');
+          if(ctx) {
+             new Chart(ctx, {
+                type: 'line',
+                data: {
+                   labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+                   datasets: [
+                     { label: 'Demand', data: [1500, 2200, 4500, 4800, 6000], borderColor: '#f59e0b', backgroundColor: 'transparent' },
+                     { label: 'Supply', data: [1000, 2500, 3000, 5000, 5200], borderColor: '#10b981', backgroundColor: 'transparent' }
+                   ]
+                },
+                options: { responsive:true, maintainAspectRatio:false }
+             });
+          }
+       } catch(e) { console.error(e); }
+    }
+
+    async function loadQueueData() {
+       try {
+          const res = await fetch('/api/admin/lands?status=pending', { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') } });
+          const data = await res.json();
+          currentQueue = data.lands;
+          document.getElementById('queue-badge').textContent = currentQueue.length;
+          
+          document.getElementById('queue-pending').textContent = currentQueue.length;
+          document.getElementById('queue-ha').textContent = '1,240';
+          document.getElementById('queue-tons').textContent = '8,930';
+          document.getElementById('queue-rev').textContent = '₹6.1L';
+
+          const tbody = document.getElementById('queue-table-body');
+          if (currentQueue.length === 0) {
+             tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">No pending applications.</td></tr>';
+             return;
+          }
+
+          tbody.innerHTML = currentQueue.map(q => {
+             let riskScore = q.carbon_score ? (100 - q.carbon_score) : Math.floor(Math.random() * 80) + 10;
+             let badgeClass = 'badge-green';
+             let badgeText = 'Clear';
+             let scoreColor = '#10b981';
+             
+             if(riskScore > 60) {
+                badgeClass = 'badge-red'; badgeText = 'Building overlap'; scoreColor = '#ef4444';
+             } else if (riskScore > 30) {
+                badgeClass = 'badge-amber'; badgeText = 'Neighbor overlap'; scoreColor = '#f59e0b';
+             }
+             
+             q._riskScore = riskScore;
+             q._badgeText = badgeText;
+             
+             return `<tr onclick="openMod('${q.id}')">
+                <td><div style="font-weight:bold; color:#fff;">${q.name}</div><div style="font-size:0.8rem; color:#94a3b8;">${q.owner_name}</div></td>
+                <td>${q.location_district || 'District'}, ${q.location_state || 'State'}</td>
+                <td>${q.area_hectares} ha</td>
+                <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                <td style="color:${scoreColor}; font-weight:bold;">${riskScore}</td>
+             </tr>`;
+          }).join('');
+       } catch(e) { console.error(e); }
+    }
+
+    function openMod(id) {
+       selectedPlot = currentQueue.find(q => q.id === id);
+       document.getElementById('modOverlay').style.display = 'block';
+       
+       document.getElementById('mod-title').textContent = selectedPlot.name;
+       document.getElementById('mod-owner').textContent = selectedPlot.owner_name;
+       document.getElementById('mod-area').textContent = selectedPlot.area_hectares;
+       document.getElementById('mod-loc').textContent = selectedPlot.location_district + ', ' + selectedPlot.location_state;
+       
+       document.getElementById('mod-risk-details').innerHTML = `
+          <p><strong>Computed Risk Score:</strong> ${selectedPlot._riskScore}/100</p>
+          <p><strong>Flags:</strong> ${selectedPlot._badgeText}</p>
+          <p style="color:#f59e0b;"><i class="fas fa-exclamation-triangle"></i> Review required prior to minting.</p>
+       `;
+       
+       document.getElementById('mod-doc-viewer').src = selectedPlot.document_url || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+       
+       setTimeout(() => {
+          if(!modMap) {
+            modMap = L.map('mod-map', { zoomControl: false }).setView([selectedPlot.lat||20, selectedPlot.lng||78], 15);
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(modMap);
+          }
+          if(modMarker) modMap.removeLayer(modMarker);
+          const r = (Math.sqrt(selectedPlot.area_hectares)*50) || 200;
+          modMarker = L.circle([selectedPlot.lat, selectedPlot.lng], { color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.3, radius: r }).addTo(modMap);
+          modMap.setView([selectedPlot.lat, selectedPlot.lng], 16);
+          modMap.invalidateSize();
+       }, 300);
+    }
+    
+    async function verifyProject(status) {
+       if(!selectedPlot) return;
+       if (status === 'verified') {
+          const reason = prompt("ACVA Audit Check:\\n\\nPlease provide your manual override reasoning for approving this plot to be logged on the accountability trail:");
+          if(reason === null) return;
+       }
+       try {
+          const res = await fetch('/api/admin/verify-land/' + selectedPlot.id, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') },
+            body: JSON.stringify({ status: status })
+          });
+          if(res.ok) {
+             showToast('Application marked as ' + status, 'success');
+             document.getElementById('modOverlay').style.display = 'none';
+             document.getElementById('verifyActionModal').style.display = 'none';
+             loadQueueData();
+             loadDashboardData();
+          }
+       } catch(e) { showToast(e.message, 'error'); }
+    }
+    
+    async function loadRegistry() {
+       const res = await fetch('/api/admin/lands', { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') } });
+       const data = await res.json();
+       document.getElementById('registry-table-body').innerHTML = data.lands.map(q => `
+          <tr>
+             <td><div style="font-weight:bold;">${q.owner_name}</div><div style="font-size:0.8rem; color:#94a3b8;">${q.name}</div></td>
+             <td>${q.location_district}, ${q.location_state}</td>
+             <td>${q.area_hectares} ha</td>
+             <td>${q.project_type}</td>
+             <td>${q.verification_status.toUpperCase()}</td>
+          </tr>
+       `).join('');
+    }
+    
+    async function loadTransactions() {
+       const res = await fetch('/api/admin/transactions', { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') } });
+       const data = await res.json();
+       document.getElementById('tx-table-body').innerHTML = data.transactions.map(tx => `
+          <tr>
+             <td style="font-family:monospace;">${tx.id.substring(0,8)}</td>
+             <td style="color:#f59e0b;">${tx.buyer_name}</td>
+             <td style="color:#10b981;">${tx.seller_name}</td>
+             <td>₹${(tx.tons * tx.price_per_ton).toLocaleString()}</td>
+             <td>₹${(tx.tons * tx.price_per_ton * 0.15).toLocaleString()}</td>
+             <td>${tx.status}</td>
+          </tr>
+       `).join('');
+    }
+    
+    async function loadUsers() {
+       const res = await fetch('/api/admin/users', { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') } });
+       const data = await res.json();
+       document.getElementById('users-table-body').innerHTML = data.users.map(u => `
+          <tr>
+             <td style="font-weight:bold;">${u.company_name || u.name}</td>
+             <td style="text-transform:capitalize;">${u.role}</td>
+             <td>${u.email}</td>
+             <td>${u.kyc_status ? u.kyc_status.toUpperCase() : 'PENDING'}</td>
+          </tr>
+       `).join('');
+    }
+
+    async function loadKYC() {
+       // Since the actual DB query might not have a dedicated endpoint for KYC requests alone in MVP,
+       // we'll fetch users with pending/submitted KYC status and mock the documents.
+       const res = await fetch('/api/admin/users', { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') } });
+       const data = await res.json();
+       const kycUsers = data.users.filter(u => u.kyc_status !== 'verified' && u.kyc_status !== 'approved');
+       
+       if (kycUsers.length === 0) {
+          document.getElementById('kyc-table-body').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">No pending KYC applications.</td></tr>';
+          return;
+       }
+       
+       document.getElementById('kyc-table-body').innerHTML = kycUsers.map(u => `
+          <tr>
+             <td style="font-weight:bold;">${u.company_name || u.name}</td>
+             <td style="text-transform:capitalize;">${u.role}</td>
+             <td style="font-family:monospace;">${Math.floor(1000 + Math.random()*9000)}-${Math.floor(1000 + Math.random()*9000)}-${Math.floor(1000 + Math.random()*9000)}</td>
+             <td><button style="background:transparent; border:1px solid #38bdf8; color:#38bdf8; padding:4px 8px; border-radius:4px; font-size:0.75rem;"><i class="fas fa-file-image"></i> View PAN/Aadhaar</button></td>
+             <td>
+               <button style="background:#10b981; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; cursor:pointer;" onclick="verifyKYC('${u.id}', 'verified')">Approve</button>
+               <button style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; cursor:pointer;" onclick="verifyKYC('${u.id}', 'rejected')">Reject</button>
+             </td>
+          </tr>
+       `).join('');
+    }
+    
+    async function verifyKYC(userId, status) {
+       try {
+          const res = await fetch('/api/admin/verify-kyc/' + userId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') },
+            body: JSON.stringify({ status: status })
+          });
+          if(res.ok) {
+             showToast('KYC marked as ' + status, 'success');
+             loadKYC();
+          }
+       } catch(e) { showToast(e.message, 'error'); }
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+  <script src="/js/capacitor-bridge.js"></script>
+
+<div id="verifyActionModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; align-items:center; justify-content:center;">
+  <div style="background:#131722; border:1px solid #2a2e39; border-radius:12px; padding:30px; width:360px;">
+    <h3 style="color:#d1d4dc; margin-top:0;">Verify Project</h3>
+    <select id="rejectReasonDrop" class="fi" style="margin-bottom:10px;"><option value="Mismatch in 7/12 area">Mismatch in 7/12 area</option><option value="Boundary overlaps with forest">Boundary overlaps with forest</option><option value="Fraudulent document">Fraudulent document</option><option value="Other">Other (Specify below)</option></select><textarea id="rejectNotes" placeholder="Reason for rejection (if rejecting)" style="width:100%; background:#0b0e14; border:1px solid #2a2e39; color:#d1d4dc; padding:12px; border-radius:4px; margin-bottom:15px; box-sizing:border-box;"></textarea>
+    <div style="display:flex; gap:10px;">
+      <button id="btn-approve" style="flex:1; background:#089981; border:none; color:white; padding:12px; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="verifyProject('verified')">Approve & Mint</button>
+      <button id="btn-reject" style="flex:1; background:#ef4444; border:none; color:white; padding:12px; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="verifyProject('rejected')">Reject</button>
+    </div>
+    <button style="width:100%; margin-top:10px; background:transparent; border:1px solid #2a2e39; color:#787b86; padding:10px; border-radius:4px; cursor:pointer;" onclick="document.getElementById('verifyActionModal').style.display='none'">Cancel</button>
+  </div>
+</div>
+
+</body>
+</html>

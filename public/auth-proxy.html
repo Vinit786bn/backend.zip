@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carbon Wallet - Authenticating...</title>
+    <style>
+        body { background: #0f172a; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: 'Inter', sans-serif; margin: 0; }
+        .spinner { border: 4px solid rgba(255, 255, 255, 0.1); width: 40px; height: 40px; border-radius: 50%; border-left-color: #10b981; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="spinner"></div>
+    <h3 id="status">Connecting to Google...</h3>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_S_y2VTWMe1f1UFumZEEW_ktbZtVzo1Y",
+            authDomain: "gen-lang-client-0044267372.firebaseapp.com",
+            databaseURL: "https://gen-lang-client-0044267372-default-rtdb.firebaseio.com",
+            projectId: "gen-lang-client-0044267372",
+            storageBucket: "gen-lang-client-0044267372.firebasestorage.app",
+            messagingSenderId: "901953259613",
+            appId: "1:901953259613:web:e39923fcfd5ef8f7d065b4"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const action = urlParams.get('action');
+        let role = urlParams.get('role') || localStorage.getItem('proxy_role') || 'customer';
+        
+        async function run() {
+            try {
+                const result = await getRedirectResult(auth);
+                if (result) {
+                    document.getElementById('status').innerText = 'Logging you in...';
+                    const user = result.user;
+                    if (user) {
+                        const firebaseIdToken = await user.getIdToken();
+                        window.location.href = "carbonwallet://login?token=" + firebaseIdToken + "&role=" + role;
+                    } else {
+                        document.getElementById('status').innerText = 'Failed to get token.';
+                    }
+                    return;
+                }
+
+                if (action === 'login') {
+                    localStorage.setItem('proxy_role', role);
+                    const provider = new GoogleAuthProvider();
+                    signInWithRedirect(auth, provider);
+                } else {
+                    document.getElementById('status').innerText = 'Ready. Please close this window.';
+                }
+            } catch(error) {
+                console.error(error);
+                document.getElementById('status').innerText = 'Authentication error: ' + error.message;
+            }
+        }
+        
+        run();
+    </script>
+</body>
+</html>
