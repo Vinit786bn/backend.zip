@@ -483,3 +483,4 @@ async function saveBankDetails() {
 
 
 window.formatRupee = function(num) { return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num); };
+
