@@ -390,14 +390,14 @@
           
           let loginRes;
           try {
-            const regRes = await fetch('/api/auth/register', {
+            const regRes = await fetch('https://carbonwallet-weqx.onrender.com/api/auth/register', {
               method: 'POST',
               headers: {'Content-Type': 'application/json'},
               body: JSON.stringify({ name, email, password, role })
             });
             
             if (regRes.status === 400) {
-              loginRes = await fetch('/api/auth/login', {
+              loginRes = await fetch('https://carbonwallet-weqx.onrender.com/api/auth/login', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ email, password })
@@ -423,4 +423,5 @@
     </script>
 </body>
 </html>
+
 
