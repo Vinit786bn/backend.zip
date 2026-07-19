@@ -1,0 +1,10 @@
+{
+  "appId": "com.carbonwallet.app",
+  "appName": "CarbonWallet",
+  "webDir": "public",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "https://carbonwallet-weqx.onrender.com",
+    "cleartext": true
+  }
+}
