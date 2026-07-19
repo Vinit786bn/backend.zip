@@ -377,5 +377,50 @@
     </div>
   </footer>
 
+    <script>
+      async function autoLoginDemo(role) {
+        showToast('Entering portal...', 'info');
+        const email = role === 'landowner' ? 'demo_landowner@carbonwallet.app' : 'demo_industry@carbonwallet.app';
+        const password = 'DemoPassword123!';
+        const name = role === 'landowner' ? 'Demo Farmer' : 'Demo Corporation';
+        
+        try {
+          // Since this is the older version, we need to handle the API calls correctly
+          // We can use the global API object since this version has it (e.g., API.register)
+          
+          let loginRes;
+          try {
+            const regRes = await fetch('/api/auth/register', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ name, email, password, role })
+            });
+            
+            if (regRes.status === 400) {
+              loginRes = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email, password })
+              });
+            } else {
+              loginRes = regRes;
+            }
+            
+            const data = await loginRes.json();
+            if (loginRes.ok) {
+               localStorage.setItem('cw_token', data.token);
+               window.location.href = role === 'landowner' ? '/landowner.html' : '/marketplace.html';
+            } else {
+               showToast('Demo login error: ' + (data.error || 'Unknown error'), 'error');
+            }
+          } catch (e) {
+            showToast('Network error during demo login', 'error');
+          }
+        } catch(err) {
+          showToast('Failed to initialize demo', 'error');
+        }
+      }
+    </script>
 </body>
 </html>
+
