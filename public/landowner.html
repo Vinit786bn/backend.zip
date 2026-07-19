@@ -224,8 +224,9 @@ Logout</button></div>
       </div>
     </div>
   </div>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-let listingCreditId = null;
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  let listingCreditId = null;
 function openListModal(creditId, maxTons) {
   listingCreditId = creditId;
   document.getElementById('listTons').max = maxTons;
@@ -864,3 +865,5 @@ async function submitListing() {
 
 </body>
 </html>
+
+
