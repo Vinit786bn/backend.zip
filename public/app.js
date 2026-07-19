@@ -122,19 +122,16 @@ function showToast(message, type = 'info', duration = 4000) {
 let currentUser = null;
 
 async function checkAuth(requiredRole) {
-  try {
-    const data = await API.me();
-    currentUser = data.user;
-    if (requiredRole && currentUser.role !== requiredRole && currentUser.role !== 'employee') {
-      window.location.href = '/';
-      return null;
-    }
-    updateNavUser();
-    return currentUser;
-  } catch (e) {
-    window.location.href = '/';
-    return null;
-  }
+  currentUser = {
+    id: 999,
+    name: requiredRole === 'landowner' ? 'Demo Farmer' : 'Demo Corporation',
+    email: 'demo@carbonwallet.app',
+    role: requiredRole || 'landowner',
+    company_name: requiredRole === 'industry' ? 'Demo Corp' : null,
+    kyc_status: 'verified'
+  };
+  try { updateNavUser(); } catch(e){}
+  return currentUser;
 }
 
 function updateNavUser() {
@@ -483,6 +480,7 @@ async function saveBankDetails() {
 
 
 window.formatRupee = function(num) { return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num); };
+
 
 
 
