@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">CarbonWallet</string>
-    <string name="title_activity_main">CarbonWallet</string>
+    <string name="app_name">carbon1</string>
+    <string name="title_activity_main">carbon1</string>
     <string name="package_name">com.carbonwallet.app</string>
     <string name="custom_url_scheme">com.carbonwallet.app</string>
     <string name="default_web_client_id">901953259613-nfn8th4ugl44teucnma1sn4hec2st508.apps.googleusercontent.com</string>

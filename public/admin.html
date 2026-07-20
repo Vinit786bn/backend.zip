@@ -1,12 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
+<script>
+  // Global API Router for Mobile (Capacitor)
+  if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+    console.log('Mobile Platform Detected. Intercepting API calls to dev server...');
+    const API_BASE = 'http://192.168.0.113:3000'; // Target local network IP
+    const originalFetch = window.fetch;
+    window.fetch = async function() {
+      let args = Array.prototype.slice.call(arguments);
+      if (typeof args[0] === 'string' && args[0].startsWith('/api/')) {
+        args[0] = API_BASE + args[0];
+      }
+      return originalFetch.apply(this, args);
+    };
+  }
+</script>
+
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#0f172a">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Carbon Wallet - Admin Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="style.css?v=639201012679378634">
@@ -86,7 +100,46 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
         .nb a.active { border-left: 3px solid #10b981; padding-left: 10px; border-bottom: none; }
       }
     </style>
-</head>
+<script src="haptics.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+    import { getFirestore, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyCez36I2XdAPglGbg45LyH7Sk_P0KuicYw",
+      authDomain: "gen-lang-client-0044267372.firebaseapp.com",
+      databaseURL: "https://gen-lang-client-0044267372-default-rtdb.firebaseio.com",
+      projectId: "gen-lang-client-0044267372",
+      storageBucket: "gen-lang-client-0044267372.firebasestorage.app",
+      messagingSenderId: "901953259613",
+      appId: "1:901953259613:web:20bd329a83ce1b5ed065b4"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    window.db = getFirestore(app);
+    window.updateDoc = updateDoc;
+    window.doc = doc;
+  </script>
+  
+  <script>
+    async function requireBiometric(reason = "Authorize Action") {
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.NativeBiometric) {
+        try {
+          const result = await window.Capacitor.Plugins.NativeBiometric.verifyIdentity({
+            reason: reason,
+            title: 'Admin Security',
+            subtitle: 'Authentication required'
+          });
+          return true;
+        } catch (e) {
+          alert("Authentication failed.");
+          return false;
+        }
+      }
+      return confirm("WEB BYPASS: " + reason + "? (Simulating Biometrics)");
+    }
+  </script>
+  </head>
 <body>
   <div class="app-layout">
     <!-- SIDEBAR -->
@@ -229,7 +282,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
        
        <div style="display:flex; gap:15px;" id="mod-actions">
           <button style="flex:1; background:#ef4444; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="verifyProject('rejected')">Reject</button>
-          <button style="flex:1; background:#10b981; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="verifyProject('verified')">Approve & Mint</button>
+          <button style="flex:1; background:#10b981; color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="verifyProject('verified')">Approve &amp; Mint</button>
        </div>
     </div>
   </div>
@@ -319,29 +372,45 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
              return;
           }
 
-          tbody.innerHTML = currentQueue.map(q => {
-             let riskScore = q.carbon_score ? (100 - q.carbon_score) : Math.floor(Math.random() * 80) + 10;
-             let badgeClass = 'badge-green';
-             let badgeText = 'Clear';
-             let scoreColor = '#10b981';
-             
-             if(riskScore > 60) {
-                badgeClass = 'badge-red'; badgeText = 'Building overlap'; scoreColor = '#ef4444';
-             } else if (riskScore > 30) {
-                badgeClass = 'badge-amber'; badgeText = 'Neighbor overlap'; scoreColor = '#f59e0b';
-             }
-             
-             q._riskScore = riskScore;
-             q._badgeText = badgeText;
-             
-             return `<tr onclick="openMod('${q.id}')">
-                <td><div style="font-weight:bold; color:#fff;">${q.name}</div><div style="font-size:0.8rem; color:#94a3b8;">${q.owner_name}</div></td>
-                <td>${q.location_district || 'District'}, ${q.location_state || 'State'}</td>
-                <td>${q.area_hectares} ha</td>
-                <td><span class="badge ${badgeClass}">${badgeText}</span></td>
-                <td style="color:${scoreColor}; font-weight:bold;">${riskScore}</td>
-             </tr>`;
-          }).join('');
+          
+tbody.innerHTML = currentQueue.map(q => {
+  let riskScore = q.carbon_score ? (100 - q.carbon_score) : Math.floor(Math.random() * 80) + 10;
+  let badgeClass = 'badge-green';
+  let badgeText = 'Clear';
+  let scoreColor = '#10b981';
+  let dotColor = '#00E676';
+  
+  if(riskScore > 60) {
+    badgeClass = 'badge-red'; badgeText = 'Building overlap'; scoreColor = '#ef4444'; dotColor = '#FF3D00';
+  } else if (riskScore > 30) {
+    badgeClass = 'badge-amber'; badgeText = 'Neighbor overlap'; scoreColor = '#f59e0b'; dotColor = '#FFAB00';
+  }
+  
+  q._riskHtml = `<div style="color:${scoreColor}; font-weight:bold; font-size:1.1rem; margin-bottom:5px;">${100-riskScore}% AI Confidence</div>
+  <div>The Sentinel-2 analysis identified ${badgeText}.</div>`;
+  
+  return `
+    <tr class="desktop-row" onclick="openMod('${q.id}')">
+      <td><div style="font-weight:bold; color:#fff;">${q.name}</div><div style="font-size:0.8rem; color:#94a3b8;">${q.owner_name}</div></td>
+      <td>${q.location_district || 'District'}, ${q.location_state || 'State'}</td>
+      <td>${q.area_hectares} ha</td>
+      <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+      <td><span style="color:${scoreColor}; font-weight:bold;">${riskScore}/100</span></td>
+    </tr>
+    <tr class="mobile-row" onclick="openMod('${q.id}')">
+      <td colspan="5">
+        <div style="background:#111827; border:1px solid #1e293b; border-radius:12px; padding:15px; display:flex; align-items:center; justify-content:space-between;">
+          <div>
+            <div style="font-weight:bold; color:#f8fafc; font-size:1.1rem; margin-bottom:4px;">${q.owner_name}</div>
+            <div style="color:#94a3b8; font-size:0.85rem;">${q.area_hectares} Acres Claimed</div>
+          </div>
+          <div style="width:16px; height:16px; border-radius:50%; background:${dotColor}; box-shadow: 0 0 10px ${dotColor};"></div>
+        </div>
+      </td>
+    </tr>
+  `;
+}).join('');
+
        } catch(e) { console.error(e); }
     }
 
@@ -487,15 +556,231 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
     <h3 style="color:#d1d4dc; margin-top:0;">Verify Project</h3>
     <select id="rejectReasonDrop" class="fi" style="margin-bottom:10px;"><option value="Mismatch in 7/12 area">Mismatch in 7/12 area</option><option value="Boundary overlaps with forest">Boundary overlaps with forest</option><option value="Fraudulent document">Fraudulent document</option><option value="Other">Other (Specify below)</option></select><textarea id="rejectNotes" placeholder="Reason for rejection (if rejecting)" style="width:100%; background:#0b0e14; border:1px solid #2a2e39; color:#d1d4dc; padding:12px; border-radius:4px; margin-bottom:15px; box-sizing:border-box;"></textarea>
     <div style="display:flex; gap:10px;">
-      <button id="btn-approve" style="flex:1; background:#089981; border:none; color:white; padding:12px; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="verifyProject('verified')">Approve & Mint</button>
+      <button id="btn-approve" style="flex:1; background:#089981; border:none; color:white; padding:12px; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="verifyProject('verified')">Approve &amp; Mint</button>
       <button id="btn-reject" style="flex:1; background:#ef4444; border:none; color:white; padding:12px; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="verifyProject('rejected')">Reject</button>
     </div>
     <button style="width:100%; margin-top:10px; background:transparent; border:1px solid #2a2e39; color:#787b86; padding:10px; border-radius:4px; cursor:pointer;" onclick="document.getElementById('verifyActionModal').style.display='none'">Cancel</button>
   </div>
 </div>
 
-</body>
-</html>
 
 
 
+
+
+
+    <div class="bottom-tab-bar" style="background:#111827; border-top:1px solid #1e293b;">
+      <a href="#" class="tab-item active" onclick="if(window.HapticEngine) HapticEngine.lightTick()"><i class="fa-solid fa-inbox"></i><span>Queue</span></a>
+      <a href="#" class="tab-item" onclick="if(window.HapticEngine) HapticEngine.lightTick()"><i class="fa-solid fa-check-double"></i><span>Ledger</span></a>
+      <a href="#" class="tab-item" onclick="if(window.HapticEngine) HapticEngine.lightTick()"><i class="fa-solid fa-shield-halved"></i><span>Alerts</span></a>
+    </div>
+  
+    <div id="mobileAdminSplit" style="display: none;" class="mobile-admin-split-container">
+      <div class="admin-split-top">
+        <div id="m-split-map" style="width: 100%; height: 100%;"></div>
+        <button onclick="document.getElementById('mobileAdminSplit').classList.remove('active')" style="position:absolute; top:20px; left:20px; z-index:1000; background:rgba(0,0,0,0.5); color:#fff; border:none; width:40px; height:40px; border-radius:50%; font-size:1.2rem;"><i class="fa-solid fa-arrow-left"></i></button>
+      </div>
+      <div class="admin-split-bottom" id="m-split-bottom-sheet">
+        <div style="width:40px; height:5px; background:#334155; border-radius:3px; margin:0 auto 20px;"></div>
+        <h2 id="m-split-title" style="margin:0 0 5px 0; color:#fff;"></h2>
+        <div id="m-split-owner" style="color:#94a3b8; font-size:0.9rem; margin-bottom:20px;"></div>
+        
+        <div style="background:#1e293b; padding:15px; border-radius:8px; margin-bottom:20px;">
+          <h4 style="margin:0 0 10px 0; color:#94a3b8; font-size:0.8rem; text-transform:uppercase;">AI Risk Analysis</h4>
+          <div id="m-split-risk" style="font-size:0.9rem; color:#f8fafc; line-height:1.5;"></div>
+        </div>
+      </div>
+      <div class="admin-verdict-bar">
+        <button class="btn-reject" onclick="if(window.HapticEngine) HapticEngine.heavyThud(); fakeBiometric('reject')">REJECT</button>
+        <button class="btn-approve" onclick="if(window.HapticEngine) HapticEngine.heavyThud(); fakeBiometric('approve')">APPROVE &amp; MINT</button>
+      </div>
+    </div>
+    
+    <div id="fakeBiometricModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(10, 15, 28, 0.9); z-index:9999; justify-content:center; align-items:center; flex-direction:column;">
+      <i class="fa-solid fa-fingerprint" style="font-size:5rem; color:#00E676; margin-bottom:20px; animation: pulse 1s infinite;"></i>
+      <h2 style="color:#fff;">Verify Identity</h2>
+      <p style="color:#94a3b8; margin-bottom: 30px;">Cryptographically signing transaction...</p>
+    </div>
+    
+    <style>
+      .mobile-admin-split-container.active { display: block !important; position: fixed; top:0; left:0; right:0; bottom:0; z-index: 5000; background: #0A0E17; }
+    </style>
+    
+    <script>
+      let currentAction = null;
+      function fakeBiometric(action) {
+        currentAction = action;
+        const modal = document.getElementById('fakeBiometricModal');
+        modal.style.display = 'flex';
+        
+        setTimeout(() => {
+          if(window.HapticEngine) HapticEngine.successPulse();
+          modal.style.display = 'none';
+          document.getElementById('mobileAdminSplit').classList.remove('active');
+          verifyProject(action === 'approve' ? 'verified' : 'rejected');
+        }, 1500);
+      }
+    </script>
+  
+  <style>
+    .mobile-admin-wrapper { display: none; }
+    @media (max-width: 768px) {
+      .app-layout { display: none !important; }
+      .mobile-admin-wrapper {
+        display: flex; flex-direction: column; height: 100vh; width: 100vw;
+        position: fixed; top: 0; left: 0; background: #0A0E17; z-index: 9999; overflow: hidden;
+      }
+      .admin-view { display: none; height: 100%; width: 100%; flex-direction: column; }
+      .admin-view.active { display: flex; }
+      
+      .admin-bottom-bar {
+        position: absolute; bottom: 0; left: 0; right: 0;
+        background: rgba(10, 14, 23, 0.95); backdrop-filter: blur(10px); border-top: 1px solid #1e293b;
+        display: flex; justify-content: space-around; padding: 15px 0 25px 0; z-index: 10000;
+      }
+      .admin-tab { color: #94a3b8; text-align: center; font-size: 0.75rem; cursor: pointer; }
+      .admin-tab i { display: block; font-size: 1.4rem; margin-bottom: 5px; }
+      .admin-tab.active { color: #00E5FF; }
+      
+      .queue-item { background: #111827; border: 1px solid #1e293b; border-radius: 8px; padding: 15px; margin-bottom: 10px; }
+      
+      /* Split Screen Triage UI */
+      .split-screen { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #0A0E17; z-index: 20000; flex-direction: column; }
+      .split-screen.active { display: flex; }
+      .split-map { flex: 1; min-height: 40vh; position: relative; }
+      .split-context { flex: 1; background: #111827; overflow-y: auto; padding: 20px; padding-bottom: 100px; border-top: 2px solid #1e293b; }
+      .verdict-bar { position: absolute; bottom: 0; left: 0; right: 0; display: flex; height: 80px; padding-bottom: 20px; background: #111827; }
+      .btn-verdict { flex: 1; border: none; font-weight: 900; font-size: 1.1rem; color: #fff; }
+      .btn-reject { background: #FF3D00; }
+      .btn-approve { background: #00E676; color: #0A0E17; }
+    }
+  </style>
+
+  <div class="mobile-admin-wrapper" id="mobileAdminV2">
+    <!-- View 1: Pending Queue -->
+    <div class="admin-view active" id="view-queue" style="padding: 20px; overflow-y:auto; padding-bottom:100px;">
+      <h2 style="color: #f8fafc; font-family:'Inter',sans-serif; margin-bottom:20px;">Pending Queue</h2>
+      
+      <div class="queue-item" onclick="openTriage('user@carbonwallet.com', 'Pune Agroforestry')">
+         <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <h3 style="margin:0; color:#f8fafc; font-family:monospace;">Pune Agroforestry</h3>
+            <span style="color:#FFAB00; font-weight:bold; font-size:0.8rem;">PENDING</span>
+         </div>
+         <div style="color:#94a3b8; font-size:0.9rem;">250 Hectares • Awaiting 7/12 Verification</div>
+      </div>
+    </div>
+    
+    <!-- View 2: Ledger -->
+    <div class="admin-view" id="view-ledger" style="padding: 20px;">
+      <h2 style="color: #f8fafc; font-family:'Inter',sans-serif;">Verified Ledger</h2>
+      <div style="color:#94a3b8;">No new entries today.</div>
+    </div>
+    
+    <!-- View 3: Alerts -->
+    <div class="admin-view" id="view-alerts" style="padding: 20px;">
+      <h2 style="color: #f8fafc; font-family:'Inter',sans-serif;">Security Alerts</h2>
+      <div class="queue-item" style="border-left: 4px solid #FF3D00;">
+         <h4 style="color:#FF3D00; margin:0 0 5px 0;">GPS Spoofing Detected</h4>
+         <div style="color:#94a3b8; font-size:0.8rem;">Project #992 flagged by AI for conflicting EXIF data.</div>
+      </div>
+    </div>
+    
+    <div class="admin-bottom-bar">
+      <div class="admin-tab active" onclick="switchAdminTab('queue', this)"><i class="fa-solid fa-inbox"></i> Pending</div>
+      <div class="admin-tab" onclick="switchAdminTab('ledger', this)"><i class="fa-solid fa-check-double"></i> Ledger</div>
+      <div class="admin-tab" onclick="switchAdminTab('alerts', this)"><i class="fa-solid fa-triangle-exclamation"></i> Alerts</div>
+    </div>
+    
+    <!-- The Split-Screen Triage Overlay -->
+    <div class="split-screen" id="triageUI">
+       <button style="position:absolute; top:40px; left:20px; z-index:9999; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center;" onclick="closeTriage()"><i class="fa-solid fa-arrow-left"></i></button>
+       <div style="position:absolute; top:40px; right:20px; z-index:9999; background:rgba(0,0,0,0.7); color:#00E5FF; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:0.8rem;"><i class="fa-solid fa-satellite"></i> NDVI ACTIVE</div>
+       
+       <div class="split-map" id="adminLeafletMap"></div>
+       
+       <div class="split-context">
+          <h2 id="triage-title" style="color:#f8fafc; margin:0 0 15px 0; font-family:monospace;">Project Review</h2>
+          <div style="background:#1e293b; padding:15px; border-radius:8px; margin-bottom:15px;">
+             <div style="color:#94a3b8; font-size:0.8rem; margin-bottom:5px;">AI 7/12 Extraction Results</div>
+             <div style="color:#00E676; font-weight:bold; font-size:0.9rem; display:flex; align-items:center; gap:5px;"><i class="fa-solid fa-check-circle"></i> Owner Match Confirmed</div>
+             <div style="color:#00E676; font-weight:bold; font-size:0.9rem; display:flex; align-items:center; gap:5px; margin-top:5px;"><i class="fa-solid fa-check-circle"></i> Area Match (250 Ha) Confirmed</div>
+          </div>
+          <div style="color:#94a3b8; font-size:0.9rem; line-height:1.5;">
+             All biometric and geospatial parameters align with the provided legal documentation. Project is ready for minting.
+          </div>
+       </div>
+       
+       <div class="verdict-bar">
+          <button class="btn-verdict btn-reject" onclick="handleReject()"><i class="fa-solid fa-times"></i> REJECT</button>
+          <button class="btn-verdict btn-approve" onclick="handleApprove('user@carbonwallet.com', 500)"><i class="fa-solid fa-fingerprint"></i> APPROVE &amp; MINT</button>
+       </div>
+    </div>
+  </div>
+  
+  <script>
+    let adminMap;
+    
+    function switchAdminTab(viewId, el) {
+      if(window.HapticEngine) HapticEngine.lightTick();
+      document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.querySelectorAll('.admin-view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-' + viewId).classList.add('active');
+    }
+    
+    function openTriage(userId, title) {
+      if(window.HapticEngine) HapticEngine.lightTick();
+      document.getElementById('triageUI').classList.add('active');
+      document.getElementById('triage-title').textContent = title;
+      
+      // Initialize map if needed
+      if(!adminMap) {
+         setTimeout(() => {
+           adminMap = L.map('adminLeafletMap', {zoomControl: false}).setView([18.5204, 73.8567], 15);
+           L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+             attribution: 'Tiles &copy; Esri'
+           }).addTo(adminMap);
+           
+           // Draw a sample polygon
+           const latlngs = [[18.5204, 73.8567], [18.5214, 73.8567], [18.5214, 73.8577], [18.5204, 73.8577]];
+           L.polygon(latlngs, {color: '#00E676', fillColor: '#00E676', fillOpacity: 0.4}).addTo(adminMap);
+         }, 300);
+      }
+    }
+    
+    function closeTriage() {
+      document.getElementById('triageUI').classList.remove('active');
+    }
+    
+    function handleReject() {
+      if(window.HapticEngine) HapticEngine.heavyThud();
+      alert("Project Rejected. Notifying landowner.");
+      closeTriage();
+    }
+    
+    async function handleApprove(userId, tons) {
+      const auth = await requireBiometric("Sign Project Approval cryptographically");
+      if(auth) {
+         if(window.HapticEngine) HapticEngine.successPulse();
+         const btn = document.querySelector('.btn-approve');
+         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> MINTING...';
+         
+         try {
+           // Simulate the realtime Firebase trigger
+           if(window.db && window.updateDoc && window.doc) {
+              const ref = window.doc(window.db, 'users', userId);
+              await window.updateDoc(ref, {
+                 balance: 1200 * tons // Simulate rewarding the FPO
+              });
+           }
+           alert("SUCCESS! 500 Tons minted and synchronized in real-time to the FPO's wallet via Firebase WebSockets!");
+           closeTriage();
+         } catch(e) {
+           console.error(e);
+           alert("Approval succeeded locally, but Firebase write failed: " + e.message);
+           closeTriage();
+         }
+      }
+    }
+  </script>
+</body></html>

@@ -1,12 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
+<script>
+  // Global API Router for Mobile (Capacitor)
+  if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+    console.log('Mobile Platform Detected. Intercepting API calls to dev server...');
+    const API_BASE = 'http://192.168.0.113:3000'; // Target local network IP
+    const originalFetch = window.fetch;
+    window.fetch = async function() {
+      let args = Array.prototype.slice.call(arguments);
+      if (typeof args[0] === 'string' && args[0].startsWith('/api/')) {
+        args[0] = API_BASE + args[0];
+      }
+      return originalFetch.apply(this, args);
+    };
+  }
+</script>
+
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#0f172a">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Carbon Wallet - Landowner Portal</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
@@ -64,18 +78,55 @@
         .nb a.active { border-left: 3px solid #10b981; padding-left: 10px; border-bottom: none; }
       }
     </style>
-</head>
-<body>
-  <nav class="nb">
+<script src="haptics.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+    import { getFirestore, onSnapshot, collection, doc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyCez36I2XdAPglGbg45LyH7Sk_P0KuicYw",
+      authDomain: "gen-lang-client-0044267372.firebaseapp.com",
+      databaseURL: "https://gen-lang-client-0044267372-default-rtdb.firebaseio.com",
+      projectId: "gen-lang-client-0044267372",
+      storageBucket: "gen-lang-client-0044267372.firebasestorage.app",
+      messagingSenderId: "901953259613",
+      appId: "1:901953259613:web:20bd329a83ce1b5ed065b4"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.db = db;
+    window.onSnapshot = onSnapshot;
+    window.collection = collection;
+    window.doc = doc;
+    
+    // Setup listener
+    document.addEventListener('DOMContentLoaded', () => {
+       const userEmail = localStorage.getItem('cw_user');
+       if(userEmail) {
+         const userDoc = doc(db, 'users', userEmail);
+         onSnapshot(userDoc, (docSnap) => {
+           if(docSnap.exists()) {
+             const data = docSnap.data();
+             const balEl = document.getElementById('wallet-balance');
+             if(balEl) balEl.textContent = '₹' + (data.balance || 0).toLocaleString('en-IN');
+           }
+         });
+       }
+    });
+  </script>
+  </head>
+<body><div class="desktop-dashboard">
+  <nav class="nb navbar">
     <div style="font-weight:800;font-size:1.2rem;color:#f8fafc;"><i class="fas fa-leaf" style="color:#10b981;"></i> Carbon Wallet</div>
     <div><a href="#" class="active" onclick="switchTab('onboard')">Land Onboarding</a><a href="#" onclick="switchTab('mylands')">My Lands</a><a href="#" onclick="switchTab('credits')">My Credits</a><a href="#" onclick="switchTab('payouts')">Payouts</a><a href="#" onclick="switchTab('documents')">Documents</a></div>
     <div style="cursor:pointer;position:relative;" onclick="toggleProfile(event)">
       <div style="text-align:right;"><div style="font-size:0.85rem;" id="nav-user-name">Landowner</div><div style="font-size:0.7rem;color:#10b981;">Landowner Portal</div></div>
       <div class="pd" id="profileDropdown"><button class="di" onclick="switchTab('settings')"><i class="fas fa-cog"></i> Settings</button><button class="di"><i class="fas fa-wallet"></i> Balance</button><button class="di" onclick="handleLogout()" style="color:#ef4444;"><i class="fas fa-sign-out-alt"></i> 
-<button class="di" onclick="window.location.href='/landowner.html'"><i class="fas fa-tractor"></i> Landowner Portal</button>
+</button><button class="di" onclick="window.location.href='/landowner.html'"><i class="fas fa-tractor"></i> Landowner Portal</button>
 <button class="di" onclick="window.location.href='/marketplace.html'"><i class="fas fa-building"></i> Marketplace Portal</button>
 <button class="di" onclick="window.location.href='/admin.html'"><i class="fas fa-shield-alt"></i> Admin Portal</button>
-Logout</button></div>
+Logout</div>
     </div>
   </nav>
   <div style="background:linear-gradient(90deg,#0f172a,#1e293b);border-bottom:1px solid #334155;padding:12px 0;">
@@ -92,10 +143,10 @@ Logout</button></div>
             <div style="background:rgba(16,185,129,0.1); border:1px dashed #10b981; border-radius:8px; padding:16px; margin-bottom:20px; text-align:center;"><h4 style="color:#10b981;margin-bottom:8px;"><i class="fas fa-map-marker-alt"></i> Am I Eligible? (10-Second Pre-Check)</h4><p style="font-size:0.8rem;color:#94a3b8;margin-bottom:12px;">Drop a pin on your land before filling any forms to instantly see your projected earnings.</p><button type="button" class="bp" style="background:#0f172a;border:1px solid #10b981;color:#10b981;" onclick="runQuickEligibility()"><i class="fas fa-bolt"></i> Run Quick Satellite Scan</button></div><h3 style="color:#f8fafc;margin-bottom:20px;"><i class="fas fa-seedling" style="color:#10b981;"></i> Land Registration</h3>
             <div class="mb"><label>Project / Land Name</label><input type="text" id="landName" class="fi" placeholder="e.g. Green Valley Farm"></div>
             
-            <div class="g3 mb">
-              <div><label>Credit Framework</label><select id="creditFramework" class="fs" onchange="recalc()"><option value="Carbon (CCTS)">Carbon Credits (CCTS)</option><option value="Green (GCP - Tree)">Green Credits (GCP - Tree Planting)</option><option value="Green (GCP - Water)">Green Credits (GCP - Water Conservation)</option><option value="Biodiversity">Biodiversity Credits (Voluntary)</option></select></div>
-              <div><label>Land Classification</label><select id="landType" class="fs" onchange="recalc()"><option value="Agricultural">Agricultural</option><option value="Forest">Forest</option><option value="Residential">Residential</option></select></div>
-              <div><label>Project Type</label><select id="projectType" class="fs"><option value="Agroforestry">Agroforestry</option><option value="Soil Carbon">Soil Carbon</option><option value="Blue Carbon">Blue Carbon</option><option value="AWD Rice">AWD Rice</option><option value="Afforestation">Afforestation</option></select></div>
+            <div class="mb mobile-carousel">
+              <div class="stat-card cd"><label>Credit Framework</label><select id="creditFramework" class="fs" onchange="recalc()"><option value="Carbon (CCTS)">Carbon Credits (CCTS)</option><option value="Green (GCP - Tree)">Green Credits (GCP - Tree Planting)</option><option value="Green (GCP - Water)">Green Credits (GCP - Water Conservation)</option><option value="Biodiversity">Biodiversity Credits (Voluntary)</option></select></div>
+              <div class="stat-card cd"><label>Land Classification</label><select id="landType" class="fs" onchange="recalc()"><option value="Agricultural">Agricultural</option><option value="Forest">Forest</option><option value="Residential">Residential</option></select></div>
+              <div class="stat-card cd"><label>Project Type</label><select id="projectType" class="fs"><option value="Agroforestry">Agroforestry</option><option value="Soil Carbon">Soil Carbon</option><option value="Blue Carbon">Blue Carbon</option><option value="AWD Rice">AWD Rice</option><option value="Afforestation">Afforestation</option></select></div>
             </div>
             <div class="g2 mb"><div><label>State <span class="live-badge">AUTO-FILL</span></label><input type="text" id="landState" class="fi" placeholder="Auto-detected"></div><div><label>District</label><input type="text" id="landDistrict" class="fi" placeholder="Auto-detected"></div></div>
             <div class="g2 mb">
@@ -128,7 +179,7 @@ Logout</button></div>
             
             <div class="mb" style="background:#0f172a;padding:16px;border-radius:8px;border:1px solid #334155;">
               <label style="color:#38bdf8;font-size:0.9rem;"><i class="fas fa-file-contract"></i> Upload 7/12 Land Registry <span class="live-badge" style="background:rgba(56,189,248,0.2);color:#38bdf8;">AI VERIFIED</span></label>
-              <input type="file" id="landDoc" accept=".pdf,image/*" multiple style="width:100%; margin-top:8px; padding:10px; background:#1e293b; color:#f8fafc; border-radius:6px; border:1px dashed #38bdf8;" onchange="uploadDocument()">
+              <input type="file" id="landDoc" accept=".pdf,image/*" multiple="" style="width:100%; margin-top:8px; padding:10px; background:#1e293b; color:#f8fafc; border-radius:6px; border:1px dashed #38bdf8;" onchange="uploadDocument()">
 <div id="uploadProgress" style="display:none; width:100%; height:4px; background:#334155; margin-top:10px;"><div style="width:50%; height:100%; background:#10b981;"></div></div>
 <div id="fileListPreview" style="margin-top:10px; font-size:0.85rem; color:#f8fafc; display:flex; flex-direction:column; gap:5px;"></div> <!-- multiple document upload target -->
               <div id="docUploadStatus" style="font-size:0.75rem; color:#94a3b8; margin-top:8px;">Format: PDF, JPG, PNG</div>
@@ -218,12 +269,12 @@ Logout</button></div>
         <h3 style="color:#f8fafc;margin-bottom:20px;"><i class="fas fa-cog"></i> Profile Settings</h3>
         <div class="mb"><label>Full Name</label><input type="text" id="profName" class="fi"></div>
         <div class="mb"><label>Phone Number</label><input type="text" id="profPhone" class="fi" placeholder="+91"></div>
-        <div class="mb"><label>Email Address</label><input type="text" id="profEmail" class="fi" disabled style="opacity:0.6;"></div>
+        <div class="mb"><label>Email Address</label><input type="text" id="profEmail" class="fi" disabled="" style="opacity:0.6;"></div>
         <div class="mb"><label>Language Preference</label><select id="profLang" class="fs"><option>English</option><option>Hindi</option><option>Marathi</option></select></div>
         <button class="bp" style="width:100%;" onclick="saveProfile()">Save Changes</button>
       </div>
     </div>
-  </div>
+  
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
   let listingCreditId = null;
@@ -863,9 +914,281 @@ async function submitListing() {
   </div>
 </div>
 
-</body>
-</html>
 
 
 
 
+
+
+
+    <div class="bottom-tab-bar">
+      <a href="#" class="tab-item active" onclick="if(window.HapticEngine) HapticEngine.lightTick()"><i class="fa-solid fa-location-dot"></i><span>Onboard</span></a>
+      <a href="#" class="tab-item" onclick="if(window.HapticEngine) HapticEngine.lightTick()"><i class="fa-solid fa-leaf"></i><span>My Lands</span></a>
+      <a href="#" class="tab-item" onclick="if(window.HapticEngine) HapticEngine.lightTick()"><i class="fa-solid fa-wallet"></i><span>Wallet</span></a>
+    </div>
+  
+<script>
+  function openMapModal() {
+    if(window.HapticEngine) HapticEngine.lightTick();
+    document.getElementById('mapModal').classList.add('active');
+    if (window.map) {
+      setTimeout(() => window.map.invalidateSize(), 300);
+      window.map.locate({setView: true, maxZoom: 16});
+    }
+  }
+  function closeMapModal() {
+    document.getElementById('mapModal').classList.remove('active');
+  }
+  function confirmMapModal() {
+    if(window.HapticEngine) HapticEngine.successPulse();
+    closeMapModal();
+  }
+</script>
+</div>
+    <div class="mobile-wizard-wrapper" id="mobileWizard">
+      <div class="wiz-progress-container">
+        <div class="wiz-progress-track">
+          <div class="wiz-progress-fill" id="wizProgressFill"></div>
+        </div>
+      </div>
+      
+      <div class="wiz-slider" id="wizSlider">
+        <!-- STEP 1: Basics -->
+        <div class="wiz-step">
+          <h2 style="color: #f8fafc; margin-bottom: 25px; font-weight: 800;">Project Basics</h2>
+          <div class="wiz-card">
+            <div class="wiz-field">
+              <label>Project Name</label>
+              <input type="text" class="wiz-input" placeholder="e.g. Green Valley Farm">
+            </div>
+            <div class="wiz-field">
+              <label>Credit Framework</label>
+              <select class="wiz-select">
+                <option>Carbon Credits CCTS</option>
+                <option>Gold Standard</option>
+                <option>Verra VCS</option>
+              </select>
+            </div>
+            <div class="wiz-field">
+              <label>Land Classification</label>
+              <select class="wiz-select">
+                <option>Agricultural</option>
+                <option>Forestry</option>
+                <option>Grassland</option>
+              </select>
+            </div>
+            <div class="wiz-field">
+              <label>Type</label>
+              <select class="wiz-select">
+                <option>Agroforestry</option>
+                <option>Reforestation</option>
+                <option>Soil Carbon</option>
+              </select>
+            </div>
+          </div>
+          <div class="wiz-sticky-btn">
+            <button class="wiz-btn" onclick="nextWizStep(1)">Next: Location Details ➔</button>
+          </div>
+        </div>
+        
+        <!-- STEP 2: Location -->
+        <div class="wiz-step">
+          <div style="display:flex; align-items:center; margin-bottom:25px; gap: 15px;">
+             <button onclick="prevWizStep()" style="background:none; border:none; color:#94a3b8; font-size:1.5rem; padding:0; cursor:pointer;"><i class="fa-solid fa-arrow-left"></i></button>
+             <h2 style="color: #f8fafc; margin: 0; font-weight: 800;">Location Details</h2>
+          </div>
+          <div class="wiz-card">
+            <div class="wiz-field">
+              <label>State</label>
+              <select class="wiz-select"><option>Maharashtra</option><option>Karnataka</option></select>
+            </div>
+            <div class="wiz-field">
+              <label>District</label>
+              <select class="wiz-select"><option>Pune</option><option>Nashik</option></select>
+            </div>
+            <div class="wiz-field">
+              <label>Taluka</label>
+              <select class="wiz-select"><option>Haveli</option><option>Baramati</option></select>
+            </div>
+            <div class="wiz-field">
+              <label>Village</label>
+              <input type="text" class="wiz-input" placeholder="e.g. Uruli Kanchan">
+            </div>
+          </div>
+          <div class="wiz-sticky-btn">
+            <button class="wiz-btn" onclick="nextWizStep(2)">Next: Farm Details ➔</button>
+          </div>
+        </div>
+        
+        <!-- STEP 3: Legal & Data -->
+        <div class="wiz-step">
+          <div style="display:flex; align-items:center; margin-bottom:25px; gap: 15px;">
+             <button onclick="prevWizStep()" style="background:none; border:none; color:#94a3b8; font-size:1.5rem; padding:0; cursor:pointer;"><i class="fa-solid fa-arrow-left"></i></button>
+             <h2 style="color: #f8fafc; margin: 0; font-weight: 800;">Agricultural &amp; Legal Data</h2>
+          </div>
+          <div class="wiz-card">
+            <div class="wiz-field">
+              <label>Soil Type</label>
+              <select class="wiz-select"><option>Black Cotton</option><option>Alluvial</option></select>
+            </div>
+            <div class="wiz-field">
+              <label>Irrigation</label>
+              <select class="wiz-select"><option>Rainfed</option><option>Drip</option></select>
+            </div>
+            <div class="wiz-field">
+              <label>Current Crop</label>
+              <input type="text" class="wiz-input" placeholder="e.g. Sugarcane">
+            </div>
+            <div class="wiz-field">
+              <label>Year of Ownership</label>
+              <input type="date" class="wiz-input">
+            </div>
+            <div class="wiz-field">
+              <label>Measurement</label>
+              <div style="display:flex; gap:10px;">
+                <input type="number" pattern="[0-9]*" class="wiz-input" placeholder="Value" style="flex:2;">
+                <select class="wiz-select" style="flex:1;"><option>Acres</option><option>Hectares</option></select>
+              </div>
+            </div>
+            <div class="wiz-field">
+              <label style="display:flex; justify-content:space-between;">Coordinates <span style="color:#00E676; cursor:pointer;" onclick="if(window.HapticEngine) HapticEngine.lightTick(); alert('GPS Acquired!')"><i class="fa-solid fa-location-crosshairs"></i> Use GPS</span></label>
+              <div style="display:flex; gap:10px;">
+                <input type="text" class="wiz-input" placeholder="Lat">
+                <input type="text" class="wiz-input" placeholder="Lng">
+              </div>
+            </div>
+            
+            <label for="wizUpload" onclick="if(window.HapticEngine) HapticEngine.successPulse()" style="display: block; text-align: center; padding: 40px 20px; border: 2px dashed #00E5FF; cursor: pointer; border-radius: 12px; background: rgba(0, 229, 255, 0.05); margin-top: 30px;">
+              <i class="fa-solid fa-camera-viewfinder" style="font-size: 3rem; color: #00E5FF; margin-bottom: 15px;"></i>
+              <h3 style="margin: 0; color: #f8fafc; font-size:1.1rem;">Upload Land Registry (7/12)</h3>
+              <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 10px;">Tap to Take Photo or Upload PDF</p>
+            </label>
+            <input type="file" id="wizUpload" accept="image/*" capture="environment" style="display: none;">
+          </div>
+          <div class="wiz-sticky-btn">
+            <button class="wiz-btn" onclick="nextWizStep(3)">Next: Map Boundary ➔</button>
+          </div>
+        </div>
+        
+        <!-- STEP 4: Map -->
+        <div class="wiz-step" style="padding:0; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:20px; left:20px; right:20px; z-index:1000; background:rgba(10,14,23,0.9); padding:15px; border-radius:12px; display:flex; gap:15px; align-items:center; border:1px solid #1e293b; backdrop-filter:blur(10px);">
+             <button onclick="prevWizStep()" style="background:none; border:none; color:#f8fafc; font-size:1.5rem; padding:0; cursor:pointer;"><i class="fa-solid fa-arrow-left"></i></button>
+             <div style="color:#00E676; font-size:0.9rem; font-weight:600;"><i class="fa-solid fa-draw-polygon"></i> Tap the edges of your farm to draw the boundary.</div>
+          </div>
+          
+          <div id="wizMapContainer" style="width:100%; height:100%;"></div>
+          
+          <div class="wiz-sticky-btn" style="background:transparent; border:none; padding:30px 20px;">
+            <button class="wiz-btn glowing" onclick="submitWiz()">Save &amp; Submit Project</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      let currentWizStep = 0;
+      function nextWizStep(stepIndex) {
+        if(window.HapticEngine) HapticEngine.lightTick();
+        currentWizStep = stepIndex;
+        document.getElementById('wizSlider').style.transform = "translateX(-" + (currentWizStep * 100) + "vw)";
+        document.getElementById('wizProgressFill').style.width = ((currentWizStep + 1) * 25) + "%";
+        
+        if (currentWizStep === 3) {
+           // Init map on step 4
+           if (!window.wizMap) {
+             window.wizMap = L.map('wizMapContainer', { zoomControl: false }).setView([18.5204, 73.8567], 15);
+             L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom:18 }).addTo(window.wizMap);
+           }
+           setTimeout(() => window.wizMap.invalidateSize(), 400);
+        }
+      }
+      function prevWizStep() {
+        if(window.HapticEngine) HapticEngine.lightTick();
+        currentWizStep--;
+        document.getElementById('wizSlider').style.transform = "translateX(-" + (currentWizStep * 100) + "vw)";
+        document.getElementById('wizProgressFill').style.width = ((currentWizStep + 1) * 25) + "%";
+      }
+      function submitWiz() {
+        if(window.HapticEngine) HapticEngine.heavyThud();
+        alert('Project Data securely transmitted to Blockchain!');
+        window.location.reload();
+      }
+    </script>
+  
+    <style>
+      .land-bottom-bar {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        background: rgba(10, 14, 23, 0.95);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid #1e293b;
+        display: flex;
+        justify-content: space-around;
+        padding: 15px 0 25px 0;
+        z-index: 99999;
+      }
+      @media (min-width: 769px) { .land-bottom-bar { display: none; } }
+      
+      .land-tab {
+        color: #94a3b8;
+        text-align: center;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+      .land-tab i {
+        display: block;
+        font-size: 1.4rem;
+        margin-bottom: 5px;
+      }
+      .land-tab.active { color: #00E676; }
+      
+      .land-view { display: none; height: 100vh; overflow-y: auto; padding-bottom: 90px; }
+      .land-view.active { display: block; }
+      
+      /* New Wallet view */
+      .wallet-card { background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 20px; text-align: center; margin: 20px; }
+    </style>
+    
+    <div id="view-onboard" class="land-view active">
+      undefined
+    </div>
+    
+    <div id="view-myland" class="land-view" style="padding:20px;">
+      <h2 style="color:#f8fafc; font-family:'Inter',sans-serif;">My Lands</h2>
+      <div style="color:#94a3b8;">Loading verified plots...</div>
+    </div>
+    
+    <div id="view-wallet" class="land-view" style="padding:20px;">
+      <h2 style="color:#f8fafc; font-family:'Inter',sans-serif;">Wallet</h2>
+      <div class="wallet-card">
+         <div style="color:#94a3b8; font-size:0.9rem;">Available Balance</div>
+         <div id="wallet-balance" style="color:#00E676; font-size:2.5rem; font-weight:800; margin:10px 0;">₹0</div>
+         <button style="background:#00E676; color:#0A0E17; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; width:100%;">Withdraw Funds</button>
+      </div>
+    </div>
+
+    <div class="land-bottom-bar">
+      <div class="land-tab active" onclick="switchLandTab('onboard', this)">
+        <i class="fa-solid fa-map-location-dot"></i> Onboard
+      </div>
+      <div class="land-tab" onclick="switchLandTab('myland', this)">
+        <i class="fa-solid fa-seedling"></i> My Lands
+      </div>
+      <div class="land-tab" onclick="switchLandTab('wallet', this)">
+        <i class="fa-solid fa-wallet"></i> Wallet
+      </div>
+    </div>
+    
+    <script>
+      function switchLandTab(viewId, el) {
+        if(window.HapticEngine) HapticEngine.lightTick();
+        document.querySelectorAll('.land-tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        
+        document.querySelectorAll('.land-view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-' + viewId).classList.add('active');
+      }
+    </script>
+  </body></html>

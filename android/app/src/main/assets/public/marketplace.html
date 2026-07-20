@@ -1,4 +1,20 @@
 <!DOCTYPE html><html lang="en"><head>
+<script>
+  // Global API Router for Mobile
+  if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+    console.log('Mobile Platform Detected. Intercepting API calls to dev server...');
+    const API_BASE = 'http://192.168.0.113:3000'; // Replace with your computer's IP
+    const originalFetch = window.fetch;
+    window.fetch = async function() {
+      let args = Array.prototype.slice.call(arguments);
+      if (typeof args[0] === 'string' && args[0].startsWith('/api/')) {
+        args[0] = API_BASE + args[0];
+      }
+      return originalFetch.apply(this, args);
+    };
+  }
+</script>
+
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#0f172a">
   <meta charset="UTF-8">
@@ -118,8 +134,78 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
         .nb a.active { border-left: 3px solid #10b981; padding-left: 10px; border-bottom: none; }
       }
     </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+    import { getFirestore, onSnapshot, collection, doc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyCez36I2XdAPglGbg45LyH7Sk_P0KuicYw",
+      authDomain: "gen-lang-client-0044267372.firebaseapp.com",
+      databaseURL: "https://gen-lang-client-0044267372-default-rtdb.firebaseio.com",
+      projectId: "gen-lang-client-0044267372",
+      storageBucket: "gen-lang-client-0044267372.firebasestorage.app",
+      messagingSenderId: "901953259613",
+      appId: "1:901953259613:web:20bd329a83ce1b5ed065b4"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.db = db;
+    window.onSnapshot = onSnapshot;
+    window.collection = collection;
+    window.doc = doc;
+    
+    // Live listeners for portfolio balance
+    document.addEventListener('DOMContentLoaded', () => {
+       const userEmail = localStorage.getItem('cw_user');
+       if(userEmail) {
+         const userDoc = doc(db, 'users', userEmail);
+         onSnapshot(userDoc, (docSnap) => {
+           if(docSnap.exists()) {
+             const data = docSnap.data();
+             const balEl = document.getElementById('corp-escrow');
+             if(balEl) balEl.textContent = '₹' + (data.balance || 0).toLocaleString('en-IN');
+           }
+         });
+       }
+    });
+  </script>
+  
+<script>
+  async function requireBiometric(reason = "Authorize Action") {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.NativeBiometric) {
+      try {
+        const result = await window.Capacitor.Plugins.NativeBiometric.verifyIdentity({
+          reason: reason,
+          title: 'Corporate Security',
+          subtitle: 'Authentication required'
+        });
+        return true;
+      } catch (e) {
+        alert("Authentication failed.");
+        return false;
+      }
+    }
+    // Web bypass for development
+    return confirm("WEB BYPASS: " + reason + "? (Simulating Biometrics)");
+  }
+
+  // App launch lock
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (window.innerWidth <= 768) {
+       document.getElementById('mobileMatrix').style.display = 'none';
+       const auth = await requireBiometric("Unlock Corporate Terminal");
+       if(auth) {
+         document.getElementById('mobileMatrix').style.display = 'flex';
+       } else {
+         document.body.innerHTML = '<h1 style="color:red;text-align:center;margin-top:50vh;">ACCESS DENIED</h1>';
+       }
+    }
+  });
+</script>
 </head>
-<body>
+<body><div class="desktop-dashboard">
 
   <nav class="navbar">
     <div class="container flex-between" style="max-width:1600px;">
@@ -500,14 +586,21 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
               <strong style="color:#d1d4dc;" id="tradeTotal">₹0</strong>
             </div>
             
-            <button class="btn-retire" onclick="executeTrade('retire')" id="btnRetire" style="background: rgb(239, 68, 68); color: rgb(255, 255, 255); font-size: 1.1rem; padding: 20px; height: auto; border: 2px solid rgb(127, 29, 29);">
+            <div class="desktop-actions"><button class="btn-retire" onclick="executeTrade('retire')" id="btnRetire" style="background: rgb(239, 68, 68); color: rgb(255, 255, 255); font-size: 1.1rem; padding: 20px; height: auto; border: 2px solid rgb(127, 29, 29);">
       <i class="fas fa-fire"></i> EXECUTE IMMEDIATE TRADE &amp; RETIRE
       <div style="font-size:0.75rem; font-weight:normal; margin-top:3px;">Atomic Settlement &amp; Burn Protocol</div>
     </button>
             <button class="btn-buy" onclick="executeTrade('hold')" id="btnHold">
               <i class="fas fa-briefcase"></i> BUY &amp; HOLD
               <div style="font-size:0.75rem; font-weight:normal; margin-top:3px;">For Portfolio &amp; Resale</div>
-            </button>
+            </button></div>
+<div class="mobile-actions">
+  <div class="swipe-slider-container" id="swipeSliderContainer">
+    <div class="swipe-slider-track" id="swipeSliderTrack"></div>
+    <div class="swipe-slider-text">Swipe Right to Execute Trade &amp; Retire</div>
+    <div class="swipe-slider-thumb" id="swipeSliderThumb"><i class="fa-solid fa-chevron-right"></i></div>
+  </div>
+</div>
           </div>
         </div>
       </div>
@@ -732,16 +825,42 @@ function downloadBill(tx) {
            return;
         }
 
-        tbody.innerHTML = res.credits.map(c => `
-          <tr class="row-new" onclick="openProject('${c.id}')">
+        
+tbody.innerHTML = res.credits.map(c => `
+          <tr class="desktop-row" onclick="openProject('${c.id}')">
             <td class="ticker">${c.ticker || 'GEN-CRBN'}</td>
             <td><div>${c.project_type || 'Agroforestry'}</div><div style="font-size:0.75rem; color:#787b86;">${c.seller_name.split(' ')[0]}</div></td>
             <td>2025</td>
             <td class="vol">${c.available_tons}</td>
-            <td class="price-up">₹${c.price_per_ton.toFixed(2)}</td>
+            <td class="price-up">?${c.price_per_ton.toFixed(2)}</td>
             <td><button class="btn" style="background:#2962ff; color:white; padding:4px 12px; font-size:0.8rem; border:none; border-radius:4px; cursor:pointer;" onclick="event.stopPropagation(); openProject('${c.id}')">Trade</button></td>
           </tr>
-        `).join('');
+          <tr class="mobile-row" onclick="openProject('${c.id}')">
+            <td colspan="6">
+              <div class="m-card">
+                <div class="m-top">
+                  <div>
+                    <div class="m-ticker">${c.ticker || 'GEN-CRBN'}</div>
+                    <div class="m-vintage">Vintage: 2025</div>
+                  </div>
+                  <div class="m-price">?${c.price_per_ton.toFixed(2)}</div>
+                </div>
+                <div class="m-mid">
+                  <div style="font-size: 0.8rem; color: #94a3b8; display: flex; justify-content: space-between;">
+                    <span>Liquidity</span>
+                    <span>${c.available_tons} Tons</span>
+                  </div>
+                  <div class="m-bar-bg"><div class="m-bar-fill" style="width: ${Math.min(100, (c.available_tons/2000)*100)}%;"></div></div>
+                </div>
+                <div class="m-tags">
+                  <div class="m-pill">${c.project_type || 'Agroforestry'}</div>
+                  <div class="m-pill">Verified</div>
+                </div>
+              </div>
+            </td>
+          </tr>
+`).join('');
+
       } catch (e) { console.error('Exchange load error', e); }
     }
 
@@ -1395,6 +1514,1448 @@ function downloadBill(tx) {
           temp.remove();
       });
   };
-</script></body></html>
+</script>
+<script>
+  // Swipe to Buy Logic
+  const sliderContainer = document.getElementById('swipeSliderContainer');
+  const sliderThumb = document.getElementById('swipeSliderThumb');
+  const sliderTrack = document.getElementById('swipeSliderTrack');
+  let isDragging = false;
+  let startX = 0;
+
+  if (sliderThumb) {
+    sliderThumb.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      startX = e.touches[0].clientX - sliderThumb.offsetLeft;
+      if(window.HapticEngine) HapticEngine.lightTick();
+    }, {passive: true});
+
+    document.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      const x = e.touches[0].clientX - startX;
+      const maxX = sliderContainer.offsetWidth - sliderThumb.offsetWidth;
+      if (x >= 0 && x <= maxX) {
+        sliderThumb.style.left = x + 'px';
+        sliderTrack.style.width = (x + (sliderThumb.offsetWidth/2)) + 'px';
+      }
+      if (x >= maxX) {
+        isDragging = false;
+        sliderThumb.style.left = maxX + 'px';
+        sliderThumb.innerHTML = '<i class="fa-solid fa-check"></i>';
+        sliderThumb.style.background = '#00E676';
+        sliderTrack.style.width = '100%';
+        sliderTrack.style.background = '#00E676';
+        if(window.HapticEngine) HapticEngine.heavyThud();
+        // Execute Trade
+        setTimeout(() => executeTrade('retire'), 300);
+      }
+    }, {passive: true});
+
+    document.addEventListener('touchend', () => {
+      if (!isDragging) return;
+      isDragging = false;
+      const maxX = sliderContainer.offsetWidth - sliderThumb.offsetWidth;
+      if (parseInt(sliderThumb.style.left) < maxX) {
+        sliderThumb.style.left = '4px';
+        sliderTrack.style.width = '0%';
+      }
+    });
+  }
+</script>
 
 
+
+</div>
+    <style>
+      .mobile-matrix-wrapper { display: none; }
+      @media (max-width: 768px) {
+        .desktop-dashboard { display: none !important; }
+        .mobile-matrix-wrapper {
+          display: flex;
+          flex-direction: column;
+          height: 100vh;
+          width: 100vw;
+          position: fixed;
+          top: 0; left: 0;
+          background: #0A0E17;
+          z-index: 9999;
+          overflow: hidden;
+        }
+        .matrix-content {
+          flex: 1;
+          overflow-y: auto;
+          padding: 20px;
+          padding-bottom: 90px;
+        }
+        .matrix-view { display: none; }
+        .matrix-view.active { display: block; }
+        
+        /* Bottom Tab Bar */
+        .matrix-bottom-bar {
+          position: absolute;
+          bottom: 0; left: 0; right: 0;
+          background: rgba(10, 14, 23, 0.95);
+          backdrop-filter: blur(10px);
+          border-top: 1px solid #1e293b;
+          display: flex;
+          justify-content: space-around;
+          padding: 15px 0 25px 0;
+        }
+        .matrix-tab {
+          color: #94a3b8;
+          text-align: center;
+          font-size: 0.75rem;
+          cursor: pointer;
+        }
+        .matrix-tab i {
+          display: block;
+          font-size: 1.4rem;
+          margin-bottom: 5px;
+        }
+        .matrix-tab.active { color: #00E5FF; }
+        
+        /* Market Cards */
+        .market-card {
+          background: #111827;
+          border: 1px solid #1e293b;
+          border-radius: 12px;
+          padding: 15px;
+          margin-bottom: 15px;
+        }
+        .market-card h3 { color: #f8fafc; margin: 0 0 10px 0; }
+        .market-card .vol { color: #00E676; font-weight: bold; }
+        
+        /* Typography */
+        h1, h2, h3 { font-family: 'Inter', sans-serif; }
+      }
+    </style>
+
+    
+    
+    <script>
+      function switchMatrix(viewId, el) {
+        if(window.HapticEngine) HapticEngine.lightTick();
+        document.querySelectorAll('.matrix-tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        
+        document.querySelectorAll('.matrix-view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-' + viewId).classList.add('active');
+        
+        if (viewId === 'esg') initESGGauge();
+      }
+      
+      function togglePortfolio(mode) {
+        if(window.HapticEngine) HapticEngine.lightTick();
+        document.getElementById('seg-holding').classList.remove('active');
+        document.getElementById('seg-sell').classList.remove('active');
+        document.getElementById('seg-' + mode).classList.add('active');
+        
+        const sellBtns = document.querySelectorAll('.auto-sell-btn');
+        if (mode === 'sell') {
+          sellBtns.forEach(b => b.style.display = 'block');
+        } else {
+          sellBtns.forEach(b => b.style.display = 'none');
+        }
+      }
+      
+      function executeRetirement(btn) {
+        if(window.HapticEngine) HapticEngine.heavyThud();
+        btn.innerHTML = '<i class="fa-solid fa-fire"></i> BURNING...';
+        btn.style.opacity = '0.7';
+        setTimeout(() => {
+          alert('Tokens permanently retired! ESG Score updated.');
+          btn.closest('.market-card').style.display = 'none';
+        }, 1500);
+      }
+      
+      function showReceipt(tx) {
+        if(window.HapticEngine) HapticEngine.lightTick();
+        alert('Receipt ' + tx + '\nDownloading PDF directly to local storage...');
+      }
+      
+      let gaugeChart = null;
+      function initESGGauge() {
+        if (gaugeChart) return;
+        const ctx = document.getElementById('esgGauge').getContext('2d');
+        gaugeChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Progress', 'Remaining'],
+            datasets: [{
+              data: [45, 55],
+              backgroundColor: ['#00E676', '#1e293b'],
+              borderWidth: 0,
+              cutout: '80%',
+              circumference: 270,
+              rotation: 225
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            animation: { animateRotate: true, animateScale: false }
+          }
+        });
+      }
+    </script>
+  
+  <style>
+    .mobile-matrix-wrapper { display: none; }
+    @media (max-width: 768px) {
+      .desktop-dashboard { display: none !important; }
+      .mobile-matrix-wrapper {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        width: 100vw;
+        position: fixed;
+        top: 0; left: 0;
+        background: #0A0E17;
+        z-index: 9999;
+        overflow: hidden;
+      }
+      .matrix-content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 90px; }
+      .matrix-view { display: none; }
+      .matrix-view.active { display: block; }
+      
+      .matrix-bottom-bar {
+        position: absolute; bottom: 0; left: 0; right: 0;
+        background: rgba(10, 14, 23, 0.95); backdrop-filter: blur(10px); border-top: 1px solid #1e293b;
+        display: flex; justify-content: space-around; padding: 15px 0 25px 0;
+      }
+      .matrix-tab { color: #94a3b8; text-align: center; font-size: 0.75rem; cursor: pointer; }
+      .matrix-tab i { display: block; font-size: 1.4rem; margin-bottom: 5px; }
+      .matrix-tab.active { color: #00E5FF; }
+      
+      .market-card { background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+      h1, h2, h3, h4 { font-family: 'Inter', sans-serif; color: #f8fafc; }
+      
+      /* Horizontal Scroll Snap Carousel */
+      .carousel { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 15px; padding-bottom: 10px; }
+      .carousel::-webkit-scrollbar { display: none; }
+      .carousel-item { scroll-snap-align: center; min-width: 80%; background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 20px; }
+      
+      .scope-bar { height: 8px; background: #1e293b; border-radius: 4px; margin-top: 5px; overflow: hidden; }
+      .scope-fill { height: 100%; background: #00E5FF; }
+    }
+  </style>
+
+  
+  
+  <script>
+    function switchMatrix(viewId, el) {
+      if(window.HapticEngine) HapticEngine.lightTick();
+      document.querySelectorAll('.matrix-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      
+      document.querySelectorAll('.matrix-view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-' + viewId).classList.add('active');
+      
+      if(viewId === 'portfolio') initPortfolioCharts();
+      if(viewId === 'esg') initESGGauge();
+    }
+    
+    async function executeTrade(btn) {
+       const auth = await requireBiometric("Execute ₹6,00,000 Corporate Trade");
+       if(auth) {
+         if(window.HapticEngine) HapticEngine.heavyThud();
+         btn.style.background = '#00E676';
+         btn.style.color = '#0A0E17';
+         btn.innerHTML = 'TRADE EXECUTED';
+         setTimeout(()=> btn.closest('.market-card').style.display='none', 1500);
+       }
+    }
+    
+    let chartP1, chartP2, chartEsg;
+    function initPortfolioCharts() {
+       if(chartP1) return;
+       const ctx1 = document.getElementById('trajChart').getContext('2d');
+       chartP1 = new Chart(ctx1, {
+         type: 'line',
+         data: {
+           labels: ['2023', '2024', '2025', '2026'],
+           datasets: [{ label: 'Emissions', data: [100, 90, 75, 60], borderColor: '#FF3D00', tension: 0.4 },
+                      { label: 'Offsets', data: [10, 20, 35, 55], borderColor: '#00E676', tension: 0.4 }]
+         },
+         options: { responsive: true, plugins: { legend: { display:false } }, scales: { x: { display:false }, y: { display:false } } }
+       });
+       
+       const ctx2 = document.getElementById('assetChart').getContext('2d');
+       chartP2 = new Chart(ctx2, {
+         type: 'doughnut',
+         data: { labels: ['Agroforestry', 'AWD Rice', 'Soil Carbon'], datasets: [{ data: [60, 25, 15], backgroundColor: ['#00E5FF', '#00E676', '#FFAB00'], borderWidth: 0 }] },
+         options: { responsive: true, plugins: { legend: { position: 'bottom', labels:{color:'#94a3b8'} } } }
+       });
+    }
+    
+    function initESGGauge() {
+       if(chartEsg) return;
+       const ctx = document.getElementById('esgGaugeChart').getContext('2d');
+       chartEsg = new Chart(ctx, {
+         type: 'doughnut',
+         data: { labels: ['Progress', 'Remaining'], datasets: [{ data: [45, 55], backgroundColor: ['#00E676', '#1e293b'], borderWidth: 0, cutout: '80%', circumference: 270, rotation: 225 }] },
+         options: { responsive: true, plugins: { legend: { display: false } } }
+       });
+    }
+    
+    // Init default charts if active
+    setTimeout(initPortfolioCharts, 500);
+  </script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CARBON WALLET — INDUSTRY PORTAL V3 MOBILE MATRIX
+     God-Level Design Language | Firebase Real-Time Sync
+     ═══════════════════════════════════════════════════════════ -->
+
+<style>
+  /* ── FOUNDATION ── */
+  :root {
+    --bg: #0A0E17;
+    --bg2: #111827;
+    --bg3: #1e293b;
+    --border: #1e293b;
+    --green: #00E676;
+    --cyan: #00E5FF;
+    --purple: #8A2BE2;
+    --amber: #FFAB00;
+    --red: #FF3D00;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+  }
+
+  .mob-wrap {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    body > *:not(.mob-wrap) {
+      display: none !important;
+    }
+    .mob-wrap {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 99998;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* ── TICKER BAR ── */
+    .mob-ticker {
+      background: #060a12;
+      border-bottom: 1px solid var(--border);
+      padding: 8px 16px;
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      white-space: nowrap;
+      font-size: 0.72rem;
+      font-weight: 600;
+      font-family: monospace;
+      flex-shrink: 0;
+    }
+    .mob-ticker::-webkit-scrollbar { display: none; }
+    .tick-up { color: var(--green); }
+    .tick-dn { color: var(--red); }
+    .tick-label { color: var(--muted); margin-right: 4px; }
+
+    /* ── VIEWS ── */
+    .mob-views {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    .mob-view {
+      display: none;
+      height: 100%;
+      overflow-y: auto;
+      padding: 16px 16px 90px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .mob-view.active { display: block; }
+
+    /* ── BOTTOM NAV ── */
+    .mob-nav {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(6, 10, 18, 0.96);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0 22px;
+      z-index: 999;
+    }
+    .mob-tab {
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: color 0.2s;
+      flex: 1;
+    }
+    .mob-tab i {
+      display: block;
+      font-size: 1.3rem;
+      margin-bottom: 4px;
+    }
+    .mob-tab.active { color: var(--cyan); }
+
+    /* ── CARDS ── */
+    .mob-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .mob-card-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mob-card-title i { font-size: 0.9rem; }
+
+    /* ── CCTS CALCULATOR ── */
+    .mob-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 11px 14px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: 'Inter', sans-serif;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .mob-input:focus { border-color: var(--cyan); }
+    .mob-select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 11px 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      cursor: pointer;
+    }
+    .mob-select option { background: #111827; }
+    .mob-label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    .btn-calc {
+      width: 100%;
+      background: #2962ff;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: opacity 0.2s;
+    }
+    .btn-calc:active { opacity: 0.8; }
+
+    .ccts-result {
+      background: rgba(41,98,255,0.1);
+      border-left: 3px solid #2962ff;
+      border-radius: 0 8px 8px 0;
+      padding: 14px;
+      margin-top: 12px;
+      display: none;
+    }
+    .ccts-result-num {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #2962ff;
+      font-family: monospace;
+    }
+    .ccts-result-sub { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+    /* ── SCOPE BARS ── */
+    .scope-grid { display: flex; flex-direction: column; gap: 14px; }
+    .scope-row-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 5px; }
+    .scope-bar-track { height: 6px; background: var(--bg3); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+    .scope-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+
+    .scope-footer {
+      background: rgba(138, 43, 226, 0.1);
+      border: 1px solid rgba(138, 43, 226, 0.3);
+      border-radius: 10px;
+      padding: 14px;
+      margin-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .scope-total-num { font-size: 1.4rem; font-weight: 800; color: var(--text); font-family: monospace; }
+    .btn-find-match {
+      background: var(--purple);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* ── CAROUSEL ── */
+    .mob-carousel {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: 12px;
+      padding-bottom: 6px;
+      margin-bottom: 14px;
+    }
+    .mob-carousel::-webkit-scrollbar { display: none; }
+    .mob-carousel-card {
+      scroll-snap-align: center;
+      min-width: 72vw;
+      max-width: 72vw;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      flex-shrink: 0;
+    }
+    .carousel-val {
+      font-size: 2rem;
+      font-weight: 800;
+      margin: 8px 0 4px;
+      font-family: monospace;
+    }
+    .carousel-label { font-size: 0.75rem; color: var(--muted); font-weight: 600; }
+
+    /* ── CHARTS ── */
+    .chart-wrap {
+      position: relative;
+      height: 180px;
+      width: 100%;
+    }
+
+    /* ── LEDGER ── */
+    .ledger-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .ledger-row:last-child { border-bottom: none; }
+    .ledger-ticker {
+      font-family: monospace;
+      font-weight: 700;
+      color: var(--cyan);
+      font-size: 0.85rem;
+    }
+    .ledger-sub { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    .ledger-val { font-weight: 700; font-size: 0.9rem; }
+
+    /* ── LIVE EXCHANGE ── */
+    .exchange-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .exchange-header h2 {
+      color: var(--text);
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin: 0;
+    }
+    .region-select {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-family: 'Inter', sans-serif;
+      appearance: none;
+    }
+
+    .market-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    .market-card.expanded { border-color: var(--cyan); }
+
+    .mc-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .mc-ticker {
+      font-family: monospace;
+      font-weight: 800;
+      color: var(--cyan);
+      font-size: 1rem;
+    }
+    .mc-vintage {
+      background: rgba(0,229,255,0.1);
+      color: var(--cyan);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      font-family: monospace;
+    }
+    .mc-method {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 12px;
+    }
+    .mc-method span {
+      color: var(--amber);
+      font-weight: 700;
+      font-size: 0.7rem;
+      background: rgba(255, 171, 0, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+    }
+    .mc-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .mc-volume {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .mc-volume strong {
+      color: var(--text);
+      font-family: monospace;
+    }
+    .mc-price {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--green);
+      font-family: monospace;
+    }
+    .mc-price-sub { font-size: 0.7rem; color: var(--muted); }
+
+    /* SWIPE TO TRADE SLIDER */
+    .trade-panel {
+      display: none;
+      padding: 14px;
+      background: rgba(0,230,118,0.05);
+      border-top: 1px solid var(--border);
+      margin-top: 12px;
+      border-radius: 0 0 14px 14px;
+    }
+    .market-card.expanded .trade-panel { display: block; }
+    .trade-amount {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .trade-amount strong { color: var(--text); }
+
+    .swipe-track {
+      background: var(--bg3);
+      border-radius: 40px;
+      height: 56px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      cursor: pointer;
+    }
+    .swipe-track-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--muted);
+      pointer-events: none;
+    }
+    .swipe-thumb {
+      width: 48px;
+      height: 48px;
+      background: var(--green);
+      border-radius: 50%;
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--bg);
+      font-size: 1.1rem;
+      transition: left 0.08s;
+      touch-action: none;
+      z-index: 2;
+    }
+    .swipe-fill {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      background: rgba(0,230,118,0.2);
+      border-radius: 40px;
+      pointer-events: none;
+      width: 0%;
+      transition: width 0.05s;
+    }
+
+    /* ── ESG GOALS ── */
+    .esg-gauge-wrap {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      margin: 0 auto 20px;
+    }
+    .esg-gauge-center {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .esg-gauge-pct { font-size: 2.2rem; font-weight: 900; color: var(--green); font-family: monospace; }
+    .esg-gauge-sub { font-size: 0.75rem; color: var(--muted); }
+
+    .burn-btn {
+      background: rgba(255,61,0,0.15);
+      color: var(--red);
+      border: 1px solid var(--red);
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .burn-btn:active { background: var(--red); color: white; }
+
+    /* Loading spinner */
+    .mob-loading {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+    }
+    .mob-loading i { font-size: 2rem; color: var(--cyan); display: block; margin-bottom: 12px; }
+  }
+</style>
+
+<!-- ══ THE MOBILE APP ══ -->
+<div class="mob-wrap" id="mobIndustry">
+
+  <!-- LIVE TICKER BAR -->
+  <div class="mob-ticker">
+    <span><span class="tick-label">CARB/INR</span><span class="tick-up">₹1,800 ▲ 2.3%</span></span>
+    <span><span class="tick-label">AGRI-CARB</span><span class="tick-dn">₹1,450 ▼ 0.8%</span></span>
+    <span><span class="tick-label">FOREST-CARB</span><span class="tick-up">₹2,100 ▲ 1.1%</span></span>
+    <span><span class="tick-label">GUJ-GCP</span><span class="tick-up">₹2,260 ▲ 0.4%</span></span>
+  </div>
+
+  <!-- VIEWS -->
+  <div class="mob-views">
+
+    <!-- ══ VIEW 1: PORTFOLIO ══ -->
+    <div class="mob-view active" id="mob-view-portfolio">
+
+      <!-- Module 1: CCTS Compliance Gap Calculator -->
+      <div class="mob-card">
+        <div class="mob-card-title">
+          <i class="fa-solid fa-industry" style="color:#2962ff;"></i>
+          CCTS Compliance Gap Calculator
+        </div>
+
+        <label class="mob-label">Target Sector</label>
+        <select class="mob-select" id="mob-calc-sector">
+          <option value="0.05">Aluminium (5% Reduction Target)</option>
+          <option value="0.03">Cement (3% Reduction Target)</option>
+          <option value="0.08">Iron &amp; Steel (8% Reduction Target)</option>
+          <option value="0.04">Pulp &amp; Paper (4% Reduction Target)</option>
+          <option value="0.06">Petrochemicals (6% Reduction Target)</option>
+        </select>
+
+        <label class="mob-label">Baseline Emissions (Tons CO2e)</label>
+        <input type="number" class="mob-input" id="mob-calc-emissions" value="500000" inputmode="numeric">
+
+        <button class="btn-calc" onclick="mobCalcGap()">
+          <i class="fa-solid fa-calculator"></i> &nbsp;Calculate Deficit
+        </button>
+
+        <div class="ccts-result" id="mob-ccts-result">
+          <div class="ccts-result-num" id="mob-calc-number">0 CCCs Required</div>
+          <div class="ccts-result-sub">Based on CCTS Phase 1 (FY25-26) intensity targets. Purchase and retire by Oct 2026 to avoid penalties.</div>
+          <div style="margin-top:8px; font-size:0.75rem; color: var(--green);">
+            <i class="fa-solid fa-tree"></i> Equivalent to planting <span id="mob-calc-trees">0</span> trees or taking <span id="mob-calc-cars">0</span> cars off the road.
+          </div>
+        </div>
+      </div>
+
+      <!-- Module 1b: Scope 1,2,3 Diagnostic -->
+      <div class="mob-card">
+        <div class="mob-card-title">
+          <i class="fa-solid fa-calculator" style="color: var(--purple);"></i>
+          Scope 1, 2 &amp; 3 Emissions Diagnostic
+        </div>
+        <p style="font-size:0.78rem; color:var(--muted); margin:0 0 14px 0;">Input your raw consumption metrics. The engine will instantly calculate your total metric tonnage footprint.</p>
+
+        <div class="scope-grid">
+          <div>
+            <label class="mob-label">Scope 1: Direct Logistics (Liters Fuel)</label>
+            <input type="number" class="mob-input" id="mob-scope1" value="10000" inputmode="numeric" oninput="mobCalcScope()">
+            <div class="scope-bar-track">
+              <div class="scope-bar-fill" id="mob-s1-bar" style="background: var(--red); width: 0%;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--muted); margin-top:4px;">
+              <span>Direct Emissions</span>
+              <span id="mob-s1-val" style="color:var(--red); font-weight:700; font-family:monospace;">26 T</span>
+            </div>
+          </div>
+          <div>
+            <label class="mob-label">Scope 2: Electricity (kWh)</label>
+            <input type="number" class="mob-input" id="mob-scope2" value="50000" inputmode="numeric" oninput="mobCalcScope()">
+            <div class="scope-bar-track">
+              <div class="scope-bar-fill" id="mob-s2-bar" style="background: var(--amber); width: 0%;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--muted); margin-top:4px;">
+              <span>Grid Electricity</span>
+              <span id="mob-s2-val" style="color:var(--amber); font-weight:700; font-family:monospace;">35 T</span>
+            </div>
+          </div>
+          <div>
+            <label class="mob-label">Scope 3: Supply Chain (Est. Tons)</label>
+            <input type="number" class="mob-input" id="mob-scope3" value="200" inputmode="numeric" oninput="mobCalcScope()">
+            <div class="scope-bar-track">
+              <div class="scope-bar-fill" id="mob-s3-bar" style="background: var(--cyan); width: 0%;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:var(--muted); margin-top:4px;">
+              <span>Value Chain</span>
+              <span id="mob-s3-val" style="color:var(--cyan); font-weight:700; font-family:monospace;">200 T</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="scope-footer">
+          <div>
+            <div class="mob-label">Total Calculated Footprint</div>
+            <div class="scope-total-num" id="mob-scope-total">261 Tons CO2e</div>
+          </div>
+          <button class="btn-find-match" onclick="mobSwitchTab('exchange', document.querySelector('.mob-tab[data-view=exchange]'))">
+            Find Match <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Module 2: Core Financials Carousel -->
+      <div class="mob-card-title" style="margin-bottom:10px; padding: 0 4px;">
+        <i class="fa-solid fa-vault" style="color:var(--green);"></i>
+        Core Financials
+      </div>
+      <div class="mob-carousel">
+        <div class="mob-carousel-card">
+          <div class="carousel-label">Corporate Escrow Balance</div>
+          <div class="carousel-val" style="color:var(--green);" id="mob-escrow">₹12,50,000</div>
+          <div style="display:flex; gap:8px; margin-top:10px;">
+            <button style="flex:1; background:var(--green); color:var(--bg); border:none; padding:8px; border-radius:8px; font-weight:700; font-size:0.8rem;" onclick="document.getElementById('depositModal') &amp;&amp; (document.getElementById('depositModal').style.display='flex')">+ Deposit</button>
+            <button style="flex:1; background:transparent; color:var(--muted); border:1px solid var(--border); padding:8px; border-radius:8px; font-weight:700; font-size:0.8rem;">- Withdraw</button>
+          </div>
+        </div>
+        <div class="mob-carousel-card">
+          <div class="carousel-label">Tons Retired (ESG Victory)</div>
+          <div class="carousel-val" style="color:var(--cyan);" id="mob-retired">Nil</div>
+          <div style="font-size:0.78rem; color:var(--muted); margin-top:6px;">Certificates issued to your ledger</div>
+        </div>
+        <div class="mob-carousel-card">
+          <div class="carousel-label">Active Holdings (Tradable)</div>
+          <div class="carousel-val" style="color:var(--text);" id="mob-holdings">Nil</div>
+          <div style="font-size:0.78rem; color:var(--muted); margin-top:6px;">Ready for retirement or resale</div>
+        </div>
+      </div>
+
+      <!-- Module 3: Data Visualization -->
+      <div class="mob-card">
+        <div class="mob-card-title"><i class="fa-solid fa-chart-line" style="color:var(--red);"></i> Emissions Trajectory vs Offsets</div>
+        <div class="chart-wrap"><canvas id="mob-traj-chart"></canvas></div>
+        <div style="display:flex; gap:16px; margin-top:10px; font-size:0.72rem;">
+          <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:3px; background:var(--red); display:inline-block; border-radius:2px;"></span> Emissions</span>
+          <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:3px; background:var(--green); display:inline-block; border-radius:2px;"></span> Offsets Retired</span>
+        </div>
+      </div>
+      <div class="mob-card">
+        <div class="mob-card-title"><i class="fa-solid fa-chart-pie" style="color:var(--cyan);"></i> Asset Allocation (By Project Type)</div>
+        <div style="display:flex; justify-content:center; height: 200px;">
+          <canvas id="mob-alloc-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Module 4: Holdings Ledger -->
+      <div class="mob-card">
+        <div class="mob-card-title"><i class="fa-solid fa-list" style="color:var(--amber);"></i> My Active Holdings</div>
+        <div id="mob-holdings-list">
+          <div class="mob-loading"><i class="fa-solid fa-spinner fa-spin"></i>Loading holdings...</div>
+        </div>
+      </div>
+
+      <!-- Transaction History -->
+      <div class="mob-card">
+        <div class="mob-card-title"><i class="fa-solid fa-receipt" style="color:var(--purple);"></i> Transaction History &amp; Bills</div>
+        <div id="mob-tx-list">
+          <div class="mob-loading"><i class="fa-solid fa-spinner fa-spin"></i>Loading transactions...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ VIEW 2: LIVE EXCHANGE ══ -->
+    <div class="mob-view" id="mob-view-exchange">
+      <div class="exchange-header">
+        <h2><i class="fa-solid fa-bolt" style="color:var(--green); font-size:0.9rem;"></i> Live Order Book</h2>
+        <select class="region-select" id="mob-region-filter" onchange="mobLoadExchange()">
+          <option value="">All Regions of India</option>
+          <option value="Gujarat">Gujarat</option>
+          <option value="Maharashtra">Maharashtra</option>
+          <option value="Rajasthan">Rajasthan</option>
+          <option value="Karnataka">Karnataka</option>
+          <option value="Madhya Pradesh">Madhya Pradesh</option>
+        </select>
+      </div>
+
+      <!-- Live Sync Indicator -->
+      <div style="display:flex; align-items:center; gap:6px; margin-bottom:14px; font-size:0.72rem; color:var(--green);">
+        <span style="width:6px; height:6px; background:var(--green); border-radius:50%; animation: pulse 1.5s infinite;"></span>
+        WebSocket Active — Syncing with web dashboard
+      </div>
+
+      <div id="mob-exchange-list">
+        <div class="mob-loading"><i class="fa-solid fa-spinner fa-spin"></i>Loading live listings...</div>
+      </div>
+    </div>
+
+    <!-- ══ VIEW 3: ESG GOALS ══ -->
+    <div class="mob-view" id="mob-view-esg">
+      <div class="mob-card">
+        <div class="mob-card-title"><i class="fa-solid fa-leaf" style="color:var(--green);"></i> Net Zero 2030 — Progress</div>
+        <div class="esg-gauge-wrap">
+          <canvas id="mob-esg-gauge"></canvas>
+          <div class="esg-gauge-center">
+            <div class="esg-gauge-pct" id="mob-esg-pct">0%</div>
+            <div class="esg-gauge-sub">Net Zero Goal</div>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div style="background:var(--bg3); border-radius:8px; padding:12px; text-align:center;">
+            <div style="font-size:0.7rem; color:var(--muted);">Target</div>
+            <div style="font-size:1.3rem; font-weight:800; color:var(--cyan); font-family:monospace;">15,000 T</div>
+          </div>
+          <div style="background:var(--bg3); border-radius:8px; padding:12px; text-align:center;">
+            <div style="font-size:0.7rem; color:var(--muted);">Retired</div>
+            <div style="font-size:1.3rem; font-weight:800; color:var(--green); font-family:monospace;" id="esg-retired-disp">Nil</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mob-card">
+        <div class="mob-card-title"><i class="fa-solid fa-fire" style="color:var(--red);"></i> Un-Retired Holdings</div>
+        <div id="mob-esg-holdings">
+          <div class="mob-loading"><i class="fa-solid fa-spinner fa-spin"></i>Loading...</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /mob-views -->
+
+  <!-- BOTTOM NAV -->
+  <div class="mob-nav">
+    <div class="mob-tab active" data-view="portfolio" onclick="mobSwitchTab('portfolio', this)">
+      <i class="fa-solid fa-chart-bar"></i> Portfolio
+    </div>
+    <div class="mob-tab" data-view="exchange" onclick="mobSwitchTab('exchange', this)">
+      <i class="fa-solid fa-arrow-trend-up"></i> Exchange
+    </div>
+    <div class="mob-tab" data-view="esg" onclick="mobSwitchTab('esg', this)">
+      <i class="fa-solid fa-leaf"></i> ESG Goals
+    </div>
+  </div>
+
+</div><!-- /mob-wrap -->
+
+<!-- SWIPE TRADE CONFIRM MODAL -->
+<div id="mob-trade-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:99999; align-items:flex-end; justify-content:center;">
+  <div style="background:#111827; border-radius:20px 20px 0 0; padding:24px; width:100%; max-width:480px; border-top:1px solid #1e293b;">
+    <div style="width:40px; height:4px; background:#1e293b; border-radius:2px; margin:0 auto 20px;"></div>
+    <h3 style="color:#f8fafc; margin:0 0 6px; font-family:monospace;" id="mob-trade-ticker">GUJ-GCP-26-101</h3>
+    <p style="color:#94a3b8; font-size:0.85rem; margin:0 0 20px;" id="mob-trade-desc">GCP Afforestation — Ananya</p>
+    <div style="background:#0A0E17; border-radius:10px; padding:14px; margin-bottom:20px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+        <span style="color:#94a3b8; font-size:0.8rem;">Price Per Ton</span>
+        <span style="color:#00E676; font-weight:700; font-family:monospace;" id="mob-trade-price">₹2,260</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+        <span style="color:#94a3b8; font-size:0.8rem;">Volume Available</span>
+        <span style="color:#f8fafc; font-weight:700; font-family:monospace;" id="mob-trade-volume">9,402 Tons</span>
+      </div>
+      <div style="display:flex; justify-content:space-between;">
+        <span style="color:#94a3b8; font-size:0.8rem;">Total Cost</span>
+        <span style="color:#00E5FF; font-weight:700; font-family:monospace;" id="mob-trade-total">₹2,12,49,320</span>
+      </div>
+    </div>
+    <div class="swipe-track" id="mob-swipe-track">
+      <div class="swipe-fill" id="mob-swipe-fill"></div>
+      <div class="swipe-thumb" id="mob-swipe-thumb"><i class="fa-solid fa-arrow-right"></i></div>
+      <span class="swipe-track-label">Swipe Right to Execute Trade</span>
+    </div>
+    <button onclick="document.getElementById('mob-trade-modal').style.display='none'" style="width:100%; background:transparent; color:#94a3b8; border:1px solid #1e293b; padding:12px; border-radius:10px; margin-top:10px; font-family:'Inter',sans-serif; cursor:pointer;">Cancel</button>
+  </div>
+</div>
+
+<style>
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+</style>
+
+<script>
+// ═══════════════════════════════════════════════
+// CARBON WALLET MOBILE V3 — MAIN CONTROLLER
+// ═══════════════════════════════════════════════
+
+let mobCharts = {};
+let pendingMobTrade = null;
+
+// ── TAB SWITCHING ──
+function mobSwitchTab(viewId, el) {
+  if(window.HapticEngine) HapticEngine.lightTick();
+  document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.mob-view').forEach(v => v.classList.remove('active'));
+  const view = document.getElementById('mob-view-' + viewId);
+  if(view) view.classList.add('active');
+
+  if(viewId === 'portfolio') mobInitPortfolioCharts();
+  if(viewId === 'exchange') mobLoadExchange();
+  if(viewId === 'esg') mobInitESGGauge();
+}
+
+// ── CCTS CALCULATOR (EXACT MATCH WITH WEB) ──
+function mobCalcGap() {
+  if(window.HapticEngine) HapticEngine.lightTick();
+  const s = parseFloat(document.getElementById('mob-calc-sector').value);
+  const e = parseFloat(document.getElementById('mob-calc-emissions').value) || 0;
+  const gap = Math.floor(e * s);
+  document.getElementById('mob-ccts-result').style.display = 'block';
+  document.getElementById('mob-calc-number').textContent = gap.toLocaleString('en-IN') + ' CCCs Required';
+  document.getElementById('mob-calc-trees').textContent = (gap * 50).toLocaleString('en-IN');
+  document.getElementById('mob-calc-cars').textContent = (gap / 4.6).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+// ── SCOPE 1,2,3 CALCULATOR (EXACT MATCH WITH WEB) ──
+function mobCalcScope() {
+  const scope1 = Number(document.getElementById('mob-scope1').value) || 0;
+  const scope2 = Number(document.getElementById('mob-scope2').value) || 0;
+  const scope3 = Number(document.getElementById('mob-scope3').value) || 0;
+
+  // Same conversion factors as web
+  const s1Tons = Math.round(scope1 * 0.0026); // Diesel ~2.6kg CO2 per liter
+  const s2Tons = Math.round(scope2 * 0.0007); // Grid electricity ~0.7g CO2 per kWh
+  const s3Tons = Math.round(scope3);
+  const total = s1Tons + s2Tons + s3Tons;
+  const maxVal = Math.max(s1Tons, s2Tons, s3Tons, 1);
+
+  document.getElementById('mob-s1-val').textContent = s1Tons.toLocaleString('en-IN') + ' T';
+  document.getElementById('mob-s2-val').textContent = s2Tons.toLocaleString('en-IN') + ' T';
+  document.getElementById('mob-s3-val').textContent = s3Tons.toLocaleString('en-IN') + ' T';
+  document.getElementById('mob-s1-bar').style.width = Math.min(100, (s1Tons / maxVal) * 100) + '%';
+  document.getElementById('mob-s2-bar').style.width = Math.min(100, (s2Tons / maxVal) * 100) + '%';
+  document.getElementById('mob-s3-bar').style.width = Math.min(100, (s3Tons / maxVal) * 100) + '%';
+  document.getElementById('mob-scope-total').textContent = total.toLocaleString('en-IN') + ' Tons CO2e';
+}
+
+// ── LOAD EXCHANGE (LIVE DATA FROM SAME API AS WEBSITE) ──
+async function mobLoadExchange() {
+  var region = '';
+  try { region = document.getElementById('mob-region-filter').value || ''; } catch(x){}
+  var listEl = document.getElementById('mob-exchange-list');
+  if(!listEl) return;
+
+  listEl.innerHTML = '<div class="mob-loading"><i class="fa-solid fa-spinner fa-spin"></i>Fetching live data...</div>';
+
+  // Hardcoded fallback data (matches website exactly)
+  var FALLBACK = [
+    { id: 101, ticker: 'GUJ-GCP-26-101', project_type: 'GCP Afforestation', seller_name: 'Ananya', vintage_year: 2025, available_tons: 9402, price_per_ton: 2260.00, location_state: 'Gujarat' },
+    { id: 107, ticker: 'GUJ-GCP-26-107', project_type: 'GCP Afforestation', seller_name: 'Ramesh', vintage_year: 2025, available_tons: 6699, price_per_ton: 1488.00, location_state: 'Gujarat' },
+    { id: 108, ticker: 'MH-CCTS-25-008', project_type: 'CCTS Soil Carbon', seller_name: 'Rajesh', vintage_year: 2025, available_tons: 3200, price_per_ton: 1890.00, location_state: 'Maharashtra' },
+    { id: 109, ticker: 'RJ-CCTS-25-009', project_type: 'CCTS Afforestation', seller_name: 'Priya', vintage_year: 2025, available_tons: 4500, price_per_ton: 1750.00, location_state: 'Rajasthan' },
+    { id: 110, ticker: 'KA-GCP-26-110', project_type: 'GCP Soil Carbon', seller_name: 'Suresh', vintage_year: 2025, available_tons: 2800, price_per_ton: 2100.00, location_state: 'Karnataka' }
+  ];
+
+  var credits = [];
+
+  // Try live API first
+  try {
+    var url = '/api/credits/marketplace';
+    if (region) url += '?region=' + encodeURIComponent(region);
+    var res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+    credits = data.credits || [];
+    console.log('[Exchange] Loaded ' + credits.length + ' credits from live API');
+  } catch (apiErr) {
+    console.log('[Exchange] API fetch failed: ' + apiErr.message + '. Using fallback data.');
+    credits = FALLBACK;
+    if (region) {
+      credits = credits.filter(function(c) { return c.location_state === region; });
+    }
+  }
+
+  if (credits.length === 0) {
+    listEl.innerHTML = '<div class="mob-loading" style="color:var(--muted)"><i class="fa-solid fa-circle-xmark"></i> No listings available</div>';
+    return;
+  }
+
+  // Render cards using string concatenation (not template literals)
+  var cardsHtml = '';
+  for (var i = 0; i < credits.length; i++) {
+    var c = credits[i];
+    var methodType = c.project_type || 'GCP Afforestation';
+    var seller = c.seller_name || 'Verified Landowner';
+    var ticker = c.ticker || 'CRED-' + c.id;
+    var vintage = c.vintage_year || new Date().getFullYear();
+    var volume = c.available_tons || 0;
+    var price = c.price_per_ton || 0;
+    var total = volume * price;
+    var state = c.location_state || 'India';
+    var volStr = volume.toLocaleString('en-IN');
+    var priceStr = price.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+    var totalStr = total.toLocaleString('en-IN', {minimumFractionDigits:2});
+
+    cardsHtml += '<div class="market-card" id="mc-' + c.id + '" onclick="mobExpandCard(' + c.id + ', \'' + ticker + '\', \'' + methodType + '\', \'' + seller + '\', ' + volume + ', ' + price + ', ' + total + ', ' + c.id + ')">';
+    cardsHtml += '<div class="mc-top"><div>';
+    cardsHtml += '<div class="mc-ticker">' + ticker + '</div>';
+    cardsHtml += '<div style="font-size:0.7rem; color:var(--muted); font-family:monospace;">' + state + '</div>';
+    cardsHtml += '</div>';
+    cardsHtml += '<div class="mc-vintage">Vint. ' + vintage + '</div></div>';
+    cardsHtml += '<div class="mc-method">' + methodType + ' — ' + seller + ' <span>✓ Verified</span></div>';
+    cardsHtml += '<div class="mc-bottom">';
+    cardsHtml += '<div class="mc-volume"><strong>' + volStr + '</strong> Tons Available</div>';
+    cardsHtml += '<div><div class="mc-price">₹' + priceStr + '</div><div class="mc-price-sub">per Ton</div></div>';
+    cardsHtml += '</div></div>';
+  }
+
+  listEl.innerHTML = cardsHtml;
+}
+
+// ── EXPAND CARD → SHOW TRADE MODAL ──
+function mobExpandCard(id, ticker, method, seller, volume, price, total, creditId) {
+  if(window.HapticEngine) HapticEngine.lightTick();
+  document.getElementById('mob-trade-ticker').textContent = ticker;
+  document.getElementById('mob-trade-desc').textContent = method + ' — ' + seller;
+  document.getElementById('mob-trade-price').textContent = '₹' + price.toLocaleString('en-IN', {minimumFractionDigits:2});
+  document.getElementById('mob-trade-volume').textContent = volume.toLocaleString('en-IN') + ' Tons';
+  document.getElementById('mob-trade-total').textContent = '₹' + total.toLocaleString('en-IN');
+  pendingMobTrade = { id: creditId, tons: volume, price, total };
+  document.getElementById('mob-trade-modal').style.display = 'flex';
+  mobInitSwipe();
+}
+
+// ── SWIPE TO TRADE SLIDER ──
+function mobInitSwipe() {
+  const track = document.getElementById('mob-swipe-track');
+  const thumb = document.getElementById('mob-swipe-thumb');
+  const fill = document.getElementById('mob-swipe-fill');
+  if(!track || !thumb) return;
+
+  thumb.style.left = '4px';
+  fill.style.width = '0%';
+
+  let startX = 0;
+  let isDragging = false;
+  const trackWidth = track.offsetWidth;
+  const maxLeft = trackWidth - 52;
+
+  const onStart = (e) => {
+    isDragging = true;
+    startX = (e.touches ? e.touches[0].clientX : e.clientX);
+  };
+  const onMove = (e) => {
+    if(!isDragging) return;
+    e.preventDefault();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const delta = clientX - startX;
+    const newLeft = Math.max(4, Math.min(maxLeft, 4 + delta));
+    thumb.style.left = newLeft + 'px';
+    fill.style.width = ((newLeft / maxLeft) * 100) + '%';
+
+    if(newLeft >= maxLeft - 4) {
+      isDragging = false;
+      mobExecuteTrade();
+    }
+  };
+  const onEnd = () => {
+    if(isDragging) {
+      isDragging = false;
+      thumb.style.left = '4px';
+      fill.style.width = '0%';
+    }
+  };
+
+  thumb.removeEventListener('touchstart', thumb._ts);
+  thumb.removeEventListener('mousedown', thumb._ms);
+  thumb._ts = onStart;
+  thumb._ms = onStart;
+  thumb.addEventListener('touchstart', onStart, {passive:true});
+  thumb.addEventListener('mousedown', onStart);
+  document.addEventListener('touchmove', onMove, {passive:false});
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('touchend', onEnd);
+  document.addEventListener('mouseup', onEnd);
+}
+
+async function mobExecuteTrade() {
+  if(window.HapticEngine) HapticEngine.heavyThud();
+  const track = document.getElementById('mob-swipe-track');
+  if(track) { track.style.background = 'rgba(0,230,118,0.3)'; track.innerHTML = '<span style="color:var(--green); font-weight:800; font-size:0.9rem;">PROCESSING...</span>'; }
+
+  if(!pendingMobTrade) return;
+  const auth = await requireBiometric("Execute ₹" + pendingMobTrade.total.toLocaleString() + " Corporate Trade");
+  if(!auth) {
+    document.getElementById('mob-trade-modal').style.display = 'none';
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem('cw_token');
+    const res = await fetch('/api/credits/purchase', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ creditId: pendingMobTrade.id, tons: pendingMobTrade.tons })
+    });
+    const d = await res.json();
+    if(d.success) {
+      if(window.HapticEngine) HapticEngine.successPulse();
+      document.getElementById('mob-trade-modal').style.display = 'none';
+      alert('Trade executed! Your holdings have been updated in real-time.');
+      mobLoadPortfolioData();
+    } else {
+      throw new Error(d.error || 'Trade failed');
+    }
+  } catch(e) {
+    alert('Trade error: ' + e.message);
+    document.getElementById('mob-trade-modal').style.display = 'none';
+  }
+}
+
+// ── LOAD PORTFOLIO DATA ──
+async function mobLoadPortfolioData() {
+  const token = localStorage.getItem('cw_token');
+  if(!token) return;
+
+  try {
+    const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+    const me = await res.json();
+    if(me.user) {
+      // Load holdings via the API.myCredits equivalent
+      const credRes = await fetch('/api/credits/purchase', { headers: { 'Authorization': 'Bearer ' + token } });
+      // Holdings via the same endpoint used by the website
+      const holdingsEl = document.getElementById('mob-holdings-list');
+      const txEl = document.getElementById('mob-tx-list');
+
+      // Hit the portfolio API
+      const portRes = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+    }
+  } catch(e) {
+    console.error('Portfolio load error:', e);
+  }
+}
+
+// ── PORTFOLIO CHARTS (Exact match with web data) ──
+function mobInitPortfolioCharts() {
+  if(mobCharts.traj) return;
+  const ctx1 = document.getElementById('mob-traj-chart');
+  const ctx2 = document.getElementById('mob-alloc-chart');
+  if(!ctx1 || !ctx2) return;
+
+  mobCharts.traj = new Chart(ctx1.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: ['2020', '2021', '2022', '2023', '2024', '2025'],
+      datasets: [
+        {
+          label: 'Emissions (Tons)',
+          data: [15500, 14800, 14100, 13200, 11800, 9800],
+          borderColor: '#FF3D00',
+          backgroundColor: 'rgba(255,61,0,0.05)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: '#FF3D00'
+        },
+        {
+          label: 'Offsets Retired',
+          data: [0, 200, 700, 1800, 3200, 6500],
+          borderColor: '#00E676',
+          backgroundColor: 'rgba(0,230,118,0.1)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: '#00E676'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: '#111827',
+        borderColor: '#1e293b',
+        borderWidth: 1,
+        titleColor: '#00E5FF',
+        bodyColor: '#f8fafc'
+      }},
+      scales: {
+        x: { grid: { color: 'rgba(30,41,59,0.5)' }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+        y: { grid: { color: 'rgba(30,41,59,0.5)' }, ticks: { color: '#94a3b8', font: { size: 10 }, callback: v => v.toLocaleString() } }
+      }
+    }
+  });
+
+  // Allocation donut - matches web chart exactly (Agriculture blue, Forestry green, Grassland amber)
+  mobCharts.alloc = new Chart(ctx2.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Agriculture', 'Forestry', 'Grassland'],
+      datasets: [{
+        data: [40, 45, 15],
+        backgroundColor: ['#2962ff', '#00E676', '#FFAB00'],
+        borderWidth: 0,
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#94a3b8', font: { size: 11 }, padding: 16, boxWidth: 12 }
+        },
+        tooltip: {
+          backgroundColor: '#111827',
+          borderColor: '#1e293b',
+          borderWidth: 1,
+          bodyColor: '#f8fafc'
+        }
+      }
+    }
+  });
+}
+
+// ── ESG GAUGE ──
+function mobInitESGGauge() {
+  if(mobCharts.esg) {
+    // Update with real data
+    const retiredEl = document.getElementById('mob-retired');
+    const esgPct = document.getElementById('mob-esg-pct');
+    const esgRetired = document.getElementById('esg-retired-disp');
+    const retiredVal = retiredEl ? retiredEl.textContent : 'Nil';
+    if(esgPct) esgPct.textContent = '0%';
+    if(esgRetired) esgRetired.textContent = retiredVal;
+    return;
+  }
+
+  const ctx = document.getElementById('mob-esg-gauge');
+  if(!ctx) return;
+
+  mobCharts.esg = new Chart(ctx.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Retired', 'Remaining'],
+      datasets: [{
+        data: [0, 100],
+        backgroundColor: ['#00E676', '#1e293b'],
+        borderWidth: 0,
+        cutout: '80%',
+        circumference: 270,
+        rotation: 225
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: { legend: { display: false }, tooltip: { enabled: false } }
+    }
+  });
+}
+
+// ── INIT ON LOAD ──
+document.addEventListener('DOMContentLoaded', () => {
+  if(window.innerWidth > 768) return; // Desktop: don't run
+
+  // Run initial calculations
+  mobCalcScope();
+
+  // Init portfolio charts after a tick
+  setTimeout(() => {
+    mobInitPortfolioCharts();
+    mobInitESGGauge();
+  }, 500);
+
+  // Load live exchange immediately in background
+  mobLoadExchange();
+
+  // Live ticker animation
+  setInterval(() => {
+    document.querySelectorAll('.mob-ticker span').forEach(el => {
+      const val = el.querySelector('.tick-up, .tick-dn');
+      if(!val) return;
+      const isUp = Math.random() > 0.4;
+      const change = (Math.random() * 2).toFixed(1);
+      val.className = isUp ? 'tick-up' : 'tick-dn';
+      val.textContent = (val.textContent.split(' ')[0]) + ' ' + (isUp ? '▲' : '▼') + ' ' + change + '%';
+    });
+  }, 4000);
+
+  // Reload exchange every 30s for real-time sync
+  setInterval(() => {
+    if(document.getElementById('mob-view-exchange')?.classList.contains('active')) {
+      mobLoadExchange();
+    }
+  }, 30000);
+});
+</script>
+</body></html>

@@ -1,12 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
+<script>
+  // Global API Router for Mobile (Capacitor)
+  if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+    console.log('Mobile Platform Detected. Intercepting API calls to dev server...');
+    const API_BASE = 'http://192.168.0.113:3000'; // Target local network IP
+    const originalFetch = window.fetch;
+    window.fetch = async function() {
+      let args = Array.prototype.slice.call(arguments);
+      if (typeof args[0] === 'string' && args[0].startsWith('/api/')) {
+        args[0] = API_BASE + args[0];
+      }
+      return originalFetch.apply(this, args);
+    };
+  }
+</script>
+
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#0f172a">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Carbon Wallet - Carbon Credit Marketplace</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="style.css?v=639201012679378634">
 </head>
@@ -26,8 +40,8 @@
       </div>
       <div class="nav-right">
         <select id="langToggle" style="background:transparent; color:#94a3b8; border:1px solid #334155; padding:6px; border-radius:4px; margin-right:15px; font-size:0.8rem;"><option>EN</option><option>HI</option><option>MR</option></select>
-        <button class="btn btn-secondary" onclick="openLoginModal('landowner')" >Landowner Portal</button>
-        <button class="btn btn-primary" onclick="openLoginModal('industry')" >Company Portal</button>
+        <button class="btn btn-secondary" onclick="openLoginModal('landowner')">Landowner Portal</button>
+        <button class="btn btn-primary" onclick="openLoginModal('industry')">Company Portal</button>
       </div>
     </div>
   </nav>
@@ -38,11 +52,11 @@
     
     <h1 class="hero-title">The Future of<br>Carbon Credit Trading</h1>
     <p style="font-size: 1.25rem; max-width: 600px; margin-bottom: 2rem;">
-      Connecting Landowners & Industries for a Sustainable Tomorrow. AI-powered verification, real-time marketplace.
+      Connecting Landowners &amp; Industries for a Sustainable Tomorrow. AI-powered verification, real-time marketplace.
     </p>
     <div style="display: flex; gap: 1rem; margin-bottom: 3rem; flex-wrap: wrap; justify-content: center;">
-      <button class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;" onclick="openLoginModal('landowner')" >I'm a Landowner</button>
-      <button class="btn btn-secondary" style="font-size: 1.1rem; padding: 1rem 2rem;" onclick="openLoginModal('industry')" >I'm a Company</button>
+      <button class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;" onclick="openLoginModal('landowner')">I'm a Landowner</button>
+      <button class="btn btn-secondary" style="font-size: 1.1rem; padding: 1rem 2rem;" onclick="openLoginModal('industry')">I'm a Company</button>
     </div>
     
     <div class="grid-3" style="gap: 2rem; max-width: 800px; margin: 0 auto; text-align: center;">
@@ -66,7 +80,7 @@
         </div>
         <div style="background: var(--bg-card); padding: 40px 20px; border-radius: var(--border-radius-lg); border: 1px solid var(--border-color);">
           <div style="width: 60px; height: 60px; background: rgba(6, 182, 212, 0.1); color: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 20px; font-weight: 800;">2</div>
-          <h3 style="color: var(--text-primary); margin-bottom: 15px;">AI & Admin Verification</h3>
+          <h3 style="color: var(--text-primary); margin-bottom: 15px;">AI &amp; Admin Verification</h3>
           <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6;">Ollama AI parses documents while satellite scans verify biomass and detect risks. Admins give the final approval to mint credits.</p>
         </div>
         <div style="background: var(--bg-card); padding: 40px 20px; border-radius: var(--border-radius-lg); border: 1px solid var(--border-color);">
@@ -152,14 +166,14 @@
         <form id="registerForm" onsubmit="handleRegister(event)">
           <div class="form-group">
             <label class="form-label">I am a...</label>
-            <select id="regRole" class="form-select" onchange="toggleRegFields()" required>
+            <select id="regRole" class="form-select" onchange="toggleRegFields()" required="">
               <option value="landowner">Landowner / Farmer</option>
               <option value="industry">Industry / Company</option>
             </select>
           </div>
           <div class="form-group">
             <label class="form-label">Full Name</label>
-            <input type="text" id="regName" class="form-input" required>
+            <input type="text" id="regName" class="form-input" required="">
           </div>
           <div class="form-group" id="regCompanyGroup" style="display:none;">
             <label class="form-label">Company Name</label>
@@ -167,11 +181,11 @@
           </div>
           <div class="form-group">
             <label class="form-label">Email</label>
-            <input type="email" id="regEmail" class="form-input" required>
+            <input type="email" id="regEmail" class="form-input" required="">
           </div>
           <div class="form-group">
             <label class="form-label">Password</label>
-            <input type="password" id="regPassword" class="form-input" required>
+            <input type="password" id="regPassword" class="form-input" required="">
           </div>
           <button type="submit" class="btn btn-primary btn-block">Register</button>
           <div style="text-align:center; margin:1rem 0; color:var(--text-muted); font-size:0.85rem;">OR</div>
@@ -236,32 +250,42 @@
       const provider = new GoogleAuthProvider();
   
       window.loginWithGoogle = async (role) => {
+        var err = document.getElementById('loginError');
+        if(err) err.style.display = 'none';
+
         try {
-          showToast('Starting Google Sign-In...', 'info');
-          const result = await signInWithPopup(auth, provider);
-          const credential = GoogleAuthProvider.credentialFromResult(result);
-          const idToken = credential.idToken;
+          var idToken = null;
           
-          showToast('Authenticating with server...', 'info');
-          const res = await fetch('/api/auth/google', {
+          if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+             var result = await window.Capacitor.Plugins.FirebaseAuthentication.signInWithGoogle();
+             idToken = result.credential?.idToken;
+             if (!idToken) throw new Error("Auth failed");
+          } else {
+             var result = await signInWithPopup(auth, provider);
+             var credential = GoogleAuthProvider.credentialFromResult(result);
+             idToken = credential.idToken;
+          }
+          
+          var res = await fetch('/api/auth/google', {
             method: 'POST',
             credentials: 'include',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ idToken, role })
+            body: JSON.stringify({ idToken: idToken, role: role })
           });
           
-          const data = await res.json();
+          var data = await res.json();
           if(res.ok) {
-            if (data.user.role !== role) {
-              throw new Error(`This email belongs to a ${data.user.role}, but you selected ${role}.`);
-            }
-            window.location.href = data.user.role === 'landowner' ? '/landowner.html?v=639201013091286979' : '/marketplace.html?v=639201013091286979';
+            localStorage.setItem('cw_token', data.token);
+            window.location.replace(data.user.role === 'landowner' ? '/landowner.html' : '/marketplace.html');
           } else {
             throw new Error(data.error || 'Login failed');
           }
         } catch (error) {
           console.error(error);
-          showToast('Google login failed: ' + (error.message || error), 'error');
+          if (err) {
+              err.textContent = error.message || error;
+              err.style.display = 'block';
+          }
         }
       };
     </script>
@@ -328,7 +352,7 @@
       <div>
         <h4 style="color:#f8fafc; margin-bottom:15px;">Powered By</h4>
         <div style="display:flex; flex-direction:column; gap:5px; font-size:0.8rem;">
-          <span>⚡ Node.js & Express</span>
+          <span>⚡ Node.js &amp; Express</span>
           <span>🧠 Ollama AI</span>
           <span>🗺️ Leaflet Maps</span>
         </div>
@@ -346,40 +370,207 @@
       }
     </script>
     <!-- Google Login Modal -->
-    <div class="modal-overlay" id="googleLoginModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
-        <div style="background:#1e293b; padding:40px; border-radius:12px; max-width:400px; width:90%; text-align:center; border:1px solid #334155; position:relative;">
-            <button onclick="document.getElementById('googleLoginModal').classList.remove('active'); setTimeout(() => document.getElementById('googleLoginModal').style.display='none', 300)" style="position:absolute; top:15px; right:20px; background:transparent; border:none; color:#94a3b8; font-size:1.5rem; cursor:pointer;">&times;</button>
-            <i class="fas fa-leaf" style="font-size:3rem; color:#00d46a; margin-bottom:20px;"></i>
-            <h2 style="margin-bottom:10px; color:#fff;">Welcome Back</h2>
-            <p style="color:#94a3b8; margin-bottom:30px; font-size:0.9rem;">Sign in to access your CarbonWallet dashboard.</p>
-            
-            <button id="btnGoogleSignIn" style="background:#fff; color:#333; border:none; padding:12px 20px; border-radius:8px; width:100%; font-size:1rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:12px; box-shadow:0 4px 6px rgba(0,0,0,0.1); transition:transform 0.2s;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="24" height="24" alt="Google Logo">
-                Continue with Google
-            </button>
-            <p id="loginError" style="color:#ef4444; margin-top:15px; font-size:0.85rem; display:none;"></p>
-        </div>
-    </div>
     
-    <script>
-                window.targetLoginRole = 'landowner';
-        function openLoginModal(role) {
-            window.targetLoginRole = role;
-            var modal = document.getElementById('googleLoginModal');
-            if(modal) {
-                modal.style.display = 'flex';
-                modal.style.opacity = '1';
-                modal.style.visibility = 'visible';
-                modal.style.zIndex = '999999';
-                modal.classList.add('active');
-            } else {
-                alert('Modal not found!');
-            }
+<div class="modal-overlay" id="googleLoginModal" style="display:none;">
+  <div class="modal" style="background:#1e293b; padding:40px; border-radius:12px; max-width:400px; width:90%; text-align:center; border:1px solid #334155; position:relative;">
+      <button onclick="closeLoginModal()" style="position:absolute; top:15px; right:20px; background:transparent; border:none; color:#94a3b8; font-size:1.5rem; cursor:pointer;">&times;</button>
+      <i class="fas fa-leaf" style="font-size:3rem; color:#00d46a; margin-bottom:20px;"></i>
+      <h2 style="margin-bottom:10px; color:#fff;">Welcome Back</h2>
+      <p style="color:#94a3b8; margin-bottom:20px; font-size:0.9rem;">Sign in to access your CarbonWallet dashboard.</p>
+      
+      <!-- OTP Login Section -->
+      <div id="otpSection" style="margin-bottom: 25px;">
+          <input type="email" id="loginEmail" placeholder="Enter your email address" style="width:100%; padding:12px; border-radius:8px; border:1px solid #334155; background:#0f172a; color:#fff; margin-bottom:15px; font-size:1rem; box-sizing:border-box;" />
+          
+          <button id="btnGetOtp" onclick="sendOtp()" style="background:var(--primary); color:#fff; border:none; padding:12px 20px; border-radius:8px; width:100%; font-size:1rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 6px rgba(0,212,106,0.2); transition:transform 0.2s;">
+              <i class="fa-solid fa-envelope"></i> Get OTP
+          </button>
+
+          <div id="otpVerifySection" style="display:none; margin-top:15px;">
+              <input type="text" id="loginOtp" placeholder="Enter 6-digit OTP" maxlength="6" style="width:100%; padding:12px; border-radius:8px; border:1px solid #334155; background:#0f172a; color:#fff; margin-bottom:15px; font-size:1rem; text-align:center; letter-spacing:4px; box-sizing:border-box;" />
+              <button id="btnVerifyOtp" onclick="verifyOtp()" style="background:var(--primary); color:#fff; border:none; padding:12px 20px; border-radius:8px; width:100%; font-size:1rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 6px rgba(0,212,106,0.2); transition:transform 0.2s;">
+                  <i class="fa-solid fa-check"></i> Verify & Login
+              </button>
+          </div>
+      </div>
+
+      <div style="display:flex; align-items:center; margin:20px 0;">
+          <div style="flex:1; height:1px; background:#334155;"></div>
+          <div style="padding:0 15px; color:#94a3b8; font-size:0.85rem; font-weight:500;">OR</div>
+          <div style="flex:1; height:1px; background:#334155;"></div>
+      </div>
+      
+      <!-- Google Login Section -->
+      <button id="btnGoogleSignIn" onclick="window.loginWithGoogle(window.targetLoginRole)" style="background:#fff; color:#333; border:none; padding:12px 20px; border-radius:8px; width:100%; font-size:1rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:12px; box-shadow:0 4px 6px rgba(0,0,0,0.1); transition:transform 0.2s;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="24" height="24" alt="Google Logo">
+          Continue with Google
+      </button>
+
+      <p id="loginError" style="color:#ef4444; margin-top:15px; font-size:0.85rem; display:none;"></p>
+  </div>
+</div>
+    
+    
+  
+  <script>
+    window.targetLoginRole = 'landowner';
+    
+    function openLoginModal(role) {
+        window.targetLoginRole = role;
+        var modal = document.getElementById('googleLoginModal');
+        if(modal) {
+            modal.style.display = 'flex';
+            modal.classList.add('active');
         }
-    </script>
-    <script src="auth-bundle.js?v=639201482145254717"></script>
-</body>
-</html>
+    }
+
+    function closeLoginModal() {
+        var m=document.getElementById('googleLoginModal'); 
+        if(m) {
+            m.style.display='none'; 
+            m.classList.remove('active');
+        }
+        
+        var v = document.getElementById('otpVerifySection');
+        if(v) v.style.display = 'none';
+        
+        var b = document.getElementById('btnGetOtp');
+        if(b) b.style.display = 'flex';
+        
+        var e = document.getElementById('loginEmail');
+        if(e) { e.disabled = false; e.value = ''; }
+        
+        var o = document.getElementById('loginOtp');
+        if(o) o.value = '';
+        
+        var err = document.getElementById('loginError');
+        if(err) err.style.display = 'none';
+    }
+
+    async function sendOtp() {
+        var email = document.getElementById('loginEmail').value.trim();
+        var btn = document.getElementById('btnGetOtp');
+        var err = document.getElementById('loginError');
+        
+        if(!email) {
+            err.textContent = "Please enter your email.";
+            err.style.display = 'block';
+            return;
+        }
+        
+        err.style.display = 'none';
+        btn.disabled = true;
+
+        try {
+            var res = await fetch('/api/auth/otp/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email })
+            });
+            var data = await res.json();
+            
+            if(res.ok) {
+                if(typeof showToast !== 'undefined') showToast("OTP sent to " + email, "success");
+                
+                document.getElementById('loginEmail').disabled = true;
+                btn.style.display = 'none';
+                document.getElementById('otpVerifySection').style.display = 'block';
+                if(data.demoOtp) {
+                    setTimeout(function(){ alert("DEMO OTP: " + data.demoOtp); }, 300);
+                }
+            } else {
+                throw new Error(data.error || 'Failed to send OTP');
+            }
+        } catch(e) {
+            err.textContent = e.message;
+            err.style.display = 'block';
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    async function verifyOtp() {
+        var email = document.getElementById('loginEmail').value.trim();
+        var otp = document.getElementById('loginOtp').value.trim();
+        var btn = document.getElementById('btnVerifyOtp');
+        var err = document.getElementById('loginError');
+        var role = window.targetLoginRole;
+        
+        if(!otp) {
+            err.textContent = "Please enter the OTP.";
+            err.style.display = 'block';
+            return;
+        }
+        
+        err.style.display = 'none';
+        btn.disabled = true;
+
+        try {
+            var res = await fetch('/api/auth/otp/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, otp: otp, role: role })
+            });
+            var data = await res.json();
+            
+            if(res.ok) {
+                localStorage.setItem('cw_token', data.token);
+                window.location.replace(data.user.role === 'landowner' ? '/landowner.html' : '/marketplace.html');
+            } else {
+                throw new Error(data.error || 'Verification failed');
+            }
+        } catch(e) {
+            err.textContent = e.message;
+            err.style.display = 'block';
+            btn.disabled = false;
+        }
+    }
+
+    window.loginWithGoogle = async (role) => {
+        var err = document.getElementById('loginError');
+        if(err) err.style.display = 'none';
+
+        try {
+          var idToken = null;
+          
+          if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+             var result = await window.Capacitor.Plugins.FirebaseAuthentication.signInWithGoogle();
+             idToken = result.credential?.idToken;
+             if (!idToken) throw new Error("Auth failed");
+          } else {
+             if(typeof signInWithPopup !== 'undefined') {
+                 var result = await signInWithPopup(auth, provider);
+                 var credential = GoogleAuthProvider.credentialFromResult(result);
+                 idToken = credential.idToken;
+             } else {
+                 throw new Error("Web login not configured");
+             }
+          }
+          
+          var res = await fetch('/api/auth/google', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ idToken: idToken, role: role })
+          });
+          
+          var data = await res.json();
+          if(res.ok) {
+            localStorage.setItem('cw_token', data.token);
+            window.location.replace(data.user.role === 'landowner' ? '/landowner.html' : '/marketplace.html');
+          } else {
+            throw new Error(data.error || 'Login failed');
+          }
+        } catch (error) {
+          console.error(error);
+          if (err) {
+              err.textContent = error.message || error;
+              err.style.display = 'block';
+          }
+        }
+    };
+  </script>
+<script src="auth-bundle.js?v=639201482145254717"></script>
 
 
 
@@ -393,3 +584,6 @@
 
 
 
+
+
+</body></html>

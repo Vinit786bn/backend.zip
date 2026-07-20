@@ -15,7 +15,7 @@ const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
 const fs = require('fs');
 
-const { getDb, seedDemoData } = require('./db');
+const { getDb, seedDemoData, logBlockchainEvent: logBlockchainEventDB } = require('./db');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
@@ -85,14 +85,7 @@ function requireRole(...roles) {
 const crypto = require('crypto');
 
 function logBlockchainEvent(db, creditId, eventType, payload) {
-  const history = db.prepare('SELECT * FROM blockchain_ledger WHERE credit_id=?').all(creditId) || [];
-  const prevHash = history.length > 0 ? history[history.length - 1].hash : '0000000000000000000000000000000000000000000000000000000000000000';
-  const payloadJson = JSON.stringify(payload);
-  const hash = crypto.createHash('sha256').update(creditId + eventType + payloadJson + prevHash).digest('hex');
-  const id = uuidv4();
-  const createdAt = new Date().toISOString();
-  db.prepare('INSERT INTO blockchain_ledger (id, credit_id, event_type, payload_json, prev_hash, hash, created_at) VALUES (?,?,?,?,?,?,?)')
-    .run(id, creditId, eventType, payloadJson, prevHash, hash, createdAt);
+  logBlockchainEventDB(eventType, creditId, null, payload);
 }
 
 function matchLimitOrders(db, creditId) {
@@ -230,22 +223,102 @@ app.post('/api/credits/list', requireAuth, (req, res) => {
 // ===================== BLOCKCHAIN ROUTES =====================
 app.get('/api/blockchain/verify/:creditId', (req, res) => {
   const db = getDb();
-  const history = db.prepare('SELECT * FROM blockchain_ledger WHERE credit_id=?').all(req.params.creditId) || [];
-  
+  const crypto = require('crypto');
+  const allBlocks = db.prepare('SELECT * FROM blockchain_ledger ORDER BY idx ASC').all();
+  const history = allBlocks.filter(b => {
+    try {
+      const data = JSON.parse(b.transaction_data);
+      return data.credit_id === req.params.creditId;
+    } catch(e) { return false; }
+  });
   let chain_valid = true;
   for (const block of history) {
-    const calcHash = crypto.createHash('sha256').update(block.credit_id + block.event_type + block.payload_json + block.prev_hash).digest('hex');
+    const calcHash = crypto.createHash('sha256').update(block.idx + block.timestamp + block.transaction_data + block.previous_hash).digest('hex');
     if (calcHash !== block.hash) {
       chain_valid = false;
       break;
     }
   }
-  res.json({ ledger: history, chain_valid });
+  res.json({ ledger: history.map(b => ({ ...b, payload_json: b.transaction_data, event_type: JSON.parse(b.transaction_data).type })), chain_valid });
 });
 
 // ===================== AUTH ROUTES =====================
 const { OAuth2Client } = require('google-auth-library');
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'dummy_client_id_for_startup');
+
+
+// --- OTP AUTH FLOW ---
+const otpStore = new Map(); // In-memory store: email -> { otp, expiresAt }
+
+app.post('/api/auth/otp/send', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email is required' });
+
+  // Generate 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = Date.now() + 5 * 60 * 1000; // 5 mins
+
+  otpStore.set(email.toLowerCase(), { otp, expiresAt });
+  
+  console.log('\n========================================');
+  console.log('🔑 DEMO OTP GENERATED for ' + email + ': ' + otp);
+  console.log('========================================\n');
+
+  res.json({ success: true, message: 'OTP sent successfully', demoOtp: otp });
+});
+
+app.post('/api/auth/otp/verify', async (req, res) => {
+  const { email, otp, role } = req.body;
+  if (!email || !otp || !role) return res.status(400).json({ error: 'Email, OTP, and Role are required' });
+
+  const record = otpStore.get(email.toLowerCase());
+  if (!record) return res.status(400).json({ error: 'No OTP requested for this email' });
+  if (Date.now() > record.expiresAt) {
+    otpStore.delete(email.toLowerCase());
+    return res.status(400).json({ error: 'OTP has expired' });
+  }
+  if (record.otp !== otp) return res.status(400).json({ error: 'Invalid OTP' });
+
+  // Valid OTP, log them in
+  otpStore.delete(email.toLowerCase()); // Burn OTP after use
+
+  let user = null;
+  const targetRole = role || 'industry'; // Default to industry if missing
+
+  // Check if user exists
+  try {
+    user = await new Promise((resolve, reject) => {
+      db.get('SELECT * FROM users WHERE email = ?', [email], (err, row) => {
+        if (err) reject(err); else resolve(row);
+      });
+    });
+
+    if (!user) {
+      // Auto-register new user
+      const name = email.split('@')[0];
+      await new Promise((resolve, reject) => {
+        db.run('INSERT INTO users (id, email, name, role) VALUES (?, ?, ?, ?)', [uuidv4(), email, name, targetRole], function(err) {
+          if (err) reject(err); else resolve();
+        });
+      });
+      user = await new Promise((resolve, reject) => {
+        db.get('SELECT * FROM users WHERE email = ?', [email], (err, row) => resolve(row));
+      });
+    }
+
+    // Role check
+    if (user.role !== targetRole) {
+      return res.status(400).json({ error: `This email belongs to a ${user.role}, but you selected ${targetRole}` });
+    }
+
+    const token = jwt.sign({ userId: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET || 'secret123', { expiresIn: '24h' });
+    res.json({ success: true, token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+  } catch(e) {
+    console.error(e);
+    res.status(500).json({ error: 'Internal server error during authentication' });
+  }
+});
+// ----------------------
 
 app.post('/api/auth/google', async (req, res) => {
     const db = getDb();

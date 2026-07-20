@@ -1,12 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
+<script>
+  // Global API Router for Mobile (Capacitor)
+  if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+    console.log('Mobile Platform Detected. Intercepting API calls to dev server...');
+    const API_BASE = 'http://192.168.0.113:3000'; // Target local network IP
+    const originalFetch = window.fetch;
+    window.fetch = async function() {
+      let args = Array.prototype.slice.call(arguments);
+      if (typeof args[0] === 'string' && args[0].startsWith('/api/')) {
+        args[0] = API_BASE + args[0];
+      }
+      return originalFetch.apply(this, args);
+    };
+  }
+</script>
+
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#0f172a">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta charset="UTF-8">
   <title>Carbon Wallet - Public Blockchain Verification</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     body { background-color: #020617; color: #e2e8f0; font-family: 'Inter', sans-serif; margin:0; padding:50px; }
@@ -31,7 +45,7 @@
     </div>
     
     <div id="resultContainer" style="display:none; text-align:left;">
-      <h3 id="integrity-status" style="color:#10b981; margin-bottom:15px; display:none;"><i class="fas fa-check-circle"></i> Chain Verified & Cryptographically Intact</h3>
+      <h3 id="integrity-status" style="color:#10b981; margin-bottom:15px; display:none;"><i class="fas fa-check-circle"></i> Chain Verified &amp; Cryptographically Intact</h3>
       
       <div id="project-summary" style="display:none; background:#1e293b; padding:15px; border-radius:8px; margin-bottom:20px; font-size:0.9rem;">
         <div style="color:#f8fafc; font-weight:bold; margin-bottom:10px;">Project Summary</div>
@@ -111,7 +125,8 @@
     });
     
 </script>
-  </body>
-</html>
+  
 
 
+
+</body></html>
