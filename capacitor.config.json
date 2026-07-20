@@ -1,6 +1,11 @@
 {
   "appId": "com.carbonwallet1",
   "appName": "CarbonWallet",
-  "webDir": "public"
+  "webDir": "public",
+  "plugins": {
+    "FirebaseAuthentication": {
+      "skipNativeAuth": false,
+      "providers": ["google.com"]
+    }
+  }
 }
-
