@@ -1150,65 +1150,49 @@ app.post('/api/credits/generate', requireAuth, (req, res) => {
 app.post('/api/credits/purchase', requireAuth, (req, res) => {
   try {
     const db = getDb();
-    const { credit_id, tons, action, order_type, target_price } = req.body;
-    const credit = db.prepare('SELECT * FROM carbon_credits WHERE id=?').get(credit_id);
-    if (!credit) return res.status(404).json({ error: 'Credit not found' });
-    if (credit.available_tons < tons) return res.status(400).json({ error: 'Not enough credits available' });
-    if (credit.owner_id === req.user.id) return res.status(400).json({ error: 'Cannot buy your own credits' });
-
-    
-    if (order_type === 'limit') {
-      const orderId = uuidv4();
-      db.prepare('INSERT INTO limit_orders (id, buyer_id, credit_id, tons, target_price, action) VALUES (?,?,?,?,?,?)')
-        .run(orderId, req.user.id, credit_id, tons, target_price, action);
-      return res.json({ success: true, is_limit: true, message: 'Limit order placed successfully.' });
+    const { credit_id, tons, action } = req.body;
+    if(!credit_id || !tons || tons <= 0 || !['buy', 'retire'].includes(action)) {
+      return res.status(400).json({error: 'Invalid input'});
     }
 
-    const txId = uuidv4();
+    const credit = db.prepare('SELECT * FROM carbon_credits WHERE id = ?').get(credit_id);
+    if(!credit || credit.available_tons < tons) return res.status(400).json({error: 'Not enough volume available'});
+
+    const buyer = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.id);
     const totalPrice = tons * credit.price_per_ton;
-    const platformFee = totalPrice * 0.15; // 15% Platform fee
-    const sellerRevenue = totalPrice * 0.85;
-
-    // Simulate Escrow logic
-    db.prepare('INSERT INTO transactions (id,credit_id,buyer_id,seller_id,tons,price_per_ton,total_price,status) VALUES (?,?,?,?,?,?,?,?)')
-      .run(txId, credit_id, req.user.id, credit.owner_id, tons, credit.price_per_ton, totalPrice, 'completed');
-      
-    db.prepare('INSERT INTO platform_fees (id, tx_id, amount) VALUES (?,?,?)').run(uuidv4(), txId, platformFee);
-    db.prepare('INSERT INTO escrow (id, user_id, amount, type, status) VALUES (?,?,?,?,?)').run(uuidv4(), credit.owner_id, sellerRevenue, 'credit', 'settled');
-
-    const newAvailable = credit.available_tons - tons;
-    const status = action === 'retire' ? 'retired' : (newAvailable <= 0 ? 'sold' : 'active');
-    db.prepare('UPDATE carbon_credits SET available_tons=?, status=? WHERE id=?')
-      .run(newAvailable, status, credit_id);
-
-    // If Retire, generate retirement serial
-    let certId = '';
-    if (action === 'retire') {
-       certId = `RET-CW-${Date.now().toString(36).toUpperCase()}`;
-    } else {
-       certId = `CW-PUR-${Date.now().toString(36).toUpperCase()}`;
-       // Create a new held credit block for the buyer
-       db.prepare(`INSERT INTO carbon_credits (id,land_id,owner_id,ticker,total_tons,available_tons,price_per_ton,status,is_resale,vintage_year) VALUES (?,?,?,?,?,?,?,?,?,?)`)
-         .run(uuidv4(), credit.land_id, req.user.id, credit.ticker, tons, tons, credit.price_per_ton, 'held', 1, credit.vintage_year);
-    }
+    const totalCost = totalPrice * 100;
     
-    const certUuid = uuidv4();
-    db.prepare(`INSERT INTO certificates (id,credit_id,owner_id,certificate_number,issued_to,tons,vintage_year,project_name,status) VALUES (?,?,?,?,?,?,?,?,?)`)
-      .run(certUuid, credit_id, req.user.id, certId, req.user.name || req.user.company_name, tons, credit.vintage_year, action === 'retire' ? 'Retired Offset' : 'Purchase', 'active');
-      
-    logBlockchainEvent(db, credit_id, action === 'retire' ? 'retire' : 'trade_executed', { tons, action, price: credit.price_per_ton });
-    matchLimitOrders(db, credit_id);
+    if (buyer.escrow_balance < totalCost) return res.status(400).json({error: 'Insufficient Escrow Balance'});
 
-    // Notifications
-    const nId1 = uuidv4(), nId2 = uuidv4();
-    db.prepare('INSERT INTO notifications (id,user_id,title,message,type) VALUES (?,?,?,?,?)')
-      .run(nId1, credit.owner_id, 'Credits Sold!', `${tons} tons purchased. ₹${sellerRevenue.toFixed(2)} added to escrow (15% platform fee deducted).`, 'success');
-    db.prepare('INSERT INTO notifications (id,user_id,title,message,type) VALUES (?,?,?,?,?)')
-      .run(nId2, req.user.id, action === 'retire' ? 'Credits Retired' : 'Purchase Confirmed', `You ${action === 'retire' ? 'retired' : 'purchased'} ${tons} tons. Certificate: ${certId}`, 'success');
+    const txId = require('uuid').v4();
+    const certId = require('uuid').v4().substring(0,8).toUpperCase();
+    const platformFee = totalPrice * 0.05; 
+
+    // Execute ATOMIC TRANSACTION
+    db.transaction(() => {
+        db.prepare('UPDATE users SET escrow_balance = escrow_balance - ? WHERE id = ?').run(totalCost, req.user.id);
+        db.prepare('UPDATE carbon_credits SET available_tons = available_tons - ? WHERE id = ?').run(tons, credit_id);
+        db.prepare('INSERT INTO transactions (id, credit_id, buyer_id, seller_id, tons, price_per_ton, total_price, platform_fee, status) VALUES (?,?,?,?,?,?,?,?,?)')
+          .run(txId, credit_id, req.user.id, credit.owner_id, tons, credit.price_per_ton, totalPrice, platformFee, 'completed');
+        db.prepare('INSERT INTO certificates (id, owner_id, credit_id, issue_date, status) VALUES (?,?,?,?,?)')
+          .run(certId, req.user.id, credit_id, new Date().toISOString(), 'active');
+        db.prepare('INSERT INTO notifications (id, user_id, title, message, type) VALUES (?,?,?,?,?)')
+          .run(require('uuid').v4(), req.user.id, action === 'retire' ? 'Credits Retired' : 'Purchase Confirmed', `You ${action === 'retire' ? 'retired' : 'purchased'} ${tons} tons. Certificate: ${certId}`, 'success');
+    })();
+
+    // Broadcast WebSocket Update
+    if(global.wss) {
+        global.wss.clients.forEach(client => {
+            if (client.readyState === 1) {
+                client.send(JSON.stringify({ type: 'TRADE_EXEC', credit_id, tons_deducted: tons, price: credit.price_per_ton }));
+            }
+        });
+    }
 
     res.json({ success: true, transaction_id: txId, certificate_id: certId, total_price: totalPrice, fee_deducted: platformFee });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
+
 
 app.post('/api/credits/list-for-sale', requireAuth, (req, res) => {
   try {
@@ -1243,6 +1227,32 @@ app.get('/api/credits/transactions', requireAuth, (req, res) => {
 });
 
 // ===================== ADMIN ROUTES =====================
+
+// --- MOBILE APP INGESTION ENDPOINT ---
+app.post('/api/admin/trigger-ingestion', requireAuth, (req, res) => {
+  try {
+    const db = getDb();
+    const { name, type, state, lat, lng, polygon } = req.body;
+    const landId = require('uuid').v4();
+    
+    db.prepare('INSERT INTO land_plots (id, owner_id, name, project_type, location_state, lat, lng, verification_status, created_at) VALUES (?,?,?,?,?,?,?,?,?)')
+      .run(landId, req.user.id, name, type, state, lat, lng, 'pending', new Date().toISOString());
+
+    if(global.wss) {
+        global.wss.clients.forEach(client => {
+            if (client.readyState === 1) {
+                client.send(JSON.stringify({ type: 'NEW_LAND_INGESTED', payload: { id: landId, name, type, state, lat, lng, polygon } }));
+            }
+        });
+    }
+
+    res.json({ success: true, landId });
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({ error: 'Ingestion failed' });
+  }
+});
+
 app.get('/api/admin/dashboard', requireAuth, requireRole('employee'), (req, res) => {
   const db = getDb();
   const uRow = db.prepare('SELECT COUNT(*) as c FROM users WHERE role != "employee"').get();

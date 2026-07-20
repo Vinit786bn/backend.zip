@@ -242,7 +242,7 @@ function seedDemoData() {
       ];
 
       users.forEach(u => {
-        insertUser.run(u.id, u.email, hash, u.name, u.role, u.company, u.phone, 'verified', u.role === 'industry' ? 5000000 : 0, new Date().toISOString());
+        insertUser.run(u.id, u.email, hash, u.name, u.role, u.company, u.phone, 'verified', u.role === 'industry' ? 1250000 : 0, new Date().toISOString());
       });
 
       const projectNames = {
@@ -285,7 +285,7 @@ function seedDemoData() {
       });
   });
 
-  doSeed();
+  insertLand.run('land101', uuidv4(), 'Ananya - Afforestation', 'GCP Afforestation', 'Gujarat', 'Kutch', 22.3, 71.8, 400, 'GCP Afforestation', 'verified', 80, 50, 9402, new Date().toISOString()); insertCredit.run('GUJ-GCP-26-101', 'land101', uuidv4(), 'CERT-101', 'GUJ-GCP-26-101', 9402, 9402, 2260, 'active', 2025, 0, new Date().toISOString()); insertLand.run('land107', uuidv4(), 'Ramesh - Grassland', 'Biodiversity', 'Gujarat', 'Kutch', 22.3, 71.8, 300, 'Biodiversity', 'verified', 80, 50, 6699, new Date().toISOString()); insertCredit.run('GUJ-GCP-26-107', 'land107', uuidv4(), 'CERT-107', 'GUJ-GCP-26-107', 6699, 6699, 1850, 'active', 2025, 0, new Date().toISOString()); doSeed();
   console.log('  Rich Demo Data seeded to real SQLite database!');
 }
 
