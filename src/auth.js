@@ -5,12 +5,12 @@ import { Capacitor } from '@capacitor/core';
 
 // REPLACE THESE WITH YOUR FIREBASE PROJECT KEYS FROM THE FIREBASE CONSOLE
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCez36I2XdAPglGbg45LyH7Sk_P0KuicYw",
+  authDomain: "gen-lang-client-0044267372.firebaseapp.com",
+  projectId: "gen-lang-client-0044267372",
+  storageBucket: "gen-lang-client-0044267372.firebasestorage.app",
+  messagingSenderId: "901953259613",
+  appId: "1:901953259613:android:20bd329a83ce1b5ed065b4"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -110,3 +110,4 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('btnGoogleSignIn');
     if (btn) btn.addEventListener('click', signInWithGoogle);
 });
+
