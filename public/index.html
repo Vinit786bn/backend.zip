@@ -362,15 +362,25 @@
     </div>
     
     <script>
-        window.targetLoginRole = 'landowner';
+                window.targetLoginRole = 'landowner';
         function openLoginModal(role) {
             window.targetLoginRole = role;
-            document.getElementById('googleLoginModal').style.display = 'flex'; document.getElementById('googleLoginModal').classList.add('active');
+            var modal = document.getElementById('googleLoginModal');
+            if(modal) {
+                modal.style.display = 'flex';
+                modal.style.opacity = '1';
+                modal.style.visibility = 'visible';
+                modal.style.zIndex = '999999';
+                modal.classList.add('active');
+            } else {
+                alert('Modal not found!');
+            }
         }
     </script>
     <script src="auth-bundle.js?v=639201482145254717"></script>
 </body>
 </html>
+
 
 
 
