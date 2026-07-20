@@ -4,4 +4,6 @@
     <string name="title_activity_main">CarbonWallet</string>
     <string name="package_name">com.carbonwallet.app</string>
     <string name="custom_url_scheme">com.carbonwallet.app</string>
+    <string name="default_web_client_id">YOUR_WEB_CLIENT_ID</string>
 </resources>
+
