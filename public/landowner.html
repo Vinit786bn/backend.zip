@@ -1191,4 +1191,34 @@ async function submitListing() {
         document.getElementById('view-' + viewId).classList.add('active');
       }
     </script>
-  </body></html>
+  
+<script>
+    function nextStep(step) {
+        if(window.Capacitor && window.Capacitor.Plugins.Haptics) {
+            window.Capacitor.Plugins.Haptics.impact({ style: 'Medium' });
+        }
+        document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+        document.getElementById('step' + step).classList.add('active');
+        document.getElementById('wizardProgress').style.width = (step * 25) + '%';
+        window.scrollTo(0,0);
+    }
+    
+    async function triggerCamera() {
+        if(window.Capacitor && window.Capacitor.Plugins.Camera) {
+            try {
+                await window.Capacitor.Plugins.Camera.getPhoto({
+                    quality: 90,
+                    allowEditing: true,
+                    resultType: 'uri'
+                });
+                showToast('Document scanned successfully', 'success');
+            } catch(e) {
+                console.log(e);
+            }
+        } else {
+            showToast('Camera not available in web mode', 'warning');
+        }
+    }
+</script>
+
+</body></html>

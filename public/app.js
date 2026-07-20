@@ -486,3 +486,45 @@ window.formatRupee = function(num) { return new Intl.NumberFormat('en-IN', { sty
 
 
 
+
+
+// ==========================================
+// REAL-TIME SYNCHRONIZATION ENGINE
+// ==========================================
+function initWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    // Use the API URL base if configured, otherwise use current host
+    const host = window.location.host;
+    const wsUrl = protocol + '//' + host;
+    
+    console.log('[WS] Connecting to ' + wsUrl);
+    const ws = new WebSocket(wsUrl);
+    
+    ws.onopen = () => console.log('[WS] Connected to Live Sync Engine');
+    
+    ws.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            console.log('[WS] Live Update:', data);
+            
+            if (data.type === 'TRADE_EXEC') {
+                // Instantly update the market feed if we are on the marketplace
+                if (typeof loadMarketCards === 'function') {
+                    console.log('[WS] Refreshing Market Cards due to live trade');
+                    loadMarketCards();
+                }
+            }
+        } catch(e) {
+            console.error('[WS] Error parsing message', e);
+        }
+    };
+    
+    ws.onclose = () => {
+        console.log('[WS] Disconnected. Reconnecting in 3s...');
+        setTimeout(initWebSocket, 3000);
+    };
+}
+
+// Auto-init on load
+window.addEventListener('load', initWebSocket);
+

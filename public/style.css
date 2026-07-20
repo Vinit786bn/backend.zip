@@ -4,15 +4,17 @@ html { scroll-behavior: smooth; }
    ============================================ */
 :root {
   /* Colors */
-  --bg-dark: #0a0f1c;
-  --bg-card: #111827;
-  --bg-glass: rgba(10, 15, 28, 0.65);
-  --primary: #00d46a;
-  --primary-hover: #00b359;
-  --secondary: #10b981;
-  --accent: #06b6d4;
-  --warning: #f59e0b;
-  --danger: #ef4444;
+  /* CarbonWallet Deep Dark Theme */
+  --bg-dark: #0A0E17;
+  --bg-card: #151A24;
+  --bg-glass: rgba(10, 14, 23, 0.75);
+  --primary: #00E676;
+  --primary-hover: #00C853;
+  --secondary: #00E5FF;
+  --accent: #8A2BE2;
+  --warning: #FFAB00;
+  --danger: #FF3D00;
+  --border-color: rgba(0, 230, 118, 0.2);
   
   /* Text */
   --text-primary: #f8fafc;
@@ -936,3 +938,184 @@ a:hover { color: var(--primary-hover); }
   .ledger-row.deposit { border-left-color: #00E676; }
   .ledger-row.purchase { border-left-color: #FF3D00; }
 }
+
+
+/* ============================================
+   CARBON WALLET - MOBILE FIRST UI CLASSES
+   ============================================ */
+
+/* Bottom Tab Bar Navigation */
+.bottom-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 12px 0;
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom, 12px);
+}
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.75rem;
+  gap: 4px;
+}
+.tab-item i {
+  font-size: 1.2rem;
+}
+.tab-item.active {
+  color: var(--primary);
+}
+
+/* Typography Overrides */
+.mono {
+  font-family: 'Courier New', Courier, monospace;
+}
+.huge-metric {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #fff;
+}
+.text-cyber { color: var(--primary); }
+.text-cyan { color: var(--secondary); }
+.text-smart { color: var(--accent); }
+.text-alert { color: var(--warning); }
+.text-critical { color: var(--danger); }
+
+/* Swipe-to-Trade Slider */
+.swipe-trade-container {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 50px;
+  height: 50px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 15px;
+}
+.swipe-trade-text {
+  color: var(--text-secondary);
+  font-weight: bold;
+  pointer-events: none;
+}
+.swipe-slider {
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  width: 40px;
+  height: 40px;
+  background: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: grab;
+  touch-action: none;
+}
+.swipe-slider:active { cursor: grabbing; }
+
+/* Multi-Step Wizard */
+.wizard-step {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+.wizard-step.active {
+  display: block;
+}
+.wizard-progress {
+  display: flex;
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  margin-bottom: 20px;
+  border-radius: 2px;
+}
+.wizard-progress-bar {
+  background: var(--primary);
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px var(--primary);
+}
+.sticky-bottom-btn {
+  position: fixed;
+  bottom: 80px; /* Above tab bar */
+  left: 5%;
+  width: 90%;
+  z-index: 100;
+}
+
+/* Split Screen Admin */
+.split-top {
+  height: 50vh;
+  position: fixed;
+  top: 0; left: 0; width: 100%;
+  z-index: 10;
+}
+.split-bottom {
+  height: 50vh;
+  position: fixed;
+  bottom: 0; left: 0; width: 100%;
+  background: var(--bg-dark);
+  z-index: 20;
+  overflow-y: auto;
+  padding-bottom: 120px; /* Space for buttons */
+}
+.admin-verdict-bar {
+  position: fixed;
+  bottom: 0; left: 0; width: 100%;
+  display: flex;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  z-index: 30;
+}
+.btn-verdict {
+  flex: 1;
+  padding: 20px;
+  font-size: 1.2rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+}
+.btn-verdict.reject { background: var(--danger); }
+.btn-verdict.approve { background: var(--primary); }
+
+/* Executive Feed Cards */
+.exec-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.input-stacked {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border-color);
+  color: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  width: 100%;
+  margin-bottom: 10px;
+}
+.btn-smart {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  width: 100%;
+  padding: 15px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
