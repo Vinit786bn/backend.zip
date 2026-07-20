@@ -16,6 +16,14 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+        signingConfigs {
+        debug {
+            storeFile file('debug.p12')
+            storePassword 'android'
+            keyAlias 'AndroidDebugKey'
+            keyPassword 'android'
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
@@ -52,3 +60,4 @@ try {
 } catch(Exception e) {
     logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
 }
+
