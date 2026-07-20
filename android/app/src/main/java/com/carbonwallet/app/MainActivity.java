@@ -1,0 +1,5 @@
+package com.carbonwallet.app;
+
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {}
