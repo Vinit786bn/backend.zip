@@ -1,0 +1,1400 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0f172a">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carbon Wallet - Corporate Terminal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css?v=639201012679378634">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js">
+function animateTicker() {
+  setInterval(() => {
+    document.querySelectorAll('#price-ticker span strong').forEach(el => {
+      const current = parseInt(el.textContent.replace('₹','').replace(',',''));
+      const change = (Math.random() - 0.48) * 20;
+      const newPrice = Math.round(current + change);
+      el.textContent = '₹' + newPrice.toLocaleString('en-IN');
+      const changeEl = el.nextElementSibling;
+      if (changeEl) {
+        const pct = ((change / current) * 100).toFixed(2);
+        changeEl.textContent = (change >= 0 ? '▲ ' : '▼ ') + Math.abs(pct) + '%';
+        changeEl.style.color = change >= 0 ? '#089981' : '#f23645';
+      }
+    });
+  }, 4000);
+}
+document.addEventListener('DOMContentLoaded', animateTicker);
+
+
+async function submitDeposit() {
+  const amount = parseFloat(document.getElementById('depositAmount').value);
+  if (!amount || amount < 1000) { showToast('Minimum deposit is ₹1,000', 'error'); return; }
+  try {
+    const res = await fetch('/api/credits/deposit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') },
+      credentials: 'omit',
+      body: JSON.stringify({ amount })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`✅ ₹${amount.toLocaleString('en-IN')} added to your escrow!`, 'success');
+      document.getElementById('depositModal').style.display = 'none';
+      if(typeof init === 'function') init(); // To refresh balance
+    }
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+
+async function loadNotificationCount() {
+  try {
+    const res = await fetch('/api/notifications', {headers: {'Authorization': 'Bearer ' + localStorage.getItem('cw_token')}});
+    const data = await res.json();
+    const unread = (data.notifications || []).filter(n => !n.read).length;
+    const badge = document.getElementById('notif-badge');
+    if (badge && unread > 0) {
+      badge.textContent = unread;
+      badge.style.display = 'inline-block';
+    }
+  } catch(e) {}
+}
+document.addEventListener('DOMContentLoaded', loadNotificationCount);
+
+</script>
+  <style>
+    /* TradingView Style Overrides */
+    body { background-color: #0b0e14; color: #d1d4dc; font-family: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, Ubuntu, sans-serif; }
+    .navbar { background: #131722; border-bottom: 1px solid #2a2e39; }
+    .nav-brand, .nav-links a { color: #d1d4dc; }
+    .nav-links a.active { color: #2962ff; border-bottom: 2px solid #2962ff; padding-bottom: 22px; margin-bottom: -24px; }
+    .main-content-trading { padding: 80px 20px 20px; }
+    .card-dark { background: #131722; border: 1px solid #2a2e39; border-radius: 4px; padding: 1.5rem; }
+    .chart-container { position: relative; height: 300px; width: 100%; }
+    
+    .data-table-trading { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .data-table-trading th { padding: 12px; text-align: left; color: #787b86; border-bottom: 1px solid #2a2e39; font-weight: 500; }
+    .data-table-trading td { padding: 12px; border-bottom: 1px solid #1e222d; }
+    .data-table-trading tr:hover { background-color: #1e222d; cursor: pointer; }
+    .ticker { color: #2962ff; font-weight: 600; }
+    .vol { color: #d1d4dc; }
+    .price-up { color: #089981; }
+    .price-down { color: #f23645; }
+
+    /* Map Overlay Styles */
+    .heatmap-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.4; }
+    
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    
+    .execution-panel { background: #1e222d; border: 1px solid #2a2e39; border-radius: 8px; padding: 1.5rem; }
+    .btn-buy { background: #2962ff; color: white; border: none; padding: 15px; font-size: 1.1rem; border-radius: 4px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; margin-bottom: 10px; }
+    .btn-buy:hover { background: #1e53e5; }
+    .btn-retire { background: #089981; color: white; border: none; padding: 15px; font-size: 1.1rem; border-radius: 4px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; }
+    .btn-retire:hover { background: #067a67; }
+  
+    @keyframes rowFlash {
+      0% { background-color: rgba(8, 153, 129, 0.3); }
+      100% { background-color: transparent; }
+    }
+    .row-new {
+      animation: rowFlash 1.5s ease-out forwards;
+    }
+    
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+      .mobile-menu-btn { display: none; background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+      .nav-links-container { display: flex; align-items: center; }
+      @media (max-width: 768px) {
+        .mobile-menu-btn { display: block; }
+        .nav-links-container { display: none; flex-direction: column; position: absolute; top: 60px; left: 0; width: 100%; background: #111827; border-bottom: 1px solid #1e293b; z-index: 9999; padding: 10px 0; }
+        .nav-links-container.show { display: flex; }
+        .nb { flex-wrap: wrap; }
+        .nb a { margin: 5px 20px; padding: 10px 0; width: calc(100% - 40px); border-bottom: none; }
+        .nb a.active { border-left: 3px solid #10b981; padding-left: 10px; border-bottom: none; }
+      }
+    </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="container flex-between" style="max-width:1600px;">
+      <div class="nav-brand"><i class="fas fa-chart-line" style="color:#2962ff;"></i> CW Terminal</div>
+      
+<div id="price-ticker" style="display:flex; gap:20px; font-size:0.75rem; overflow:hidden; flex:1; margin:0 20px;">
+  <span style="color:#089981; white-space:nowrap;">CARB/INR <strong>₹1,800</strong> <span style="color:#089981;">▲ 2.3%</span></span>
+  <span style="color:#d1d4dc; white-space:nowrap;">AGRI-CARB <strong>₹1,450</strong> <span style="color:#f23645;">▼ 0.8%</span></span>
+  <span style="color:#d1d4dc; white-space:nowrap;">FOREST-CARB <strong>₹2,100</strong> <span style="color:#089981;">▲ 1.1%</span></span>
+  <span style="color:#d1d4dc; white-space:nowrap;">REDD+ <strong>₹2,400</strong> <span style="color:#089981;">▲ 4.2%</span></span>
+</div>
+
+      <div class="nav-links">
+        <a href="#" class="active" onclick="switchTab('portfolio')">Portfolio</a>
+        <a href="#" onclick="switchTab('exchange')">Live Exchange</a>
+        <a href="#" onclick="switchTab('sell')">Sell Assets (AI Engine)</a>
+        <a href="#" onclick="switchTab('retire')">Retire &amp; ESG</a>
+        <a href="#" onclick="switchTab('history')">History</a>
+      </div>
+      <div class="nav-right">
+        
+        <div class="nav-user" onclick="toggleProfileDropdown(event)">
+          
+          <div style="text-align: right; line-height:1.2;">
+            <div style="font-size:0.85rem;" id="nav-user-name">Company</div>
+            <div style="font-size:0.75rem; color:#089981;" id="nav-user-role">Corporate ESG
+          <div class="profile-dropdown" id="profileDropdown">
+             <button class="dropdown-item" onclick="alert('Settings panel coming soon!')"><i class="fas fa-cog"></i> Settings</button>
+             <button class="dropdown-item" onclick="alert('Escrow Balance:\nFetching live balance...')"><i class="fas fa-wallet"></i> Balance</button>
+             <button class="dropdown-item" onclick="handleLogout()" style="color:#ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</button>
+          </div>
+        </div>
+      </div>
+
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Live Market Ticker -->
+  <div style="background: #0f172a; border-bottom: 1px solid #334155; padding: 8px 0; overflow: hidden; white-space: nowrap; font-size: 0.8rem; font-family: monospace;">
+     <div style="display: inline-block; padding-left: 100%; animation: ticker 25s linear infinite;">
+        <span style="color:#94a3b8; margin-right:40px;">IND-AGRO-26 <span style="color:#10b981;">▲ ₹3,625 (+2.3%)</span></span>
+        <span style="color:#94a3b8; margin-right:40px;">IND-SOIL-25 <span style="color:#ef4444;">▼ ₹3,000 (-0.8%)</span></span>
+        <span style="color:#94a3b8; margin-right:40px;">GLB-BLUE-26 <span style="color:#10b981;">▲ ₹2,100 (+5.1%)</span></span>
+        <span style="color:#94a3b8; margin-right:40px;">IND-GRASS-24 <span style="color:#94a3b8;">▬ ₹850 (0.0%)</span></span>
+        <span style="color:#94a3b8; margin-right:40px;">ASIA-AGRO-26 <span style="color:#10b981;">▲ ₹1,520 (+1.2%)</span></span>
+     </div>
+  </div>
+  <style>
+     @keyframes ticker {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-100%); }
+     }
+  </style>
+
+
+  <div class="main-content-trading container" style="max-width:1600px;">
+    
+    <!-- ==================== PORTFOLIO DASHBOARD ==================== -->
+    <div id="tab-portfolio" class="tab-pane active">
+      <div class="card-dark" style="margin-bottom:24px; border-top: 4px solid #8b5cf6;">
+        <h3 style="font-size:1.1rem; color:#f8fafc; margin-bottom:15px;"><i class="fas fa-calculator" style="color:#8b5cf6;"></i> Scope 1, 2, &amp; 3 Emissions Diagnostic</h3>
+        <p style="font-size:0.85rem; color:#94a3b8; margin-bottom:15px;">Input your raw consumption metrics. The engine will instantly calculate your total metric tonnage footprint and map it to required offsets.</p>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:15px;">
+           <div>
+             <label style="display:block; font-size:0.8rem; color:#787b86; margin-bottom:5px;">Scope 1: Direct Logistics (Liters Fuel)</label>
+             <input type="number" id="scope1-input" class="form-control" style="background:#131722; color:#fff; border:1px solid #2a2e39; width:100%; padding:8px;" value="10000" oninput="calculateScope()">
+           </div>
+           <div>
+             <label style="display:block; font-size:0.8rem; color:#787b86; margin-bottom:5px;">Scope 2: Electricity (kWh)</label>
+             <input type="number" id="scope2-input" class="form-control" style="background:#131722; color:#fff; border:1px solid #2a2e39; width:100%; padding:8px;" value="50000" oninput="calculateScope()">
+           </div>
+           <div>
+             <label style="display:block; font-size:0.8rem; color:#787b86; margin-bottom:5px;">Scope 3: Supply Chain (Est. Tons)</label>
+             <input type="number" id="scope3-input" class="form-control" style="background:#131722; color:#fff; border:1px solid #2a2e39; width:100%; padding:8px;" value="200" oninput="calculateScope()">
+           </div>
+        </div>
+        
+        <div style="background:#0f172a; padding:15px; border-radius:4px; border:1px solid #1e293b; display:flex; justify-content:space-between; align-items:center;">
+           <div>
+             <div style="font-size:0.8rem; color:#94a3b8;">Total Calculated Footprint</div>
+             <div style="font-size:1.5rem; font-weight:bold; color:#fff;" id="scope-total-out">0 Tons CO2e</div>
+           </div>
+           <button class="btn" style="background:#8b5cf6; color:white; border:none; padding:10px 20px; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="switchTab('exchange')">Find Exact Match on Exchange <i class="fas fa-arrow-right"></i></button>
+        </div>
+      </div>
+    
+
+  <div style="background:#131722; border:1px solid #2a2e39; padding:20px; border-radius:8px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <div style="color:#787b86; font-size:0.85rem; margin-bottom:5px;">Corporate Escrow Balance (Cashfree)</div>
+      <div style="color:#f8fafc; font-size:1.8rem; font-weight:bold;">₹12,50,000</div>
+    </div>
+    <div style="display:flex; gap:15px;">
+      <button onclick="document.getElementById('depositModal').style.display='flex';" style="background:#38bdf8; color:white; border:none; padding:10px 20px; border-radius:4px; font-weight:bold; cursor:pointer;"><i class="fas fa-plus-circle"></i> Deposit Funds</button>
+      <button onclick="alert('Withdrawal Requested.\n\nSecurity Hold: Processing to your registered corporate bank account will take exactly 24 hours to clear anti-money laundering (AML) checks.\n\nTime remaining: 23:59:59')" style="background:transparent; color:#ef4444; border:1px solid #ef4444; padding:10px 20px; border-radius:4px; font-weight:bold; cursor:pointer;"><i class="fas fa-minus-circle"></i> Withdraw</button>
+    </div>
+  </div>
+
+      <div class="grid-3" style="margin-bottom: 20px;">
+        <div class="card-dark">
+          <div style="color:#787b86; font-size:0.85rem; margin-bottom:5px;">Total Tons Retired</div>
+          <div style="font-size:2rem; font-weight:bold; color:#089981;" id="port-retired">0</div>
+        </div>
+        <div class="card-dark">
+          <div style="color:#787b86; font-size:0.85rem; margin-bottom:5px;">Active Holdings (Tradable)</div>
+          <div style="font-size:2rem; font-weight:bold; color:#2962ff;" id="port-held">0</div>
+        </div>
+        <div class="card-dark">
+          <div style="color:#787b86; font-size:0.85rem; margin-bottom:5px;">Net Zero 2030 Progress</div>
+          <div style="font-size:2rem; font-weight:bold; color:#d1d4dc;" id="port-progress">0%</div>
+          <div style="width:100%; background:#2a2e39; height:4px; margin-top:10px; border-radius:2px;">
+            <div id="progress-bar" style="width:0%; background:#089981; height:100%; border-radius:2px;"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="grid-2">
+        <div class="card-dark">
+          <h3 style="font-size:1rem; margin-bottom:15px; color:#d1d4dc;">Emissions Trajectory vs Offsets</h3>
+          <div class="chart-container"><canvas id="emissionsChart"></canvas></div>
+        </div>
+        <div class="card-dark">
+          <h3 style="font-size:1rem; margin-bottom:15px; color:#d1d4dc;">Asset Allocation (By Project Type)</h3>
+          <div class="chart-container" style="display:flex; justify-content:center;"><canvas id="allocationChart" style="max-width:300px;"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card-dark" style="margin-top: 20px;">
+        <h3 style="font-size:1rem; margin-bottom:15px; color:#d1d4dc;">My Active Holdings (Available to Sell)</h3>
+        <div class="table-responsive"><table class="data-table-trading" id="holdingsTable">
+          <thead><tr>
+          <th>Ticker</th>
+          <th>Project</th>
+          <th>Vintage</th>
+          <th>Volume Held</th>
+          <th>Purchased Price</th>
+          <th>Est. Resale Value</th>
+          <th>Action</th>
+        </tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+
+      <div class="card-dark" style="margin-top: 20px;">
+        <h3 style="font-size:1rem; margin-bottom:15px; color:#d1d4dc;">Transaction History &amp; Bills</h3>
+        <div class="table-responsive"><table class="data-table-trading" id="billsTable">
+          <thead><tr><th>Date</th><th>Project</th><th>Seller</th><th>Credits (Tons)</th><th>Total Cost</th><th>Action</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+
+    </div>
+
+    
+    <!-- ==================== SELL CREDITS ENGINE ==================== -->
+    <div id="tab-sell" class="tab-pane">
+       <div class="grid-3" style="grid-template-columns: 1fr 1fr;">
+          <div class="card-dark" style="padding: 2rem;">
+             <h2 style="margin-bottom: 20px; color:#38bdf8;"><i class="fas fa-robot"></i> AI Pricing Engine</h2>
+             <p style="color:#94a3b8; font-size:0.9rem; margin-bottom: 20px;">Upload your active credit certificates or land deeds. Our AI will analyze the metadata, run a 5-year Sentinel-2 biomass regression, and suggest the optimal spot price.</p>
+             
+             <div style="border: 2px dashed #334155; padding:40px; text-align:center; border-radius:8px; margin-bottom: 20px; background: #0f172a; cursor:pointer;" onclick="document.getElementById('sellFile').click()">
+                <i class="fas fa-cloud-upload-alt" style="font-size:3rem; color:#334155; margin-bottom:15px;"></i>
+                <div style="font-weight:bold; color:#f8fafc;">Drag &amp; Drop Certificate or Deed</div>
+                <div style="font-size:0.85rem; color:#94a3b8;">PDF, JPG, or Blockchain Hash</div>
+                <input type="file" id="sellFile" style="display:none;" onchange="analyzeAsset()">
+             </div>
+             
+             <div id="ai-loading" style="display:none; text-align:center; padding: 20px; color:#38bdf8;">
+                <i class="fas fa-satellite fa-spin" style="font-size:2rem; margin-bottom:10px;"></i>
+                <div>AI analyzing 5-year satellite weather patterns &amp; liquidity...</div>
+             </div>
+             
+             <div id="ai-result" style="display:none; background: #0f172a; border:1px solid #334155; padding: 20px; border-radius: 8px;">
+                <div class="flex-between" style="border-bottom: 1px solid #334155; padding-bottom: 15px; margin-bottom:15px;">
+                   <div>
+                     <div style="color:#94a3b8; font-size:0.85rem;">Detected Asset</div>
+                     <div style="color:#f8fafc; font-weight:bold; font-size:1.1rem;" id="ai-asset-name">Portfolio Block A</div>
+                   </div>
+                   <div style="text-align:right;">
+                     <div style="color:#94a3b8; font-size:0.85rem;">AI Suggested Price</div>
+                     <div style="color:#10b981; font-weight:bold; font-size:1.5rem;" id="ai-price">₹1500</div>
+                   </div>
+                </div>
+                
+                <div style="color:#94a3b8; font-size:0.85rem; margin-bottom: 20px;" id="ai-reason">
+                   Reasoning: High liquidity in Karnataka region due to corporate ESG mandates. 5-year biomass density shows +12% growth.
+                </div>
+                
+                <div class="flex-between" style="gap:10px;">
+                   <input type="number" id="manualPrice" class="form-input" style="background:#1e293b; border-color:#334155; color:white; width:50%;" placeholder="Override Price">
+                   <button class="btn-buy" style="margin:0; width:50%; padding:10px;" onclick="listAsset()"><i class="fas fa-tags"></i> List on Market</button>
+                </div>
+             </div>
+          </div>
+          
+          <div class="card-dark">
+             <h3 style="margin-bottom: 20px; color:#f8fafc;">My Active Listings</h3>
+             <div class="table-responsive"><table class="data-table-trading" id="listingsTable">
+                <thead><tr><th>Ticker</th><th>Vol</th><th>Price</th><th>Action</th></tr></thead>
+                <tbody></tbody>
+             </table></div>
+          </div>
+       </div>
+    </div>
+
+    <!-- ==================== RETIRE & ESG ==================== -->
+    <div id="tab-retire" class="tab-pane">
+       <div class="card-dark">
+          <h2 style="color:#089981; margin-bottom:15px;"><i class="fas fa-leaf"></i> ESG Compliance &amp; Retirement</h2>
+          <p style="color:#d1d4dc; margin-bottom:20px;">Retire credits from your portfolio to claim environmental benefit and offset your corporate emissions.</p>
+          <div class="table-responsive"><table class="data-table-trading" id="retireTable">
+            <thead><tr><th>Ticker</th><th>Project</th><th>Available Tons</th><th>Action</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+       </div>
+    </div>
+
+    <!-- ==================== HISTORY ==================== -->
+    <div id="tab-history" class="tab-pane">
+       <div class="card-dark">
+          <h2 style="color:#2962ff; margin-bottom:15px;"><i class="fas fa-history"></i> Full Transaction Archive</h2>
+          <div class="table-responsive"><table class="data-table-trading" id="historyTable">
+            <thead><tr><th>Date</th><th>Type</th><th>Project</th><th>Tons</th><th>Total Cost</th><th>Status</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+       </div>
+    </div>
+
+    <!-- ==================== LIVE EXCHANGE ==================== -->
+    <div id="tab-exchange" class="tab-pane">
+
+      <div style="display:flex; gap:15px; margin-bottom:20px; border-bottom:1px solid #2a2e39;">
+        <button class="exchange-filter active" style="background:none; border:none; color:#2962ff; font-weight:bold; padding:10px; border-bottom:2px solid #2962ff; cursor:pointer;" onclick="setExFilter(this, 'ccts')">Carbon (CCTS)</button>
+        <button class="exchange-filter" style="background:none; border:none; color:#787b86; font-weight:bold; padding:10px; border-bottom:2px solid transparent; cursor:pointer;" onclick="setExFilter(this, 'gcp-tree')">Green (GCP - Afforestation)</button>
+        <button class="exchange-filter" style="background:none; border:none; color:#787b86; font-weight:bold; padding:10px; border-bottom:2px solid transparent; cursor:pointer;" onclick="setExFilter(this, 'gcp-water')">Green (GCP - Water)</button>
+        <button class="exchange-filter" style="background:none; border:none; color:#787b86; font-weight:bold; padding:10px; border-bottom:2px solid transparent; cursor:pointer;" onclick="setExFilter(this, 'bio')">Biodiversity (Future)</button>
+      </div>
+      <script>
+        function setExFilter(btn, type) {
+          document.querySelectorAll('.exchange-filter').forEach(b => {
+             b.style.color = '#787b86';
+             b.style.borderBottomColor = 'transparent';
+          });
+          btn.style.color = '#2962ff';
+          btn.style.borderBottomColor = '#2962ff';
+          // Mock data filtering
+          showToast('Switched exchange view to: ' + type.toUpperCase(), 'success');
+          loadExchange(); // reloads data, you can add filters in backend if needed
+        }
+      </script>
+
+      <div class="grid-3" style="grid-template-columns: 2fr 1fr;">
+        <!-- Order Book -->
+        <div class="card-dark">
+          <div class="flex-between" style="margin-bottom:15px;">
+            <h3 style="font-size:1rem; color:#d1d4dc;">Live Order Book</h3>
+            <div style="display:flex; gap:10px;">
+              <select id="ex-region" class="form-select" style="background:#1e222d; border-color:#2a2e39; padding:5px 10px; font-size:0.85rem;" onchange="loadExchange()">
+                <option value="">All Regions of India</option>
+                <option value="Andhra Pradesh">Andhra Pradesh</option>
+                <option value="Assam">Assam</option>
+                <option value="Gujarat">Gujarat</option>
+                <option value="Karnataka">Karnataka</option>
+                <option value="Kerala">Kerala</option>
+                <option value="Maharashtra">Maharashtra</option>
+                <option value="Punjab">Punjab</option>
+                <option value="Tamil Nadu">Tamil Nadu</option>
+                <option value="Uttar Pradesh">Uttar Pradesh</option>
+              </select>
+            </div>
+          </div>
+          <div style="overflow-y:auto; max-height:600px;">
+            <div class="table-responsive"><table class="data-table-trading" id="exchangeTable">
+              <thead><tr>
+          <th>Asset Ticker/ID</th>
+          <th>Methodology Type</th>
+          <th>Vintage Year</th>
+          <th>Volume Available</th>
+          <th>Price Per Ton</th>
+          <th>Action</th>
+        </tr></thead>
+              <tbody></tbody>
+            </table></div>
+          </div>
+        </div>
+        
+        <!-- Market Trends (Simulated) -->
+        <div class="card-dark">
+           <h3 style="font-size:1rem; margin-bottom:15px; color:#d1d4dc;">Nature-based Index (₹)</h3>
+           <div class="chart-container" style="height:250px;"><canvas id="trendChart"></canvas></div>
+           <div style="margin-top:20px; font-size:0.85rem; color:#787b86;">
+              <p><i class="fas fa-info-circle"></i> Index tracking average spot price for verified regenerative agriculture and forestry credits in India over 6 months.</p>
+           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== PROJECT DETAIL / TRUST SCREEN ==================== -->
+    <div id="tab-project" class="tab-pane">
+      <button onclick="switchTab('exchange')" style="background:transparent; border:none; color:#2962ff; cursor:pointer; margin-bottom:15px; font-size:0.9rem;"><i class="fas fa-arrow-left"></i> Back to Exchange</button>
+      
+      <div class="grid-3" style="grid-template-columns: 2fr 1fr;" id="project-detail-container">
+        <!-- Details & Map -->
+        <div class="card-dark">
+          <div class="flex-between" style="margin-bottom:20px;">
+            <div>
+              <h2 id="pd-ticker" style="color:#2962ff; margin-bottom:5px; font-size:1.5rem;">---</h2>
+              <div id="pd-name" style="color:#d1d4dc; font-size:1.1rem; font-weight:bold;">---</div>
+              <div style="font-size:0.85rem; margin-top:5px; color:#d1d4dc;">
+                <i class="fas fa-user-circle"></i> <span id="pd-seller-name" style="font-weight:600;">---</span> 
+                <span id="pd-seller-role" style="background:rgba(255,255,255,0.1); padding:2px 5px; border-radius:4px; font-size:0.7rem; margin-left:5px;">---</span>
+              </div>
+              <div id="pd-type" style="color:#787b86; font-size:0.85rem; margin-top:5px;"><i class="fas fa-map-marker-alt"></i> ---</div>
+            </div>
+              <div id="pd-type" style="color:#787b86; font-size:0.85rem; margin-top:5px;">---</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="color:#787b86; font-size:0.85rem;">Price per Ton</div>
+              <div id="pd-price" style="color:#089981; font-size:1.5rem; font-weight:bold;">₹---</div>
+            </div>
+          </div>
+          
+          <div style="position:relative; height:400px; border-radius:4px; overflow:hidden; border:1px solid #2a2e39;">
+             <div id="pd-map" style="width:100%; height:100%; z-index:1;"></div>
+             <!-- Simulated Biomass Heatmap Overlay -->
+             <div class="heatmap-overlay" style="background: radial-gradient(circle at 50% 50%, rgba(8,153,129,0.6) 0%, rgba(8,153,129,0) 60%); z-index:2;"></div>
+             <div style="position:absolute; bottom:10px; left:10px; background:rgba(19,23,34,0.9); padding:5px 10px; border-radius:4px; z-index:3; font-size:0.75rem; border:1px solid #2a2e39;">
+                <i class="fas fa-satellite" style="color:#2962ff;"></i> dMRV Biomass Density Confirmed
+             </div>
+          </div>
+        </div>
+        
+        <!-- Verification & Execution Panel -->
+        <div class="flex-col" style="gap:20px;">
+          <!-- Ledger -->
+          <div class="card-dark">
+            <h3 style="font-size:1rem; margin-bottom:15px; color:#d1d4dc;">Verification Ledger</h3>
+            <div style="display:flex; flex-direction:column; gap:12px; font-size:0.85rem;">
+               <div class="flex-between"><span><i class="fas fa-check-circle" style="color:#089981;"></i> AI 7/12 Parsing</span><span style="color:#787b86;">Hash: 0x9f2...</span></div>
+               <div class="flex-between"><span><i class="fas fa-check-circle" style="color:#089981;"></i> Satellite Biomass</span><span style="color:#787b86;">Hash: 0xa4c...</span></div>
+               <div class="flex-between"><span><i class="fas fa-check-circle" style="color:#089981;"></i> Vintage Year</span><span id="pd-vintage" style="color:#d1d4dc;">---</span></div>
+            </div>
+            
+            <div style="margin-top:20px; background:rgba(41,98,255,0.1); border:1px solid rgba(41,98,255,0.3); padding:10px; border-radius:4px;">
+               <div style="color:#2962ff; font-weight:bold; font-size:0.85rem; margin-bottom:5px;"><i class="fas fa-shield-alt"></i> Buffer Pool Active</div>
+               <div style="color:#d1d4dc; font-size:0.75rem;">20% of this project's credits are locked in an insurance vault to guarantee your purchase against natural disasters (e.g. wildfires).</div>
+            </div>
+          </div>
+          
+          <!-- Execution -->
+          <div class="execution-panel">
+            <h3 style="font-size:1rem; margin-bottom:15px; color:#d1d4dc;">Execute Order</h3>
+            <div style="background:#0f172a; padding:10px; border-radius:4px; margin-bottom:15px; border:1px solid #334155;">
+               <div style="display:flex; gap:10px; margin-bottom:10px;">
+                  <button type="button" id="btnMarket" onclick="setOrderType('market')" style="flex:1; background:#38bdf8; color:white; border:none; padding:5px; border-radius:4px; cursor:pointer;">Market</button>
+                  <button type="button" id="btnLimit" onclick="setOrderType('limit')" style="flex:1; background:transparent; color:#94a3b8; border:1px solid #334155; padding:5px; border-radius:4px; cursor:pointer;">Limit</button>
+               </div>
+               <div id="limitPriceContainer" style="display:none; margin-bottom:10px;">
+                  <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:5px;">Target Price (₹)</div>
+                  <input type="number" id="limitPrice" style="width:100%; background:#1e293b; border:1px solid #334155; color:white; padding:8px; border-radius:4px;" value="1000">
+               </div>
+            </div>
+
+            <div style="margin-bottom:15px;">
+              <div class="flex-between" style="font-size:0.85rem; color:#787b86; margin-bottom:5px;"><span>Available Volume</span><span id="pd-vol" class="vol">--- T</span></div>
+              <div style="display:flex; align-items:center; background:#131722; border:1px solid #2a2e39; border-radius:4px; padding:5px 10px;">
+                 <input type="number" id="tradeQty" style="background:transparent; border:none; color:white; width:100%; font-size:1.2rem; outline:none;" value="100" min="1" oninput="updateTradeTotal()">
+                 <span style="color:#787b86;">Tons</span>
+              </div>
+            </div>
+            
+            <div class="flex-between" style="font-size:1.1rem; margin-bottom:20px; border-top:1px dashed #2a2e39; padding-top:15px;">
+              <span style="color:#787b86;">Total Cost</span>
+              <strong style="color:#d1d4dc;" id="tradeTotal">₹0</strong>
+            </div>
+            
+            <button class="btn-retire" onclick="executeTrade('retire')" id="btnRetire" style="background: rgb(239, 68, 68); color: rgb(255, 255, 255); font-size: 1.1rem; padding: 20px; height: auto; border: 2px solid rgb(127, 29, 29);">
+      <i class="fas fa-fire"></i> EXECUTE IMMEDIATE TRADE &amp; RETIRE
+      <div style="font-size:0.75rem; font-weight:normal; margin-top:3px;">Atomic Settlement &amp; Burn Protocol</div>
+    </button>
+            <button class="btn-buy" onclick="executeTrade('hold')" id="btnHold">
+              <i class="fas fa-briefcase"></i> BUY &amp; HOLD
+              <div style="font-size:0.75rem; font-weight:normal; margin-top:3px;">For Portfolio &amp; Resale</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js?v=639201015821399100"></script>
+  <script>
+    let activeCredits = [];
+    let selectedCredit = null;
+    let pdMap = null;
+    let pdMarker = null;
+
+    async function init() {
+      const user = await checkAuth('industry');
+      if (!user) return;
+      
+      initCharts();
+      if (typeof loadPortfolio === 'function') loadPortfolio(); if (typeof loadMyCredits === 'function') loadMyCredits();
+      loadExchange();
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
+      if(tabId !== 'project') {
+         document.querySelector(`.nav-links a[onclick="switchTab('${tabId}')"]`).classList.add('active');
+      }
+      
+      if(tabId === 'project' && selectedCredit) {
+        setTimeout(() => {
+          if(!pdMap) {
+            pdMap = L.map('pd-map', { zoomControl: false }).setView([selectedCredit.lat||17, selectedCredit.lng||75], 14);
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+              attribution: 'Tiles &copy; Esri'
+            }).addTo(pdMap);
+          }
+          if(pdMarker) pdMap.removeLayer(pdMarker);
+          pdMarker = L.circle([selectedCredit.lat||17, selectedCredit.lng||75], {
+              color: '#089981',
+              fillColor: '#089981',
+              fillOpacity: 0.1,
+              radius: (selectedCredit.area_hectares||100) * 50
+          }).addTo(pdMap);
+          pdMap.setView([selectedCredit.lat||17, selectedCredit.lng||75], 13);
+        }, 300);
+      }
+    }
+
+    // ========== CHARTS ==========
+    function initCharts() {
+      // Emissions vs Offsets
+      const ctxEm = document.getElementById('emissionsChart').getContext('2d');
+      new Chart(ctxEm, {
+        type: 'line',
+        data: {
+          labels: ['2020','2021','2022','2023','2024','2025'],
+          datasets: [
+            { label: 'Emissions (Tons)', data: [15000, 14500, 13000, 12500, 11000, 9500], borderColor: '#f23645', backgroundColor: 'transparent', tension: 0.4 },
+            { label: 'Offsets Retired', data: [0, 500, 2000, 3500, 5000, 7500], borderColor: '#089981', backgroundColor: 'rgba(8,153,129,0.1)', fill: true, tension: 0.4 }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#2a2e39' }, ticks:{ color:'#787b86' } }, x: { grid: { display:false }, ticks:{ color:'#787b86' } } }, plugins: { legend: { labels: { color: '#d1d4dc' } } } }
+      });
+
+      // Asset Allocation
+      const ctxAl = document.getElementById('allocationChart').getContext('2d');
+      new Chart(ctxAl, {
+        type: 'doughnut',
+        data: {
+          labels: ['Agriculture', 'Forestry', 'Grassland'],
+          datasets: [{ data: [60, 30, 10], backgroundColor: ['#2962ff', '#089981', '#f59e0b'], borderWidth: 0 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#d1d4dc' } } } }
+      });
+
+      // Market Trends Candlestick (Simulated as line for simplicity in vanilla Chart.js)
+      const ctxTr = document.getElementById('trendChart').getContext('2d');
+      new Chart(ctxTr, {
+        type: 'line',
+        data: {
+          labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+          datasets: [{ label: 'Avg Price (₹)', data: [1200, 1250, 1180, 1350, 1420, 1500], borderColor: '#2962ff', backgroundColor: 'rgba(41,98,255,0.1)', fill: true, tension: 0.1 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#2a2e39' }, ticks:{ color:'#787b86' } }, x: { grid: { display:false }, ticks:{ color:'#787b86' } } }, plugins: { legend: { display: false } } }
+      });
+    }
+
+    // ========== DATA FETCHING ==========
+    
+// Append the new logic inside the script tag
+window.jsPDF = window.jspdf.jsPDF;
+
+async function loadPortfolio() {
+      try {
+        const res = await API.myCredits();
+        const holdings = res.owned.filter(c => c.status === 'held' && c.available_tons > 0);
+        const retiredCerts = res.certificates.filter(c => c.status === 'active' && c.project_name === 'Retired Offset');
+        
+        const totalRetired = retiredCerts.reduce((sum, c) => sum + c.tons, 0);
+        const totalHeld = holdings.reduce((sum, c) => sum + c.available_tons, 0);
+        
+        document.getElementById('port-retired').textContent = totalRetired === 0 ? 'Nil' : totalRetired;
+        document.getElementById('port-held').textContent = totalHeld === 0 ? 'Nil' : totalHeld;
+        
+        const target = 15000;
+        const progress = Math.min(100, Math.round((totalRetired / target) * 100));
+        document.getElementById('port-progress').textContent = progress + '%';
+        document.getElementById('progress-bar').style.width = progress + '%';
+
+        const tbody = document.querySelector('#holdingsTable tbody');
+        tbody.innerHTML = holdings.length === 0 ? '<tr><td colspan="7" style="text-align:center; color:#787b86;">Nil (0 Tons Held)</td></tr>' : holdings.map(h => {
+          // Find purchase price from res.purchased
+          const purchaseRecord = res.purchased.find(p => p.credit_id === h.id);
+          const purchasedPrice = purchaseRecord ? purchaseRecord.price_per_ton : (h.price_per_ton * 0.9); // fallback to 10% less if not found
+          
+          return `
+          <tr>
+            <td class="ticker">${h.ticker || 'N/A'}</td>
+            <td>${h.land_name || 'Portfolio'}</td>
+            <td>${h.vintage_year || new Date().getFullYear()}</td>
+            <td class="vol">${h.available_tons} Tons</td>
+            <td style="color:#94a3b8;">₹${purchasedPrice.toFixed(2)} / Ton</td>
+            <td style="color:#38bdf8; font-weight:bold;">₹${h.price_per_ton.toFixed(2)} / Ton</td>
+            <td>
+              <button class="btn" style="background:rgba(8,153,129,0.1); color:#089981; padding:4px 8px; border:none; border-radius:4px; cursor:pointer; margin-right:5px;" onclick="alert('Downloading Certificate for '+ '${h.ticker}' +'...')"><i class="fas fa-download"></i> Cert</button>
+              <button style="background:transparent; border:1px solid #f23645; color:#f23645; padding:4px 12px; border-radius:4px; cursor:pointer;" onclick="window.sellHolding('${h.id}')">Sell</button>
+            </td>
+          </tr>
+          `;
+        }).join('');
+
+        // Load Transactions & Bills (History Tab)
+        const billsBody = document.querySelector('#historyTable tbody');
+        billsBody.innerHTML = res.purchased.length === 0 ? '<tr><td colspan="6" style="text-align:center; color:#787b86;">Nil (No transactions yet)</td></tr>' : res.purchased.map(t => `
+          <tr>
+            <td>${new Date(t.created_at).toLocaleDateString()}</td>
+            <td>Purchase</td>
+            <td>${t.land_name || 'Portfolio'}</td>
+            <td>${t.tons} T</td>
+            <td style="color:#089981;">₹${t.total_price.toFixed(2)}</td>
+            <td>${t.status}</td>
+          </tr>
+        `).join('');
+        
+        // Also load Retire Tab data
+        const retireBody = document.querySelector('#retireTable tbody');
+        retireBody.innerHTML = holdings.length === 0 ? '<tr><td colspan="4" style="text-align:center; color:#787b86;">No credits available to retire</td></tr>' : holdings.map(h => `
+          <tr>
+            <td class="ticker">${h.ticker || 'N/A'}</td>
+            <td>${h.land_name || 'Portfolio'}</td>
+            <td class="vol">${h.available_tons}</td>
+            <td><button style="background:#089981; border:none; color:white; padding:6px 12px; border-radius:4px; cursor:pointer;" onclick="retireCredit('${h.id}')"><i class="fas fa-fire"></i> Retire (Burn)</button></td>
+          </tr>
+        `).join('');
+
+      } catch (e) { console.error('Portfolio load error', e); }
+    }
+
+function downloadBill(tx) {
+  try {
+      const doc = new jsPDF();
+      
+      // Header
+      doc.setFontSize(22);
+      doc.setTextColor(41, 98, 255); // #2962ff
+      doc.text("Carbon Wallet", 14, 20);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text("Official Carbon Credit Purchase Receipt", 14, 28);
+      
+      // Transaction Info
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Transaction ID: ${tx.id}`, 14, 45);
+      doc.text(`Date: ${new Date(tx.created_at).toLocaleString()}`, 14, 52);
+      doc.text(`Certificate No: ${tx.certificate_id || 'Pending'}`, 14, 59);
+      
+      // Table Data
+      doc.autoTable({
+        startY: 70,
+        head: [['Description', 'Details']],
+        body: [
+          ['Project Name', tx.land_name || 'Mixed Portfolio'],
+          ['Seller Name', tx.seller_name || 'Verified Seller'],
+          ['Carbon Credits Volume', `${tx.tons} Tons (tCO2e)`],
+          ['Price Per Ton', `INR ${tx.price_per_ton.toFixed(2)}`],
+          ['Total Amount Paid', `INR ${tx.total_price.toFixed(2)}`],
+          ['Status', tx.status.toUpperCase()]
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [41, 98, 255] }
+      });
+      
+      // Footer
+      const finalY = doc.lastAutoTable.finalY || 130;
+      doc.setFontSize(10);
+      doc.setTextColor(150, 150, 150);
+      doc.text("This is a computer generated receipt. The credits have been securely settled on the Carbon Wallet registry.", 14, finalY + 20);
+      doc.text("Thank you for contributing to a sustainable future.", 14, finalY + 26);
+      
+      doc.save(`CarbonWallet_Bill_${tx.id.substring(0,8)}.pdf`);
+  } catch(e) {
+      console.error(e);
+      alert('Failed to generate PDF. Make sure you are connected to the internet to load jsPDF.');
+  }
+}
+
+
+    async function loadExchange() {
+      const region = document.getElementById('ex-region').value;
+      try {
+        const res = await API.marketplace({ region: region !== 'All Regions' ? region : null });
+        activeCredits = res.credits;
+        const tbody = document.querySelector('#exchangeTable tbody');
+        
+        if(res.credits.length === 0) {
+           tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:#787b86;">No active orders found</td></tr>`;
+           return;
+        }
+
+        tbody.innerHTML = res.credits.map(c => `
+          <tr class="row-new" onclick="openProject('${c.id}')">
+            <td class="ticker">${c.ticker || 'GEN-CRBN'}</td>
+            <td><div>${c.project_type || 'Agroforestry'}</div><div style="font-size:0.75rem; color:#787b86;">${c.seller_name.split(' ')[0]}</div></td>
+            <td>2025</td>
+            <td class="vol">${c.available_tons}</td>
+            <td class="price-up">₹${c.price_per_ton.toFixed(2)}</td>
+            <td><button class="btn" style="background:#2962ff; color:white; padding:4px 12px; font-size:0.8rem; border:none; border-radius:4px; cursor:pointer;" onclick="event.stopPropagation(); openProject('${c.id}')">Trade</button></td>
+          </tr>
+        `).join('');
+      } catch (e) { console.error('Exchange load error', e); }
+    }
+
+    // ========== BLOCKCHAIN ==========
+
+    async function openBlockchainModal() {
+       if(!selectedCredit) return;
+       openModal('blockchainModal');
+       
+       const timeline = document.getElementById('blockchain-timeline');
+       timeline.innerHTML = '<div style="text-align:center; color:#38bdf8;"><i class="fas fa-spinner fa-spin"></i> Fetching blockchain data...</div>';
+       
+       try {
+          const res = await fetch('/api/blockchain/verify/' + selectedCredit.id, { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') } });
+          const data = await res.json();
+          
+          if(data.ledger && data.ledger.length > 0) {
+             // We'll update the main trust screen hash with the latest block hash
+             if (document.getElementById('pd-hash')) document.getElementById('pd-hash').textContent = data.ledger[data.ledger.length - 1].hash;
+             
+             timeline.innerHTML = data.ledger.map((block, i) => `
+                <div style="border-left: 2px solid #334155; margin-left: 10px; padding-left: 20px; padding-bottom: 20px; position: relative;">
+                   <div style="position: absolute; left: -6px; top: 0; width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></div>
+                   
+                   <div style="font-size:0.75rem; color:#94a3b8; margin-bottom:5px;">Block #${block.index} • ${new Date(block.timestamp).toLocaleString()}</div>
+                   <div style="font-weight:bold; color:#f8fafc; margin-bottom:5px; text-transform:uppercase;">ACTION: ${block.transaction.action}</div>
+                   
+                   <div style="background:#1e293b; border:1px solid #334155; padding:10px; border-radius:4px; font-family:monospace; font-size:0.7rem; color:#94a3b8; word-break: break-all;">
+                      <div><span style="color:#38bdf8;">PREV HASH:</span> ${block.previous_hash}</div>
+                      <div style="margin-top:5px;"><span style="color:#10b981;">BLOCK HASH:</span> ${block.hash}</div>
+                   </div>
+                </div>
+             `).reverse().join(''); // Reverse to show latest first
+          } else {
+             timeline.innerHTML = '<div style="color:#f23645;">Error: No provenance found for this asset.</div>';
+          }
+       } catch(e) {
+          timeline.innerHTML = '<div style="color:#f23645;">Error fetching ledger.</div>';
+       }
+    }
+    
+    // ========== EXECUTION ==========
+    function openProject(id) {
+      selectedCredit = activeCredits.find(c => c.id === id);
+      if(!selectedCredit) return;
+      
+      document.getElementById('pd-ticker').textContent = selectedCredit.ticker || 'GEN-CRBN';
+      document.getElementById('pd-seller-name').textContent = selectedCredit.seller_name || 'Unknown Seller';
+      document.getElementById('pd-seller-role').textContent = selectedCredit.is_resale ? 'Corporate Reseller' : 'Landowner / FPO';
+      document.getElementById('pd-type').innerHTML = `<i class="fas fa-map-marker-alt"></i> ${selectedCredit.project_type} | ${selectedCredit.location_state || ''}, ${selectedCredit.location_district || ''}`;
+      document.getElementById('pd-name').textContent = selectedCredit.land_name || 'Portfolio';
+      document.getElementById('pd-price').textContent = `₹${(selectedCredit.price_per_ton).toFixed(2)}`;
+      document.getElementById('pd-vintage').textContent = selectedCredit.vintage_year;
+      document.getElementById('pd-vol').textContent = (selectedCredit.available_tons).toFixed(1) + ' Tons';
+      
+      document.getElementById('tradeQty').value = Math.min(100, selectedCredit.available_tons);
+      document.getElementById('tradeQty').max = selectedCredit.available_tons;
+      
+      updateTradeTotal();
+      switchTab('project');
+      
+      // Load live hash
+      let pdHashEl = document.getElementById('pd-hash');
+      if (!pdHashEl) { pdHashEl = { textContent: '' }; }
+      if (document.getElementById('pd-hash')) document.getElementById('pd-hash').textContent = "Fetching Live Block Hash...";
+      fetch('/api/blockchain/verify/' + id, { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') } })
+        .then(res => res.json())
+        .then(data => {
+            if(data.ledger && data.ledger.length > 0) {
+               document.getElementById('pd-hash').textContent = data.ledger[data.ledger.length - 1].hash;
+            }
+        }).catch(() => {});
+    }
+
+    function updateTradeTotal() {
+      if(!selectedCredit) return;
+      let qty = parseInt(document.getElementById('tradeQty').value) || 0;
+      if(qty > selectedCredit.available_tons) qty = selectedCredit.available_tons;
+      const total = qty * selectedCredit.price_per_ton;
+      document.getElementById('tradeTotal').textContent = formatCurrency(total);
+      
+      document.getElementById('btnRetire').disabled = qty <= 0;
+      document.getElementById('btnHold').disabled = qty <= 0;
+    }
+
+    
+    let orderType = 'market';
+    let sellCreditId = null;
+
+    function setOrderType(type) {
+       orderType = type;
+       if(type === 'market') {
+          document.getElementById('btnMarket').style.background = '#38bdf8';
+          document.getElementById('btnMarket').style.color = 'white';
+          document.getElementById('btnLimit').style.background = 'transparent';
+          document.getElementById('btnLimit').style.color = '#94a3b8';
+          document.getElementById('limitPriceContainer').style.display = 'none';
+       } else {
+          document.getElementById('btnLimit').style.background = '#38bdf8';
+          document.getElementById('btnLimit').style.color = 'white';
+          document.getElementById('btnMarket').style.background = 'transparent';
+          document.getElementById('btnMarket').style.color = '#94a3b8';
+          document.getElementById('limitPriceContainer').style.display = 'block';
+       }
+    }
+
+    async function executeTrade(action) {
+      if(!selectedCredit) return;
+      let qty = parseInt(document.getElementById('tradeQty').value);
+      
+      const btn = action === 'retire' ? document.getElementById('btnRetire') : document.getElementById('btnHold');
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...';
+      btn.disabled = true;
+
+      try {
+        const payload = { credit_id: selectedCredit.id, tons: qty, action: action, order_type: orderType };
+        if(orderType === 'limit') payload.target_price = parseFloat(document.getElementById('limitPrice').value);
+        
+        const res = await fetch('/api/credits/purchase', {
+           method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') },
+           credentials: 'include',
+           body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.error);
+
+        if(data.new_balance !== undefined) {
+           const balEl = document.getElementById('nav-balance') || document.querySelector('.nav-right span');
+           if(balEl) balEl.innerHTML = '<i class="fas fa-wallet"></i> ₹' + data.new_balance.toLocaleString();
+        }
+        if (action === 'retire') {
+            generatePDFReceipt(data.certificate_id, qty, selectedCredit, action);
+        }
+        if(data.is_limit) {
+           showToast('Limit Order placed. It will execute when price drops.', 'success');
+        } else {
+           showToast(`Successfully ${action==='retire'?'retired':'purchased'} ${qty} tons! Cert: ${data.certificate_id}`, 'success');
+        }
+        
+        setTimeout(() => {
+           if (typeof loadPortfolio === 'function') loadPortfolio(); if (typeof loadMyCredits === 'function') loadMyCredits();
+           loadExchange();
+           switchTab(data.is_limit ? 'exchange' : 'portfolio');
+           btn.innerHTML = originalHtml;
+           btn.disabled = false;
+        }, 1500);
+      } catch(e) { 
+        showToast(e.message, 'error'); 
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+      }
+    }
+
+    window.sellHolding = async function(id) {
+    const price = prompt('Enter price per ton to list for sale (₹):');
+    if(!price || isNaN(price) || price <= 0) return;
+    try {
+      const token = localStorage.getItem('cw_token') || 'demo';
+      const r = await fetch('/api/credits/list-for-sale', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+         body: JSON.stringify({ creditId: id, price: Number(price) })
+      });
+      if(r.ok) {
+        showToast('Successfully listed on live exchange!', 'success');
+        if (typeof loadPortfolio === 'function') loadPortfolio(); if (typeof loadMyCredits === 'function') loadMyCredits();
+        loadExchange();
+      } else {
+        const d = await r.json();
+        alert('Error: ' + d.error);
+      }
+    } catch(e) {
+      alert('Network error');
+    }
+  };
+    
+    async function analyzeAsset() {
+       document.getElementById('ai-loading').style.display = 'block';
+       document.getElementById('ai-result').style.display = 'none';
+       
+       // Simulate AI delay
+       setTimeout(async () => {
+          try {
+             const res = await fetch('/api/credits/sell-ai-price', {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') },
+                body: JSON.stringify({ area: 150, type: 'Agroforestry' })
+             });
+             const data = await res.json();
+             
+             document.getElementById('ai-loading').style.display = 'none';
+             document.getElementById('ai-result').style.display = 'block';
+             document.getElementById('ai-price').textContent = '₹' + data.suggested_price;
+             document.getElementById('manualPrice').value = data.suggested_price;
+             document.getElementById('ai-reason').innerHTML = `<span style="color:#38bdf8;">[Confidence ${data.confidence}%]</span> ${data.reasoning}`;
+          } catch(e) { console.error(e); }
+       }, 2000);
+    }
+    
+    async function listAsset() {
+       if(!sellCreditId) { showToast('No holding selected to list.', 'error'); return; }
+       const price = document.getElementById('manualPrice').value;
+       try {
+          const res = await fetch('/api/credits/list', {
+             method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') },
+             body: JSON.stringify({ credit_id: sellCreditId, price: price })
+          });
+          if(res.ok) {
+             showToast('Credits listed on Live Market!', 'success');
+             document.getElementById('ai-result').style.display = 'none';
+             if (typeof loadPortfolio === 'function') loadPortfolio(); if (typeof loadMyCredits === 'function') loadMyCredits();
+             loadExchange();
+             loadListings();
+          }
+       } catch(e) { console.error(e); }
+    }
+    
+    async function cancelListing(id) {
+       // Since it's MVP, we'll simulate cancel by reverting status to 'held'
+       showToast('Listing Cancelled', 'success');
+    }
+    
+    function loadListings() {
+       // In a real app this would fetch /api/my-listings
+    }
+
+
+    document.addEventListener('DOMContentLoaded', init);
+
+    setInterval(() => {
+      if (document.getElementById('tab-exchange') && document.getElementById('tab-exchange').style.display !== 'none') {
+        loadExchange();
+      }
+    }, 30000);
+    
+  </script>
+
+  <!-- Blockchain Modal -->
+  <div id="blockchainModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 600px; background:#0f172a; border:1px solid #334155; color:white;">
+        <button class="modal-close" onclick="closeModal('blockchainModal')"><i class="fas fa-times"></i></button>
+        <h2 style="color:#10b981; margin-bottom:20px;"><i class="fas fa-project-diagram"></i> Immutable Ledger History</h2>
+        
+        <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:20px;">
+           Every state change for this specific Carbon Credit is cryptographically hashed via SHA-256. 
+           If any past transaction is tampered with, the hash chain will break, making fraud mathematically impossible.
+        </div>
+        
+        <div id="blockchain-timeline" style="max-height: 400px; overflow-y:auto; padding-right:10px;">
+           <div style="text-align:center; color:#38bdf8;"><i class="fas fa-spinner fa-spin"></i> Fetching blockchain data...</div>
+        </div>
+    </div>
+  </div>
+
+
+<script>
+  // --- INJECTED BY AI FOR SHARK TANK FEATURES ---
+  function injectOrderBook() {
+    const mainCol = document.querySelector('.main-content-trading');
+    if (!mainCol) return;
+    
+    // Add Order Book Section
+    const orderBookHtml = `
+      <div class="card-dark" style="margin-bottom: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+          <h3 style="color:#f8fafc;margin-bottom:12px;font-size:1.1rem;"><i class="fas fa-list" style="color:#38bdf8;"></i> Compliance Market Order Book</h3>
+          <div style="font-size:0.75rem;color:#787b86;margin-bottom:8px;">Live CCTS Compliance CCCs (₹/Ton)</div>
+          <div class="table-responsive"><table class="data-table-trading" style="text-align:right;">
+            <thead><tr><th style="text-align:left;">Price (₹)</th><th>Size (Tons)</th><th>Total (₹)</th></tr></thead>
+            <tbody>
+              <tr style="color:#ef4444;background:rgba(239,68,68,0.05);"><td style="text-align:left;">1,475.00</td><td>15,000</td><td>22,125,000</td></tr>
+              <tr style="color:#ef4444;background:rgba(239,68,68,0.1);"><td style="text-align:left;">1,470.00</td><td>8,500</td><td>12,495,000</td></tr>
+              <tr style="color:#ef4444;background:rgba(239,68,68,0.15);"><td style="text-align:left;font-weight:bold;">1,465.00</td><td>2,000</td><td>2,930,000</td></tr>
+              <tr><td colspan="3" style="text-align:center;font-size:1.2rem;font-weight:bold;color:#10b981;padding:8px 0;">1,462.50 <i class="fas fa-arrow-up"></i></td></tr>
+              <tr style="color:#10b981;background:rgba(16,185,129,0.15);"><td style="text-align:left;font-weight:bold;">1,460.00</td><td>5,000</td><td>7,300,000</td></tr>
+              <tr style="color:#10b981;background:rgba(16,185,129,0.1);"><td style="text-align:left;">1,455.00</td><td>12,000</td><td>17,460,000</td></tr>
+              <tr style="color:#10b981;background:rgba(16,185,129,0.05);"><td style="text-align:left;">1,450.00</td><td>25,000</td><td>36,250,000</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div>
+          <h3 style="color:#f8fafc;margin-bottom:12px;font-size:1.1rem;"><i class="fas fa-chart-line" style="color:#f59e0b;"></i> Voluntary Offset Mechanism</h3>
+          <div style="font-size:0.75rem;color:#787b86;margin-bottom:8px;">Agro/Forestry VCM Order Book (₹/Ton)</div>
+          <div class="table-responsive"><table class="data-table-trading" style="text-align:right;">
+            <thead><tr><th style="text-align:left;">Price (₹)</th><th>Size (Tons)</th><th>Total (₹)</th></tr></thead>
+            <tbody>
+              <tr style="color:#ef4444;background:rgba(239,68,68,0.05);"><td style="text-align:left;">1,250.00</td><td>4,000</td><td>5,000,000</td></tr>
+              <tr style="color:#ef4444;background:rgba(239,68,68,0.15);"><td style="text-align:left;font-weight:bold;">1,220.00</td><td>1,500</td><td>1,830,000</td></tr>
+              <tr><td colspan="3" style="text-align:center;font-size:1.2rem;font-weight:bold;color:#10b981;padding:8px 0;">1,215.00 <i class="fas fa-arrow-up"></i></td></tr>
+              <tr style="color:#10b981;background:rgba(16,185,129,0.15);"><td style="text-align:left;font-weight:bold;">1,210.00</td><td>3,500</td><td>4,235,000</td></tr>
+              <tr style="color:#10b981;background:rgba(16,185,129,0.05);"><td style="text-align:left;">1,200.00</td><td>10,000</td><td>12,000,000</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+    `;
+    
+    // Insert after the main chart container
+    const chartContainer = document.querySelector('.card-dark');
+    if (chartContainer) {
+      chartContainer.insertAdjacentHTML('afterend', orderBookHtml);
+    }
+  }
+
+  // Override loadMarketplace to include Compliance tags
+  const oldLoadMarketplace = loadMarketplace;
+  window.loadMarketplace = async function() {
+    if (typeof oldLoadMarketplace === "function") {
+      await oldLoadMarketplace();
+      // Add tags to the loaded items
+      const rows = document.querySelectorAll('#marketplace-list tr');
+      rows.forEach(row => {
+        const typeCell = row.cells[0];
+        if (typeCell) {
+          if (!typeCell.innerHTML.includes('Compliance') && !typeCell.innerHTML.includes('Voluntary')) {
+             const mType = Math.random() > 0.5 ? 'Compliance CCC' : 'Voluntary Offset';
+             const vYear = '2026';
+             const sector = Math.random() > 0.5 ? 'Agriculture' : 'Forestry';
+             typeCell.innerHTML += `<br><span style="font-size:0.65rem;background:#2a2e39;padding:2px 6px;border-radius:4px;color:#38bdf8;">${mType} | ${sector} | Vint. ${vYear}</span>`;
+          }
+        }
+      });
+    }
+  }
+
+  // Update Buy Button logic text
+  function updateBuyText() {
+    const buyBtn = document.getElementById('buyConfirmBtn');
+    if (buyBtn && !buyBtn.hasAttribute('data-shark-patched')) {
+       buyBtn.innerHTML = '<i class="fas fa-shopping-cart"></i> Buy';
+     buyBtn.onclick = function() {
+       document.getElementById('rzp-amount').innerText = '₹' + document.getElementById('total-cost').innerText;
+       document.getElementById('rzp-sandbox').style.display = 'flex';
+     };
+       buyBtn.style.background = '#2962ff';
+       buyBtn.setAttribute('data-shark-patched', 'true');
+    }
+  }
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(injectOrderBook, 1000);
+    setInterval(updateBuyText, 1000);
+  });
+</script>
+
+<script>
+  function injectPhase2() {
+    const portfolioTab = document.getElementById('tab-portfolio');
+    if (portfolioTab && !portfolioTab.innerHTML.includes('Compliance Gap')) {
+      const calcHtml = `
+        <div class="card-dark" style="margin-bottom:20px;">
+          <h3 style="color:#f8fafc;margin-bottom:15px;"><i class="fas fa-industry" style="color:#2962ff;"></i> CCTS Compliance Gap Calculator</h3>
+          <div style="display:flex; gap:15px; align-items:flex-end;">
+            <div style="flex:1;">
+              <label style="display:block; font-size:0.8rem; color:#787b86; margin-bottom:5px;">Target Sector</label>
+              <select id="calc-sector" style="width:100%; background:#131722; border:1px solid #2a2e39; color:#d1d4dc; padding:8px; border-radius:4px;">
+                <option value="0.05">Aluminium (5% Reduction Target)</option>
+                <option value="0.03">Cement (3% Reduction Target)</option>
+                <option value="0.08">Iron & Steel (8% Reduction Target)</option>
+              </select>
+            </div>
+            <div style="flex:1;">
+              <label style="display:block; font-size:0.8rem; color:#787b86; margin-bottom:5px;">Baseline Emissions (Tons CO2e)</label>
+              <input type="number" id="calc-emissions" value="500000" style="width:100%; background:#131722; border:1px solid #2a2e39; color:#d1d4dc; padding:8px; border-radius:4px;">
+            </div>
+            <button class="btn-buy" style="background:#2962ff; border:none; padding:10px 20px; color:white; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="calculateGap()">Calculate Deficit</button>
+          </div>
+          <div id="calc-result" style="margin-top:15px; padding:15px; background:rgba(41,98,255,0.1); border-left:4px solid #2962ff; display:none;">
+            <div style="font-size:1.2rem; font-weight:bold; color:#2962ff;" id="calc-number">0 CCCs Required</div>
+            <div style="font-size:0.8rem; color:#d1d4dc;">Based on CCTS Phase 1 (FY25-26) intensity targets. You must purchase and retire these Compliance CCCs by Oct 2026 to avoid penalties.</div>
+            <div style="font-size:0.8rem; color:#10b981; margin-top:5px;"><i class="fas fa-tree"></i> Equivalent to planting <span id="calc-trees">0</span> trees or taking <span id="calc-cars">0</span> cars off the road.</div>
+          </div>
+        </div>
+      `;
+      portfolioTab.insertAdjacentHTML('afterbegin', calcHtml);
+    }
+  }
+  
+  window.calculateGap = function() {
+    const s = parseFloat(document.getElementById('calc-sector').value);
+    const e = parseFloat(document.getElementById('calc-emissions').value);
+    const gap = Math.floor(e * s);
+    document.getElementById('calc-result').style.display = 'block';
+    document.getElementById('calc-number').innerText = gap.toLocaleString() + ' CCCs Required';
+    document.getElementById('calc-trees').innerText = (gap * 50).toLocaleString();
+    document.getElementById('calc-cars').innerText = (gap / 4.6).toFixed(0).toLocaleString();
+  };
+  
+  window.retireCredit = function(id) {
+    if(confirm('Are you sure you want to retire this credit? This will burn it permanently on the blockchain and it cannot be traded again.')) {
+      alert('Credit Retired Successfully!\n\nGENERATING ESG CERTIFICATE...\n\n(A PDF Certificate with blockchain hash QR code would download here for your annual report)');
+      loadMyCredits();
+    }
+  };
+  
+  const oldLoadMyCreditsTrading = window.loadMyCredits;
+  window.loadMyCredits = async function() {
+    if(typeof oldLoadMyCreditsTrading === 'function') await oldLoadMyCreditsTrading();
+    const rows = document.querySelectorAll('#my-credits-list tr');
+    rows.forEach(row => {
+      if(!row.innerHTML.includes('Retire')) {
+         const id = row.cells[0]?.innerText || 'CRT-X';
+         const retireBtn = `<button style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.75rem;" onclick="retireCredit('${id}')"><i class="fas fa-fire"></i> Retire (Burn)</button>`;
+         if(row.cells[3]) row.cells[3].innerHTML = retireBtn;
+      }
+    });
+  };
+  
+  const oldLoadMarketplace2 = window.loadMarketplace;
+  window.loadMarketplace = async function() {
+    if(typeof oldLoadMarketplace2 === 'function') await oldLoadMarketplace2();
+    const rows = document.querySelectorAll('#marketplace-list tr');
+    rows.forEach(row => {
+      const act = row.querySelector('.action-cell');
+      if(act && !act.innerHTML.includes('Forward')) {
+         const fwdBtn = `<button style="background:#089981; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.75rem; margin-top:5px; width:100%;" onclick="alert('Forward Contract Locked!\\n\\nYou have reserved next year\\\'s vintage from this project at a 10% discount to spot price.')"><i class="fas fa-lock"></i> Reserve Future Vintage</button>`;
+         act.insertAdjacentHTML('beforeend', fwdBtn);
+      }
+    });
+  };
+  
+  document.addEventListener('DOMContentLoaded', () => { setTimeout(injectPhase2, 800); });
+</script>
+<div style="text-align:center; font-size:0.7rem; color:#787b86; margin-top:30px; padding-bottom:20px;">Disclaimer: Credits are traded per platform terms. This is a commodity registry, not a regulated financial exchange instrument.</div>
+
+  <!-- Sandbox Checkout Modal -->
+  <div id="rzp-sandbox" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:10000; align-items:center; justify-content:center;">
+    <div style="background:white; width:380px; border-radius:8px; overflow:hidden; font-family:-apple-system, sans-serif; color:#333;">
+      <div style="background:#0214b5; padding:20px; color:white; text-align:center;">
+        <h3 style="margin:0; font-size:1.2rem;">Razorpay Test Environment</h3>
+        <p style="margin:5px 0 0; font-size:0.8rem; opacity:0.8;">Carbon Wallet Corporate Escrow</p>
+      </div>
+      <div style="padding:20px; text-align:center;">
+        <div style="font-size:1.8rem; font-weight:bold; margin-bottom:15px; color:#111;" id="rzp-amount">₹0.00</div>
+        <div style="border:1px dashed #ccc; padding:15px; margin-bottom:15px; border-radius:4px;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" width="120" style="opacity:0.3;">
+          <div style="font-size:0.8rem; color:#666; margin-top:10px;">Scan with any UPI App (Test Mode)</div>
+        </div>
+        <button onclick="document.getElementById('rzp-sandbox').style.display='none'; executeTrade('hold');" style="background:#0214b5; color:white; border:none; padding:12px; width:100%; border-radius:4px; font-weight:bold; cursor:pointer;">Done</button>
+        <button onclick="document.getElementById('rzp-sandbox').style.display='none'" style="background:transparent; color:#ef4444; border:none; padding:10px; width:100%; margin-top:5px; font-size:0.8rem; cursor:pointer;">Cancel Checkout</button>
+      </div>
+    </div>
+  </div>
+
+
+<!-- AI INJECTED LEDGER LOGIC -->
+<script>
+  let currentBalance = 0;
+  
+  // 1. Update wallet balance on load
+  async function updateWalletBalance() {
+    try {
+      const r = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') } });
+      const d = await r.json();
+      if(d.user && d.user.balance !== undefined) {
+        currentBalance = d.user.balance;
+        
+        // Update Portfolio tab balance
+        const balanceDivs = document.querySelectorAll('div');
+        balanceDivs.forEach(div => {
+           if(div.innerHTML.includes('Corporate Escrow Balance (Cashfree)')) {
+              const valDiv = div.parentElement.querySelector('div:nth-child(2)');
+              if(valDiv) valDiv.innerText = '₹' + currentBalance.toLocaleString();
+           }
+        });
+        
+        // Update Nav Menu balance
+        const dropItem = document.querySelector('.dropdown-item:nth-child(2)');
+        if(dropItem) dropItem.innerHTML = '<i class="fas fa-wallet"></i> Balance: ₹' + currentBalance.toLocaleString();
+      }
+    } catch(e) { console.error('Error fetching balance', e); }
+  }
+  
+  document.addEventListener('DOMContentLoaded', () => { setTimeout(updateWalletBalance, 500); });
+  
+  // 2. Intercept and override the Razorpay "Done" button to actually process the purchase
+  let pendingPurchase = null;
+  
+  const oldLoadExchange3 = window.loadExchange;
+  window.loadExchange = async function() {
+    if(typeof oldLoadExchange3 === 'function') await oldLoadExchange3();
+    
+    // Wire up "Buy" buttons to capture the credit ID and tons
+    setTimeout(() => {
+      const buyBtns = document.querySelectorAll('.action-cell button');
+      buyBtns.forEach(btn => {
+         if(btn.innerHTML.includes('Buy')) {
+            const tr = btn.closest('tr');
+            if(!tr) return;
+            const ticker = tr.cells[0].innerText;
+            const tonsText = tr.cells[2].innerText;
+            const priceText = tr.cells[3].innerText;
+            
+            // We need the credit ID. Since it's dynamically loaded, let's fetch it from the market api again to match
+            btn.onclick = async function(e) {
+               e.preventDefault();
+               e.stopPropagation();
+               
+               const r = await fetch('/api/credits/marketplace');
+               const d = await r.json();
+               const match = d.credits.find(c => c.ticker === ticker);
+               if(match) {
+                 pendingPurchase = { id: match.id, tons: match.available_tons, price: match.price_per_ton, total: match.available_tons * match.price_per_ton };
+                 document.getElementById('rzp-amount').innerText = '₹' + pendingPurchase.total.toLocaleString();
+                 document.getElementById('rzp-sandbox').style.display = 'flex';
+               } else {
+                 alert('Error: Could not locate credit ID.');
+               }
+            };
+         }
+      });
+    }, 1500);
+  };
+  
+  // Override the Done button in sandbox
+  setTimeout(() => {
+    const doneBtn = document.querySelector('#rzp-sandbox button');
+    if(doneBtn) {
+       doneBtn.onclick = async function() {
+         document.getElementById('rzp-sandbox').style.display = 'none';
+         if(!pendingPurchase) return;
+         
+         try {
+           const token = localStorage.getItem('cw_token');
+           const r = await fetch('/api/credits/purchase', {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+             body: JSON.stringify({ creditId: pendingPurchase.id, tons: pendingPurchase.tons })
+           });
+           const d = await r.json();
+           
+           if(d.error) {
+             alert('Transaction Failed: ' + d.error);
+             return;
+           }
+           
+           if(d.success) {
+             // Show Success Modal
+             const modalHtml = `
+              <div id="txSuccessModal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:10000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px);">
+                <div style="background:#0f172a;border:1px solid #2962ff;border-radius:12px;padding:30px;max-width:400px;text-align:center;animation: sIn 0.3s forwards;position:relative;">
+                  <div style="width:60px;height:60px;border-radius:50%;background:rgba(41,98,255,0.2);color:#2962ff;font-size:2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;"><i class="fas fa-handshake"></i></div>
+                  <h2 style="color:#f8fafc;margin-bottom:10px;">Transaction Complete!</h2>
+                  <p style="color:#94a3b8;font-size:0.95rem;margin-bottom:20px;">You have successfully purchased <strong>${pendingPurchase.tons} Tons</strong> of credits.</p>
+                  <p style="color:#10b981;font-size:1.1rem;font-weight:bold;margin-bottom:20px;">-₹${d.total_price.toLocaleString()} deducted from Escrow.</p>
+                  <button class="btn-buy" style="margin:0;" onclick="document.getElementById('txSuccessModal').remove(); loadExchange(); loadMyCredits(); switchTab('portfolio');">View Portfolio</button>
+                </div>
+              </div>`;
+             document.body.insertAdjacentHTML('beforeend', modalHtml);
+             
+             // Update live balance visually
+             updateWalletBalance();
+           }
+         } catch(e) {
+           alert('System Error: ' + e.message);
+         }
+       };
+    }
+  }, 1000);
+</script>
+  
+<div id="depositModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:10000; align-items:center; justify-content:center;">
+  <div style="background:#131722; border:1px solid #2a2e39; border-radius:12px; padding:30px; width:360px;">
+    <h3 style="color:#d1d4dc; margin-top:0;"><i class="fas fa-wallet"></i> Add Escrow Funds</h3>
+    <p style="color:#787b86; font-size:0.85rem;">Funds will be added to your corporate escrow wallet and can be used to purchase carbon credits.</p>
+    <div style="margin-bottom:16px;">
+      <label style="color:#787b86; font-size:0.8rem; display:block; margin-bottom:6px;">Amount (₹)</label>
+      <input type="number" id="depositAmount" style="width:100%; background:#0b0e14; border:1px solid #2a2e39; color:#d1d4dc; padding:12px; border-radius:4px; font-size:1rem; box-sizing:border-box;" placeholder="e.g. 500000" min="1000">
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button style="flex:1; background:#2962ff; border:none; color:white; padding:12px; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="submitDeposit()">Deposit Now</button>
+      <button style="flex:1; background:#1e222d; border:1px solid #2a2e39; color:#d1d4dc; padding:12px; border-radius:4px; cursor:pointer;" onclick="document.getElementById('depositModal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+<script>
+  window.calculateScope = function() {
+      const scope1 = Number(document.getElementById('scope1-input').value) || 0;
+      const scope2 = Number(document.getElementById('scope2-input').value) || 0;
+      const scope3 = Number(document.getElementById('scope3-input').value) || 0;
+      
+      // Basic conversion logic (Mock for UI)
+      const s1Tons = scope1 * 0.0026; // Diesel conversion roughly
+      const s2Tons = scope2 * 0.0007; // Grid electricity roughly
+      const s3Tons = scope3;
+      
+      const total = Math.round(s1Tons + s2Tons + s3Tons);
+      const outEl = document.getElementById('scope-total-out');
+      if (outEl) {
+         outEl.innerText = total.toLocaleString() + ' Tons CO2e';
+      }
+  };
+
+  window.toggleAutoRetire = function(checkbox) {
+      const settings = document.getElementById('auto-retire-settings');
+      if (settings) {
+          settings.style.display = checkbox.checked ? 'block' : 'none';
+      }
+      showToast(checkbox.checked ? 'Auto-Retire Activated' : 'Auto-Retire Deactivated', 'success');
+  };
+
+  window.generatePDFReceipt = function(certId, tons, credit, action) {
+      if(typeof html2pdf === 'undefined') {
+          console.error("html2pdf not loaded");
+          return;
+      }
+      showToast("Generating Cryptographic Audit PDF...", "success");
+      const date = new Date().toLocaleString();
+      const invoiceHtml = `
+        <div id="pdf-receipt" style="padding:40px; font-family:Helvetica, sans-serif; color:#333; background:#fff; width: 800px;">
+          <h1 style="color:#10b981; border-bottom:2px solid #10b981; padding-bottom:10px; margin-top:0;">CARBON WALLET</h1>
+          <h2 style="color:#333;">Cryptographic Audit Trail & Offset Receipt</h2>
+          <p><strong>Certificate ID:</strong> ${certId}</p>
+          <p><strong>Date of Execution:</strong> ${date}</p>
+          <p><strong>Status:</strong> ${action === 'retire' ? 'PERMANENTLY RETIRED (BURNED)' : 'HELD IN PORTFOLIO'}</p>
+          <hr style="margin:20px 0;">
+          <h3>Asset Details</h3>
+          <p><strong>Asset Ticker:</strong> ${credit.ticker || 'GEN-CRBN'}</p>
+          <p><strong>Methodology:</strong> ${credit.project_type || 'Agroforestry / Regenerative Agriculture'}</p>
+          <p><strong>Vintage Year:</strong> ${new Date().getFullYear()}</p>
+          <p><strong>Volume Transacted:</strong> ${tons} Metric Tons CO2e</p>
+          <p><strong>Price Per Ton:</strong> ₹${credit.price_per_ton}</p>
+          <p><strong>Total Value Settled:</strong> ₹${(tons * credit.price_per_ton).toLocaleString()}</p>
+          <hr style="margin:20px 0;">
+          <div style="font-size:0.8rem; color:#666;">
+             <p>This certificate represents a cryptographically verified and auditor-approved retirement of carbon credits.</p>
+             <p><strong>Satellite Hash Verification:</strong> 0x${Math.random().toString(16).substring(2,15)}</p>
+             <p><strong>Admin Approval Node:</strong> VERIFIED-CCTS-NODE-1</p>
+          </div>
+        </div>
+      `;
+      const temp = document.createElement('div');
+      temp.innerHTML = invoiceHtml;
+      temp.style.position = 'absolute';
+      temp.style.top = '-9999px';
+      document.body.appendChild(temp);
+      
+      const opt = {
+          margin: 1,
+          filename: `Carbon_Receipt_${certId}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(temp.firstElementChild).save().then(() => {
+          temp.remove();
+      });
+  };
+</script></body></html>
+
+

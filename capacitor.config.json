@@ -1,10 +1,5 @@
 {
   "appId": "com.carbonwallet.app",
   "appName": "CarbonWallet",
-  "webDir": "public",
-  "plugins": {
-    "CapacitorHttp": {
-      "enabled": true
-    }
-  }
+  "webDir": "public"
 }
