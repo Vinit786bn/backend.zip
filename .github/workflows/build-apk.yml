@@ -30,6 +30,10 @@ jobs:
         working-directory: ./mobile-app
         run: npm install
 
+      - name: Prebuild Android
+        working-directory: ./mobile-app
+        run: npx expo prebuild --platform android
+
       - name: Grant execute permission for gradlew
         working-directory: ./mobile-app/android
         run: chmod +x gradlew
