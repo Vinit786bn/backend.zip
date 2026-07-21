@@ -921,11 +921,7 @@ async function submitListing() {
 
 
 
-    <div class="bottom-tab-bar">
-      <a href="#" class="tab-item active" onclick="if(window.HapticEngine) HapticEngine.lightTick()"><i class="fa-solid fa-location-dot"></i><span>Onboard</span></a>
-      <a href="#" class="tab-item" onclick="if(window.HapticEngine) HapticEngine.lightTick()"><i class="fa-solid fa-leaf"></i><span>My Lands</span></a>
-      <a href="#" class="tab-item" onclick="if(window.HapticEngine) HapticEngine.lightTick()"><i class="fa-solid fa-wallet"></i><span>Wallet</span></a>
-    </div>
+    
   
 <script>
   function openMapModal() {
@@ -1116,81 +1112,7 @@ async function submitListing() {
       }
     </script>
   
-    <style>
-      .land-bottom-bar {
-        position: fixed;
-        bottom: 0; left: 0; right: 0;
-        background: rgba(10, 14, 23, 0.95);
-        backdrop-filter: blur(10px);
-        border-top: 1px solid #1e293b;
-        display: flex;
-        justify-content: space-around;
-        padding: 15px 0 25px 0;
-        z-index: 99999;
-      }
-      @media (min-width: 769px) { .land-bottom-bar { display: none; } }
-      
-      .land-tab {
-        color: #94a3b8;
-        text-align: center;
-        font-size: 0.75rem;
-        cursor: pointer;
-        transition: color 0.2s;
-      }
-      .land-tab i {
-        display: block;
-        font-size: 1.4rem;
-        margin-bottom: 5px;
-      }
-      .land-tab.active { color: #00E676; }
-      
-      .land-view { display: none; height: 100vh; overflow-y: auto; padding-bottom: 90px; }
-      .land-view.active { display: block; }
-      
-      /* New Wallet view */
-      .wallet-card { background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 20px; text-align: center; margin: 20px; }
-    </style>
     
-    <div id="view-onboard" class="land-view active">
-      undefined
-    </div>
-    
-    <div id="view-myland" class="land-view" style="padding:20px;">
-      <h2 style="color:#f8fafc; font-family:'Inter',sans-serif;">My Lands</h2>
-      <div style="color:#94a3b8;">Loading verified plots...</div>
-    </div>
-    
-    <div id="view-wallet" class="land-view" style="padding:20px;">
-      <h2 style="color:#f8fafc; font-family:'Inter',sans-serif;">Wallet</h2>
-      <div class="wallet-card">
-         <div style="color:#94a3b8; font-size:0.9rem;">Available Balance</div>
-         <div id="wallet-balance" style="color:#00E676; font-size:2.5rem; font-weight:800; margin:10px 0;">₹0</div>
-         <button style="background:#00E676; color:#0A0E17; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; width:100%;">Withdraw Funds</button>
-      </div>
-    </div>
-
-    <div class="land-bottom-bar">
-      <div class="land-tab active" onclick="switchLandTab('onboard', this)">
-        <i class="fa-solid fa-map-location-dot"></i> Onboard
-      </div>
-      <div class="land-tab" onclick="switchLandTab('myland', this)">
-        <i class="fa-solid fa-seedling"></i> My Lands
-      </div>
-      <div class="land-tab" onclick="switchLandTab('wallet', this)">
-        <i class="fa-solid fa-wallet"></i> Wallet
-      </div>
-    </div>
-    
-    <script>
-      function switchLandTab(viewId, el) {
-        if(window.HapticEngine) HapticEngine.lightTick();
-        document.querySelectorAll('.land-tab').forEach(t => t.classList.remove('active'));
-        el.classList.add('active');
-        
-        document.querySelectorAll('.land-view').forEach(v => v.classList.remove('active'));
-        document.getElementById('view-' + viewId).classList.add('active');
-      }
-    </script>
   
 <script>
     function nextStep(step) {

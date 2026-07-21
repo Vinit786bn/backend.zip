@@ -3,6 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "dependencies": {
+    "@gorhom/bottom-sheet": "^5.2.14",
     "axios": "^1.18.1",
     "expo": "~57.0.7",
     "expo-camera": "~57.0.3",
@@ -21,9 +22,13 @@
     "react-dom": "19.2.3",
     "react-native": "0.86.0",
     "react-native-gesture-handler": "~2.32.0",
+    "react-native-gifted-charts": "^1.4.77",
+    "react-native-linear-gradient": "^2.8.3",
     "react-native-maps": "1.27.2",
+    "react-native-reanimated": "4.5.0",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "4.25.2",
+    "react-native-svg": "15.15.4",
     "react-native-web": "~0.21.0"
   },
   "devDependencies": {
