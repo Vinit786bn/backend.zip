@@ -1,163 +1,304 @@
-import React, { useState } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView
-} from 'react-native';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, TextInput } from 'react-native';
+import { db, auth } from '../../firebase';
+import { doc, onSnapshot, collection, query, where, orderBy, runTransaction, addDoc } from 'firebase/firestore';
+import BottomSheet, { BottomSheetView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 
-const PORTFOLIO = [
-  { id: '1', ticker: 'CCTS-MH-001', tons: 100, status: 'active', cert: 'A3F9B2', value: 85000, date: '2024-07-15' },
-  { id: '2', ticker: 'CCTS-GJ-007', tons: 100, status: 'retired', cert: 'C8D2E7', value: 110000, date: '2024-06-20' },
-];
+export default function WalletScreen() {
+  const [balance, setBalance] = useState(0);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [method, setMethod] = useState<'bank' | 'upi'>('bank');
+  
+  const bottomSheetRef = useRef<BottomSheet>(null);
 
-const TXN_HISTORY = [
-  { id: 't1', type: 'BUY', ticker: 'CCTS-MH-001', tons: 100, amount: 85000, date: 'Jul 15, 2024' },
-  { id: 't2', type: 'RETIRE', ticker: 'CCTS-GJ-007', tons: 100, amount: 110000, date: 'Jun 20, 2024' },
-  { id: 't3', type: 'DEPOSIT', ticker: '—', tons: 0, amount: 500000, date: 'Jun 1, 2024' },
-];
+  useEffect(() => {
+    const email = auth.currentUser?.email || 'demo@carbonwallet.in';
+    
+    // Listen to User Balance
+    const userRef = doc(db, 'users', email);
+    const unsubUser = onSnapshot(userRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setBalance(docSnap.data().walletBalance || 0);
+      }
+    });
 
-export default function WalletTab() {
-  const [tab, setTab] = useState<'portfolio' | 'history'>('portfolio');
+    // Listen to Transactions
+    const q = query(
+      collection(db, 'transactions'),
+      where('userEmail', '==', email)
+    );
+    const unsubTx = onSnapshot(q, (snap) => {
+      const txs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      // Sort in memory since Firestore requires composite index for multiple fields
+      txs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setTransactions(txs);
+      setLoading(false);
+    });
+
+    return () => {
+      unsubUser();
+      unsubTx();
+    };
+  }, []);
+
+  const handleWithdrawPress = () => {
+    try { Haptics.impactAsync(Haptics } catch (e) {}.ImpactFeedbackStyle.Medium);
+    bottomSheetRef.current?.expand();
+  };
+
+  const handleWithdrawMax = () => {
+    try { Haptics.selectionAsync(); } catch (e) {}
+    setWithdrawAmount(balance.toString());
+  };
+
+  const executeWithdrawal = async () => {
+    const amount = parseFloat(withdrawAmount);
+    if (isNaN(amount) || amount <= 0) {
+      alert('Enter a valid amount');
+      return;
+    }
+    if (amount > balance) {
+      alert('Insufficient funds');
+      return;
+    }
+
+    try { Haptics.impactAsync(Haptics } catch (e) {}.ImpactFeedbackStyle.Heavy);
+    bottomSheetRef.current?.close();
+    setLoading(true);
+
+    const email = auth.currentUser?.email || 'demo@carbonwallet.in';
+    const userRef = doc(db, 'users', email);
+
+    try {
+      // 1. Atomic Transaction to update balance
+      await runTransaction(db, async (transaction) => {
+        const userDoc = await transaction.get(userRef);
+        if (!userDoc.exists()) throw new Error('User not found');
+        
+        const currentBalance = userDoc.data().walletBalance || 0;
+        if (currentBalance < amount) throw new Error('Insufficient funds');
+
+        transaction.update(userRef, { walletBalance: currentBalance - amount });
+      });
+
+      // 2. Add pending payout transaction record
+      await addDoc(collection(db, 'transactions'), {
+        userEmail: email,
+        type: 'withdrawal',
+        amount: amount,
+        method: method,
+        status: 'pending',
+        title: Withdrawal to ,
+        createdAt: new Date().toISOString()
+      });
+
+      try { Haptics.notificationAsync(Haptics } catch (e) {}.NotificationFeedbackType.Success);
+      setWithdrawAmount('');
+    } catch (e: any) {
+      alert('Withdrawal failed: ' + e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderTx = ({ item }: { item: any }) => {
+    const isOut = item.type === 'withdrawal';
+    return (
+      <View style={styles.txCard}>
+        <View style={[styles.txIcon, isOut ? styles.txIconOut : styles.txIconIn]}>
+          <Text style={{ fontSize: 16 }}>{isOut ? '🏦' : '🌿'}</Text>
+        </View>
+        <View style={styles.txInfo}>
+          <Text style={styles.txTitle}>{item.title}</Text>
+          <Text style={styles.txStatus}>{item.status?.toUpperCase()}</Text>
+        </View>
+        <Text style={[styles.txAmt, isOut ? styles.txAmtOut : styles.txAmtIn]}>
+          {isOut ? '-' : '+'} ₹{item.amount.toLocaleString('en-IN')}
+        </Text>
+      </View>
+    );
+  };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Header */}
-        <Text style={styles.title}>💳  My Wallet</Text>
-
-        {/* Balance Card */}
-        <View style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>ESCROW BALANCE (THE VAULT)</Text>
-          <Text style={styles.balanceValue}>₹12,50,000</Text>
-          <View style={styles.balanceRow}>
-            <View style={styles.balanceStat}>
-              <Text style={styles.balanceStatVal}>₹1,95,000</Text>
-              <Text style={styles.balanceStatLbl}>Deployed</Text>
-            </View>
-            <View style={styles.balanceDivider} />
-            <View style={styles.balanceStat}>
-              <Text style={[styles.balanceStatVal, { color: '#FFAB00' }]}>200 T</Text>
-              <Text style={styles.balanceStatLbl}>Total Credits</Text>
-            </View>
-            <View style={styles.balanceDivider} />
-            <View style={styles.balanceStat}>
-              <Text style={[styles.balanceStatVal, { color: '#00E5FF' }]}>2</Text>
-              <Text style={styles.balanceStatLbl}>Certificates</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Tab Switcher */}
-        <View style={styles.tabRow}>
-          <TouchableOpacity
-            style={[styles.tabBtn, tab === 'portfolio' && styles.tabBtnActive]}
-            onPress={() => { setTab('portfolio'); Haptics.selectionAsync(); }}>
-            <Text style={[styles.tabBtnText, tab === 'portfolio' && styles.tabBtnTextActive]}>Portfolio</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tabBtn, tab === 'history' && styles.tabBtnActive]}
-            onPress={() => { setTab('history'); Haptics.selectionAsync(); }}>
-            <Text style={[styles.tabBtnText, tab === 'history' && styles.tabBtnTextActive]}>Transactions</Text>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <View style={styles.ledger}>
+          <Text style={styles.ledgerLabel}>Total Balance</Text>
+          <Text style={styles.balanceText}>₹ {balance.toLocaleString('en-IN')}</Text>
+          <TouchableOpacity style={styles.withdrawBtn} onPress={handleWithdrawPress}>
+            <Text style={styles.withdrawBtnText}>🏦 Withdraw to Bank / UPI</Text>
           </TouchableOpacity>
         </View>
 
-        {tab === 'portfolio' ? (
-          <>
-            <Text style={styles.sectionLabel}>MY CARBON CREDITS</Text>
-            {PORTFOLIO.map(item => (
-              <View key={item.id} style={styles.portfolioCard}>
-                <View style={styles.portfolioTop}>
-                  <Text style={styles.pticker}>{item.ticker}</Text>
-                  <View style={[styles.statusBadge, { backgroundColor: item.status === 'active' ? '#002818' : '#1a237e' }]}>
-                    <Text style={[styles.statusText, { color: item.status === 'active' ? '#00E676' : '#7986cb' }]}>
-                      {item.status === 'active' ? '● ACTIVE' : '✓ RETIRED'}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.portfolioStats}>
-                  <View>
-                    <Text style={styles.pstat}>{item.tons} Tons</Text>
-                    <Text style={styles.pstatLabel}>Volume</Text>
-                  </View>
-                  <View>
-                    <Text style={[styles.pstat, { color: '#00E676' }]}>₹{item.value.toLocaleString()}</Text>
-                    <Text style={styles.pstatLabel}>Market Value</Text>
-                  </View>
-                  <View>
-                    <Text style={styles.pstat}>{item.cert}</Text>
-                    <Text style={styles.pstatLabel}>Cert. ID</Text>
-                  </View>
-                </View>
-                <Text style={styles.pdate}>Issued: {item.date}</Text>
-              </View>
-            ))}
-          </>
-        ) : (
-          <>
-            <Text style={styles.sectionLabel}>TRANSACTION HISTORY</Text>
-            {TXN_HISTORY.map(txn => (
-              <View key={txn.id} style={styles.txnCard}>
-                <View style={[styles.txnIcon, {
-                  backgroundColor: txn.type === 'BUY' ? '#1e3a5f' : txn.type === 'RETIRE' ? '#002818' : '#4a2800'
-                }]}>
-                  <Text style={styles.txnIconText}>
-                    {txn.type === 'BUY' ? '🛒' : txn.type === 'RETIRE' ? '♻️' : '💰'}
-                  </Text>
-                </View>
-                <View style={styles.txnInfo}>
-                  <Text style={styles.txnType}>{txn.type}</Text>
-                  <Text style={styles.txnDesc}>{txn.ticker !== '—' ? `${txn.ticker} · ${txn.tons}T` : 'Escrow Deposit'}</Text>
-                  <Text style={styles.txnDate}>{txn.date}</Text>
-                </View>
-                <Text style={[styles.txnAmount, { color: txn.type === 'DEPOSIT' ? '#00E676' : '#ffffff' }]}>
-                  {txn.type === 'DEPOSIT' ? '+' : '-'}₹{txn.amount.toLocaleString()}
-                </Text>
-              </View>
-            ))}
-          </>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+        <View style={styles.historySec}>
+          <Text style={styles.historyTitle}>Financial History</Text>
+          {loading && transactions.length === 0 ? (
+            <ActivityIndicator color="#00E676" style={{ marginTop: 20 }} />
+          ) : (
+            <FlatList
+              data={transactions}
+              renderItem={renderTx}
+              keyExtractor={i => i.id}
+              contentContainerStyle={{ paddingBottom: 100 }}
+              ListEmptyComponent={
+                <Text style={styles.emptyText}>No transactions yet.</Text>
+              }
+            />
+          )}
+        </View>
+
+        <BottomSheet
+          ref={bottomSheetRef}
+          index={-1}
+          snapPoints={['55%']}
+          enablePanDownToClose
+          backgroundStyle={styles.sheetBg}
+          handleIndicatorStyle={styles.sheetHandle}
+          backdropComponent={(props) => (
+            <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
+          )}
+        >
+          <BottomSheetView style={styles.sheetContent}>
+            <Text style={styles.sheetTitle}>Withdraw Funds</Text>
+            
+            <Text style={styles.inputLabel}>Amount (₹)</Text>
+            <View style={styles.inputRow}>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={withdrawAmount}
+                onChangeText={setWithdrawAmount}
+                placeholder="0"
+                placeholderTextColor="#475569"
+              />
+              <TouchableOpacity style={styles.maxBtn} onPress={handleWithdrawMax}>
+                <Text style={styles.maxBtnText}>MAX</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.inputLabel}>Transfer Method</Text>
+            <View style={styles.methodRow}>
+              <TouchableOpacity 
+                style={[styles.methodBtn, method === 'bank' && styles.methodActive]}
+                onPress={() => { setMethod('bank'); try { Haptics.selectionAsync(); } catch (e) {} }}
+              >
+                <Text style={[styles.methodText, method === 'bank' && styles.methodTextActive]}>🏦 Bank Account</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.methodBtn, method === 'upi' && styles.methodActive]}
+                onPress={() => { setMethod('upi'); try { Haptics.selectionAsync(); } catch (e) {} }}
+              >
+                <Text style={[styles.methodText, method === 'upi' && styles.methodTextActive]}>📱 UPI</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity style={styles.confirmBtn} onPress={executeWithdrawal}>
+              <Text style={styles.confirmBtnText}>Confirm Transfer</Text>
+            </TouchableOpacity>
+          </BottomSheetView>
+        </BottomSheet>
+      </View>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#0A0E17' },
-  content: { padding: 20, paddingBottom: 80 },
-  title: { color: '#ffffff', fontSize: 24, fontWeight: '900', marginBottom: 20 },
-
-  balanceCard: { backgroundColor: '#002818', borderRadius: 20, padding: 24, marginBottom: 20, borderWidth: 1, borderColor: '#00E676' },
-  balanceLabel: { color: '#4a7c59', fontSize: 11, fontWeight: '800', letterSpacing: 1.5, marginBottom: 8 },
-  balanceValue: { color: '#ffffff', fontSize: 36, fontWeight: '900', marginBottom: 20 },
-  balanceRow: { flexDirection: 'row', alignItems: 'center' },
-  balanceStat: { flex: 1, alignItems: 'center' },
-  balanceStatVal: { color: '#00E676', fontSize: 16, fontWeight: '800' },
-  balanceStatLbl: { color: '#4a7c59', fontSize: 11, marginTop: 2 },
-  balanceDivider: { width: 1, height: 32, backgroundColor: '#134d2f' },
-
-  tabRow: { flexDirection: 'row', backgroundColor: '#111827', borderRadius: 12, padding: 4, marginBottom: 20 },
-  tabBtn: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center' },
-  tabBtnActive: { backgroundColor: '#1e293b' },
-  tabBtnText: { color: '#64748b', fontSize: 14, fontWeight: '600' },
-  tabBtnTextActive: { color: '#00E676', fontWeight: '800' },
-
-  sectionLabel: { color: '#475569', fontSize: 11, fontWeight: '800', letterSpacing: 2, marginBottom: 12, textTransform: 'uppercase' },
-
-  portfolioCard: { backgroundColor: '#111827', borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#1e293b' },
-  portfolioTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  pticker: { color: '#00E5FF', fontSize: 15, fontWeight: '900', fontFamily: 'monospace' },
-  statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
-  statusText: { fontSize: 11, fontWeight: '800' },
-  portfolioStats: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: '#0f172a', borderRadius: 10, padding: 14, marginBottom: 10 },
-  pstat: { color: '#ffffff', fontSize: 16, fontWeight: '800' },
-  pstatLabel: { color: '#475569', fontSize: 11, marginTop: 2 },
-  pdate: { color: '#475569', fontSize: 12 },
-
-  txnCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#111827', borderRadius: 14, padding: 14, marginBottom: 10, gap: 14 },
-  txnIcon: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  txnIconText: { fontSize: 20 },
-  txnInfo: { flex: 1 },
-  txnType: { color: '#ffffff', fontSize: 14, fontWeight: '800' },
-  txnDesc: { color: '#64748b', fontSize: 12, marginTop: 2 },
-  txnDate: { color: '#475569', fontSize: 11, marginTop: 2 },
-  txnAmount: { fontSize: 15, fontWeight: '800' },
+  container: {
+    flex: 1,
+    backgroundColor: '#0A0E17',
+  },
+  ledger: {
+    alignItems: 'center',
+    paddingTop: 40,
+    paddingBottom: 30,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  ledgerLabel: {
+    fontSize: 14,
+    color: '#94A3B8',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  balanceText: {
+    fontSize: 48,
+    fontWeight: '900',
+    color: '#FFF',
+    marginVertical: 10,
+    letterSpacing: -1,
+  },
+  withdrawBtn: {
+    backgroundColor: '#00E676',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    borderRadius: 16,
+    marginTop: 10,
+    shadowColor: '#00E676',
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  withdrawBtnText: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  historySec: {
+    flex: 1,
+    padding: 20,
+  },
+  historyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFF',
+    marginBottom: 16,
+  },
+  txCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#141920',
+    borderRadius: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.02)',
+  },
+  txIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  txIconIn: { backgroundColor: 'rgba(0,230,118,0.1)' },
+  txIconOut: { backgroundColor: 'rgba(255,61,0,0.1)' },
+  txInfo: { flex: 1 },
+  txTitle: { color: '#FFF', fontSize: 14, fontWeight: '700' },
+  txStatus: { color: '#94A3B8', fontSize: 11, marginTop: 4, fontWeight: '600' },
+  txAmt: { fontSize: 16, fontWeight: '800' },
+  txAmtIn: { color: '#00E676' },
+  txAmtOut: { color: '#FFF' },
+  emptyText: { color: '#94A3B8', textAlign: 'center', marginTop: 20 },
+  sheetBg: { backgroundColor: '#141920' },
+  sheetHandle: { backgroundColor: '#475569' },
+  sheetContent: { padding: 24, flex: 1 },
+  sheetTitle: { fontSize: 20, fontWeight: '800', color: '#FFF', marginBottom: 24 },
+  inputLabel: { color: '#94A3B8', fontSize: 12, fontWeight: '700', marginBottom: 8, textTransform: 'uppercase' },
+  inputRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 24, gap: 12 },
+  input: { flex: 1, backgroundColor: '#0A0E17', borderWidth: 1, borderColor: '#1e293b', borderRadius: 12, color: '#FFF', fontSize: 24, padding: 16, fontWeight: '700' },
+  maxBtn: { backgroundColor: 'rgba(0,230,118,0.1)', padding: 16, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(0,230,118,0.3)' },
+  maxBtnText: { color: '#00E676', fontWeight: '800' },
+  methodRow: { flexDirection: 'row', gap: 12, marginBottom: 32 },
+  methodBtn: { flex: 1, padding: 16, backgroundColor: '#0A0E17', borderWidth: 1, borderColor: '#1e293b', borderRadius: 12, alignItems: 'center' },
+  methodActive: { borderColor: '#00E676', backgroundColor: 'rgba(0,230,118,0.05)' },
+  methodText: { color: '#94A3B8', fontWeight: '700' },
+  methodTextActive: { color: '#00E676' },
+  confirmBtn: { backgroundColor: '#00E5FF', padding: 18, borderRadius: 16, alignItems: 'center' },
+  confirmBtnText: { color: '#000', fontSize: 16, fontWeight: '800' }
 });
