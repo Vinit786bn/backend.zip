@@ -110,7 +110,7 @@ export default function OnboardScreen() {
         <View style={{width:20}} />
       </View>
       
-      <View style={styles.progBar}><View style={[styles.progFill, {width: ${step * 25}%}]} /></View>
+      <View style={styles.progBar}><View style={[styles.progFill, {width: `${step * 25}%`}]} /></View>
 
       <ScrollView style={styles.content}>
         {step === 1 && (
@@ -204,3 +204,4 @@ const styles = StyleSheet.create({
   nextBtn: { backgroundColor: '#00E676', padding: 18, borderRadius: 16, alignItems: 'center' },
   nextBtnText: { color: '#000', fontSize: 16, fontWeight: '800' },
 });
+
