@@ -46,7 +46,7 @@ export default function DashboardScreen() {
   }, []);
 
   const handleCardPress = (item: Project) => {
-    try { Haptics.impactAsync(Haptics } catch (e) {}.ImpactFeedbackStyle.Light);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (e) {}
     if (item.status === 'registered') {
       router.push(/project/ + item.id);
     } else if (item.status === 'rejected') {

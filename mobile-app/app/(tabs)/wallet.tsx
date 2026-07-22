@@ -46,7 +46,7 @@ export default function WalletScreen() {
   }, []);
 
   const handleWithdrawPress = () => {
-    try { Haptics.impactAsync(Haptics } catch (e) {}.ImpactFeedbackStyle.Medium);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (e) {}
     bottomSheetRef.current?.expand();
   };
 
@@ -66,7 +66,7 @@ export default function WalletScreen() {
       return;
     }
 
-    try { Haptics.impactAsync(Haptics } catch (e) {}.ImpactFeedbackStyle.Heavy);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (e) {}
     bottomSheetRef.current?.close();
     setLoading(true);
 
@@ -96,7 +96,7 @@ export default function WalletScreen() {
         createdAt: new Date().toISOString()
       });
 
-      try { Haptics.notificationAsync(Haptics } catch (e) {}.NotificationFeedbackType.Success);
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch (e) {}
       setWithdrawAmount('');
     } catch (e: any) {
       alert('Withdrawal failed: ' + e.message);

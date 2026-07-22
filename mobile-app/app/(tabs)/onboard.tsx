@@ -23,25 +23,25 @@ export default function OnboardScreen() {
   const [markers, setMarkers] = useState<{lat:number, lng:number}[]>([]);
 
   const handleNext = () => {
-    try { Haptics.impactAsync(Haptics } catch (e) {}.ImpactFeedbackStyle.Medium);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (e) {}
     if (step === 1 && !name) return alert('Project Name required');
     if (step < 4) setStep(step + 1);
   };
   const handleBack = () => {
-    try { Haptics.impactAsync(Haptics } catch (e) {}.ImpactFeedbackStyle.Light);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (e) {}
     if (step > 1) setStep(step - 1);
   };
 
   const doGetLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') return alert('Permission denied');
-    try { Haptics.impactAsync(Haptics } catch (e) {}.ImpactFeedbackStyle.Medium);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (e) {}
     setLoading(true);
     const loc = await Location.getCurrentPositionAsync({});
     setLat(loc.coords.latitude.toFixed(6));
     setLng(loc.coords.longitude.toFixed(6));
     setLoading(false);
-    try { Haptics.notificationAsync(Haptics } catch (e) {}.NotificationFeedbackType.Success);
+    try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch (e) {}
   };
 
   const doScan = async () => {
@@ -52,12 +52,12 @@ export default function OnboardScreen() {
   const handleMapTap = (e: any) => {
     const coord = e.nativeEvent.coordinate;
     setMarkers([...markers, { lat: coord.latitude, lng: coord.longitude }]);
-    try { Haptics.impactAsync(Haptics } catch (e) {}.ImpactFeedbackStyle.Light);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (e) {}
   };
 
   const handleSubmit = async () => {
     if (markers.length < 3) return alert('Draw a polygon with at least 3 points');
-    try { Haptics.impactAsync(Haptics } catch (e) {}.ImpactFeedbackStyle.Heavy);
+    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (e) {}
     setLoading(true);
     
     try {
@@ -73,7 +73,7 @@ export default function OnboardScreen() {
         createdAt: new Date().toISOString()
       });
       
-      try { Haptics.notificationAsync(Haptics } catch (e) {}.NotificationFeedbackType.Success);
+      try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch (e) {}
       // Reset form
       setStep(1); setName(''); setArea(''); setLat(''); setLng(''); setMarkers([]);
       
@@ -91,7 +91,7 @@ export default function OnboardScreen() {
       <View style={{flex:1}}>
         <CameraView style={{flex:1}} facing="back">
           <View style={styles.camOverlay}>
-            <TouchableOpacity style={styles.camBtn} onPress={() => { setShowCamera(false); try { Haptics.notificationAsync(Haptics } catch (e) {}.NotificationFeedbackType.Success); }}>
+            <TouchableOpacity style={styles.camBtn} onPress={() => { setShowCamera(false); try { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch (e) {} }}>
               <Text style={styles.camBtnText}>Capture Document</Text>
             </TouchableOpacity>
           </View>
