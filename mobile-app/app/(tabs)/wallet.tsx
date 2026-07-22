@@ -92,7 +92,7 @@ export default function WalletScreen() {
         amount: amount,
         method: method,
         status: 'pending',
-        title: Withdrawal to ,
+        title: 'Withdrawal',
         createdAt: new Date().toISOString()
       });
 
@@ -302,3 +302,4 @@ const styles = StyleSheet.create({
   confirmBtn: { backgroundColor: '#00E5FF', padding: 18, borderRadius: 16, alignItems: 'center' },
   confirmBtnText: { color: '#000', fontSize: 16, fontWeight: '800' }
 });
+
