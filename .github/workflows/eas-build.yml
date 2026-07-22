@@ -33,4 +33,4 @@ jobs:
 
       - name: Build on EAS
         working-directory: mobile-app
-        run: eas build --platform android --profile development --non-interactive
+        run: eas build --platform android --profile standalone --non-interactive
