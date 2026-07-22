@@ -1,11 +1,12 @@
 ﻿import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Location from 'expo-location';
 import MapView, { Polygon, Marker } from 'react-native-maps';
 import { router } from 'expo-router';
-import { db, auth } from '../../firebase';
+
 import { collection, addDoc } from 'firebase/firestore';
 import * as Haptics from 'expo-haptics';
 
@@ -101,7 +102,7 @@ export default function OnboardScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{flex: 1}}><SafeAreaView style={styles.container}>
       <View style={styles.header}>
         {step > 1 ? (
           <TouchableOpacity onPress={handleBack}><Text style={{color:'#FFF',fontSize:20}}>←</Text></TouchableOpacity>
@@ -180,7 +181,7 @@ export default function OnboardScreen() {
           </TouchableOpacity>
         )}
       </View>
-    </SafeAreaView>
+    </SafeAreaView></KeyboardAvoidingView>
   );
 }
 
@@ -204,4 +205,5 @@ const styles = StyleSheet.create({
   nextBtn: { backgroundColor: '#00E676', padding: 18, borderRadius: 16, alignItems: 'center' },
   nextBtnText: { color: '#000', fontSize: 16, fontWeight: '800' },
 });
+
 

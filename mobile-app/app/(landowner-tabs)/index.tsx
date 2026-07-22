@@ -1,5 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import SkeletonLoader from '../../components/SkeletonLoader';
 import { router } from 'expo-router';
 import { db, auth } from '../../firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
@@ -221,3 +222,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
