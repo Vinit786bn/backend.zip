@@ -1126,6 +1126,59 @@ tbody.innerHTML = res.credits.map(c => `
 
 <script>
   // --- INJECTED BY AI FOR SHARK TANK FEATURES ---
+  
+  function startLiveOrderBooks() {
+    if (window.liveOrderInterval) clearInterval(window.liveOrderInterval);
+    window.liveOrderInterval = setInterval(() => {
+      // Compliance
+      const cBody = document.getElementById('compliance-order-book-body');
+      if (cBody) {
+        let basePrice = 1460 + (Math.random() * 6 - 3);
+        let html = '';
+        for(let i=3; i>=1; i--) {
+           let p = (basePrice + (i*2.5)).toFixed(2);
+           let s = Math.floor(Math.random() * 10000 + 2000);
+           let t = (p * s).toLocaleString('en-IN', {maximumFractionDigits:0});
+           html += '<tr style="color:#ef4444;background:rgba(239,68,68,0.0'+(i*5)+');"><td style="text-align:left;">'+p+'</td><td>'+s.toLocaleString('en-IN')+'</td><td>'+t+'</td></tr>';
+        }
+        let trend = Math.random() > 0.4 ? '<i class="fas fa-arrow-up"></i>' : '<i class="fas fa-arrow-down" style="color:#ef4444;"></i>';
+        let color = trend.includes('up') ? '#10b981' : '#ef4444';
+        html += '<tr><td colspan="3" style="text-align:center;font-size:1.2rem;font-weight:bold;color:'+color+';padding:8px 0;">'+basePrice.toFixed(2)+' '+trend+'</td></tr>';
+        for(let i=1; i<=3; i++) {
+           let p = (basePrice - (i*2.5)).toFixed(2);
+           let s = Math.floor(Math.random() * 10000 + 2000);
+           let t = (p * s).toLocaleString('en-IN', {maximumFractionDigits:0});
+           html += '<tr style="color:#10b981;background:rgba(16,185,129,0.0'+((4-i)*5)+');"><td style="text-align:left;">'+p+'</td><td>'+s.toLocaleString('en-IN')+'</td><td>'+t+'</td></tr>';
+        }
+        cBody.innerHTML = html;
+      }
+      
+      // Voluntary
+      const vBody = document.getElementById('voluntary-order-book-body');
+      if (vBody) {
+        let basePrice = 1210 + (Math.random() * 4 - 2);
+        let html = '';
+        for(let i=2; i>=1; i--) {
+           let p = (basePrice + (i*3)).toFixed(2);
+           let s = Math.floor(Math.random() * 6000 + 1000);
+           let t = (p * s).toLocaleString('en-IN', {maximumFractionDigits:0});
+           html += '<tr style="color:#ef4444;background:rgba(239,68,68,0.'+(i*5)+');"><td style="text-align:left;">'+p+'</td><td>'+s.toLocaleString('en-IN')+'</td><td>'+t+'</td></tr>';
+        }
+        let trend = Math.random() > 0.4 ? '<i class="fas fa-arrow-up"></i>' : '<i class="fas fa-arrow-down" style="color:#ef4444;"></i>';
+        let color = trend.includes('up') ? '#10b981' : '#ef4444';
+        html += '<tr><td colspan="3" style="text-align:center;font-size:1.2rem;font-weight:bold;color:'+color+';padding:8px 0;">'+basePrice.toFixed(2)+' '+trend+'</td></tr>';
+        for(let i=1; i<=2; i++) {
+           let p = (basePrice - (i*3)).toFixed(2);
+           let s = Math.floor(Math.random() * 6000 + 1000);
+           let t = (p * s).toLocaleString('en-IN', {maximumFractionDigits:0});
+           html += '<tr style="color:#10b981;background:rgba(16,185,129,0.'+((3-i)*5)+');"><td style="text-align:left;">'+p+'</td><td>'+s.toLocaleString('en-IN')+'</td><td>'+t+'</td></tr>';
+        }
+        vBody.innerHTML = html;
+      }
+    }, 2000);
+  }
+
+
   function injectOrderBook() {
     const mainCol = document.querySelector('.main-content-trading');
     if (!mainCol) return;
@@ -1138,7 +1191,7 @@ tbody.innerHTML = res.credits.map(c => `
           <div style="font-size:0.75rem;color:#787b86;margin-bottom:8px;">Live CCTS Compliance CCCs (₹/Ton)</div>
           <div class="table-responsive"><table class="data-table-trading" style="text-align:right;">
             <thead><tr><th style="text-align:left;">Price (₹)</th><th>Size (Tons)</th><th>Total (₹)</th></tr></thead>
-            <tbody>
+            <tbody id="compliance-order-book-body">
               <tr style="color:#ef4444;background:rgba(239,68,68,0.05);"><td style="text-align:left;">1,475.00</td><td>15,000</td><td>22,125,000</td></tr>
               <tr style="color:#ef4444;background:rgba(239,68,68,0.1);"><td style="text-align:left;">1,470.00</td><td>8,500</td><td>12,495,000</td></tr>
               <tr style="color:#ef4444;background:rgba(239,68,68,0.15);"><td style="text-align:left;font-weight:bold;">1,465.00</td><td>2,000</td><td>2,930,000</td></tr>
@@ -1154,7 +1207,7 @@ tbody.innerHTML = res.credits.map(c => `
           <div style="font-size:0.75rem;color:#787b86;margin-bottom:8px;">Agro/Forestry VCM Order Book (₹/Ton)</div>
           <div class="table-responsive"><table class="data-table-trading" style="text-align:right;">
             <thead><tr><th style="text-align:left;">Price (₹)</th><th>Size (Tons)</th><th>Total (₹)</th></tr></thead>
-            <tbody>
+            <tbody id="voluntary-order-book-body">
               <tr style="color:#ef4444;background:rgba(239,68,68,0.05);"><td style="text-align:left;">1,250.00</td><td>4,000</td><td>5,000,000</td></tr>
               <tr style="color:#ef4444;background:rgba(239,68,68,0.15);"><td style="text-align:left;font-weight:bold;">1,220.00</td><td>1,500</td><td>1,830,000</td></tr>
               <tr><td colspan="3" style="text-align:center;font-size:1.2rem;font-weight:bold;color:#10b981;padding:8px 0;">1,215.00 <i class="fas fa-arrow-up"></i></td></tr>
