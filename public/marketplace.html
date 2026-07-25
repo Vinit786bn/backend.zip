@@ -2464,7 +2464,22 @@ tbody.innerHTML = res.credits.map(c => `
         </div>
       </div>
 
-      <!-- Module 4: Holdings Ledger -->
+      
+    </div>
+    
+    <!-- ══ VIEW 5: PROFILE (LEDGER & TRANSACTIONS) ══ -->
+    <div class="mob-view" id="mob-view-profile">
+        <div style="background: #0d131f; padding: 25px 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #000;">
+                <i class="fa-solid fa-building"></i>
+            </div>
+            <div>
+                <div style="font-weight: 800; font-size: 1.2rem; color: #f8fafc;" id="mob-profile-name">Company Profile</div>
+                <div style="color: var(--muted); font-size: 0.8rem;">Corporate ESG Account</div>
+            </div>
+        </div>
+        
+        <!-- Module 4: Holdings Ledger -->
       <div class="mob-card">
         <div class="mob-card-title"><i class="fa-solid fa-list" style="color:var(--amber);"></i> My Active Holdings</div>
         <div id="mob-holdings-list">
