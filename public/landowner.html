@@ -19,19 +19,19 @@
     .fi:focus,.fs:focus{border-color:#38bdf8;outline:none;}
     .mb{margin-bottom:16px;} .mb label{display:block;font-size:0.85rem;color:#94a3b8;margin-bottom:6px;font-weight:600;}
     .bp{background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:12px 24px;border-radius:6px;font-weight:700;cursor:pointer;font-size:0.95rem;transition:0.2s;}
-    .bp:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(16₹85₹29,0.4);} .bp:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+    .bp:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(16, 185, 129,0.4);} .bp:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
     .cd{background:#111827;border:1px solid #1e293b;border-radius:10px;padding:24px;}
     .g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;} .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
     .nb{background:#111827;border-bottom:1px solid #1e293b;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:60px;}
     .nb a{color:#94a3b8;text-decoration:none;padding:18px 0;margin:0 12px;border-bottom:2px solid transparent;font-weight:600;font-size:0.9rem;}
     .nb a.active{color:#10b981;border-bottom-color:#10b981;}
     .ps{background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:16px;margin-bottom:12px;transition:0.3s;}
-    .ps.active{border-color:#f59e0b;} .ps.passed{border-color:#10b981;background:rgba(16₹85₹29,0.05);} .ps.failed{border-color:#ef4444;background:rgba(239,68,68,0.05);}
+    .ps.active{border-color:#f59e0b;} .ps.passed{border-color:#10b981;background:rgba(16, 185, 129,0.05);} .ps.failed{border-color:#ef4444;background:rgba(239,68,68,0.05);}
     .sh{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
     .si{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;}
     .si.pending{background:#334155;color:#94a3b8;} .si.running{background:#f59e0b;color:white;animation:pulse 1s infinite;} .si.passed{background:#10b981;color:white;} .si.failed{background:#ef4444;color:white;}
-    @keyframes pulse{0%₹00%{opacity:1;}50%{opacity:0.5;}}
-    .sg{display:grid;grid-template-columns:repeat(4₹fr);gap:8px;margin-top:12px;}
+    @keyframes pulse{0%, 100%{opacity:1;}50%{opacity:0.5;}}
+    .sg{display:grid;grid-template-columns:repeat(4, 1fr);gap:8px;margin-top:12px;}
     .sc{background:#0f172a;border:1px solid #334155;border-radius:4px;padding:6px 8px;font-size:0.7rem;color:#94a3b8;text-align:center;}
     .sc .v{color:#38bdf8;font-weight:bold;font-size:0.85rem;display:block;margin-top:2px;}
     .leaflet-draw-toolbar a{color:#333!important;}
@@ -41,7 +41,7 @@
     .toast.success{background:#10b981;color:white;} .toast.error{background:#ef4444;color:white;}
     @keyframes sIn{from{transform:translateX(100%);}to{transform:translateX(0);}}
     .live-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.65rem;font-weight:bold;background:rgba(239,68,68,0.2);color:#ef4444;animation:livePulse 2s infinite;}
-    @keyframes livePulse{0%₹00%{opacity:1;}50%{opacity:0.5;}}
+    @keyframes livePulse{0%, 100%{opacity:1;}50%{opacity:0.5;}}
   </style>
 
     <style>
@@ -202,7 +202,7 @@
         </div>
         
         <div style="display: flex; justify-content: flex-end; margin-bottom: 20px; margin-top: -15px;">
-           <button type="button" onclick="toggleMobileThermal()" style="background: #F97316; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; box-shadow: 0 4px 10px rgba(249₹15,22,0.4); cursor: pointer;"><i class="fas fa-satellite-dish"></i> Thermal Radar View</button>
+           <button type="button" onclick="toggleMobileThermal()" style="background: #F97316; color: white; border: none; padding: 8px 16px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; box-shadow: 0 4px 10px rgba(249, 115, 22,0.4); cursor: pointer;"><i class="fas fa-satellite-dish"></i> Thermal Radar View</button>
         </div>
 
     
@@ -350,11 +350,11 @@
           <h2 style="color: #FFFFFF; font-weight: 800; font-size: 1.8rem; margin: 10px 0 25px 0;">Wallet Dashboard</h2>
   
           <!-- Financial Balance Card -->
-          <div style="background: linear-gradient(135deg, rgba(16₹85₹29,0.15) 0%, rgba(16₹85₹29,0) 100%); border: 1px solid rgba(16₹85₹29,0.4); border-radius: 20px; padding: 25px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(16₹85₹29,0.1);">
+          <div style="background: linear-gradient(135deg, rgba(16, 185, 129,0.15) 0%, rgba(16, 185, 129,0) 100%); border: 1px solid rgba(16, 185, 129,0.4); border-radius: 20px; padding: 25px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(16, 185, 129,0.1);">
             <div style="color: #94A3B8; font-size: 0.85rem; text-transform: uppercase; font-weight: 800; margin-bottom: 5px;">Available Cash Balance</div>
             <div style="color: #FFFFFF; font-size: 2.5rem; font-weight: 900; margin-bottom: 20px;">₹4,25,500 <span style="font-size: 1rem; color: #10B981;">INR</span></div>
             
-            <button onclick="openMobileWithdraw()" style="width: 100%; padding: 16px; background: #10B981; color: #FFFFFF; border: none; border-radius: 12px; font-weight: 800; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(16₹85₹29,0.4); display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <button onclick="openMobileWithdraw()" style="width: 100%; padding: 16px; background: #10B981; color: #FFFFFF; border: none; border-radius: 12px; font-weight: 800; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(16, 185, 129,0.4); display: flex; align-items: center; justify-content: center; gap: 10px;">
               <i class="fa-solid fa-building-columns"></i> Withdraw to Bank
             </button>
           </div>
@@ -415,9 +415,9 @@
       
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 25px;">
     <h2 style="color: #FFFFFF; font-weight: 800; font-size: 1.8rem; margin: 0;">Profile</h2>
-    <button style="background:rgba(0,230₹18,0.2); color:#00E676; border:none; padding:8px 16px; border-radius:20px; font-size:0.85rem; font-weight:800; cursor:pointer;" onclick="alert('Edit Profile Modal Opening...')"><i class="fa-solid fa-pen"></i> Edit Profile</button>
+    <button style="background:rgba(0, 230, 118,0.2); color:#00E676; border:none; padding:8px 16px; border-radius:20px; font-size:0.85rem; font-weight:800; cursor:pointer;" onclick="alert('Edit Profile Modal Opening...')"><i class="fa-solid fa-pen"></i> Edit Profile</button>
 </div>
-      <div style="background: linear-gradient(135deg, rgba(0,230₹18,0.1) 0%, rgba(0,230₹18,0) 100%); border: 1px solid rgba(0,230₹18,0.3); border-radius: 12px; padding: 20px; margin-bottom: 25px; display: flex; align-items: center; gap: 15px;">
+      <div style="background: linear-gradient(135deg, rgba(0, 230, 118,0.1) 0%, rgba(0, 230, 118,0) 100%); border: 1px solid rgba(0, 230, 118,0.3); border-radius: 12px; padding: 20px; margin-bottom: 25px; display: flex; align-items: center; gap: 15px;">
         <div style="width: 50px; height: 50px; background: #00E676; border-radius: 25px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #0A0E17; font-weight: 800;">RA</div>
         <div>
           <div style="color: #F8FAFC; font-weight: 700; font-size: 1.2rem;">Ramesh Agri</div>
@@ -459,7 +459,7 @@
           <h3 style="color: #F8FAFC; margin: 0; font-size: 1.2rem;"><i class="fa-solid fa-id-card"></i> KYC Uploads</h3>
           <i class="fa-solid fa-times" style="color: #94A3B8; font-size: 1.2rem; cursor: pointer;" onclick="document.getElementById('mProfileKYC').style.display='none'; document.getElementById('mProfileMenu').style.display='block';"></i>
         </div>
-        <div style="padding: 12px; background: rgba(245₹58₹1,0.1); border: 1px solid #F59E0B; border-radius: 6px; color: #F59E0B; font-size: 0.85rem; margin-bottom: 20px;"><i class="fa-solid fa-triangle-exclamation"></i> KYC Pending. Verification required for payouts.</div>
+        <div style="padding: 12px; background: rgba(245, 158, 1,0.1); border: 1px solid #F59E0B; border-radius: 6px; color: #F59E0B; font-size: 0.85rem; margin-bottom: 20px;"><i class="fa-solid fa-triangle-exclamation"></i> KYC Pending. Verification required for payouts.</div>
         <div class="field-group"><label class="field-label">Aadhaar Card (Front & Back)</label><input type="file" class="custom-input"></div>
         <div class="field-group"><label class="field-label">PAN Card</label><input type="file" class="custom-input"></div>
         <div style="margin-top: 15px; display: flex; gap: 10px; align-items: flex-start;">
@@ -666,7 +666,7 @@
     }
 </script><div class="desktop-dashboard">
   <nav class="nb navbar">
-    <div style="font-weight:800;font-size:1.2rem;color:#f8fafc;"><img src="assets/logo.png" style="width:24px; height:24px; border-radius:4px; vertical-align:middle; margin-right:8px;">Carbon Wallet</div>
+    <div style="font-weight:800;font-size:1.2rem;color:#f8fafc;display:flex;align-items:center;"><a href="index.html" style="color: #94A3B8; font-size: 1.2rem; margin-right: 15px; text-decoration: none;"><i class="fa-solid fa-arrow-left"></i></a><img src="assets/logo.png" style="width:24px; height:24px; border-radius:4px; vertical-align:middle; margin-right:8px;">Carbon Wallet</div>
     <div><a href="#" class="active" onclick="switchTab('onboard')">Land Onboarding</a><a href="#" onclick="switchTab('mylands')">My Lands</a><a href="#" onclick="switchTab('credits')">My Credits</a><a href="#" onclick="switchTab('payouts')">Payouts</a><a href="#" onclick="switchTab('documents')">Documents</a></div>
     <div style="cursor:pointer;position:relative;" onclick="toggleProfile(event)">
       <div style="text-align:right;"><div style="font-size:0.85rem;" id="nav-user-name">Landowner</div><div style="font-size:0.7rem;color:#10b981;">Landowner Portal</div></div>
@@ -688,7 +688,7 @@ Logout</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
         <div>
           <div class="cd">
-            <div style="background:rgba(16₹85₹29,0.1); border:1px dashed #10b981; border-radius:8px; padding:16px; margin-bottom:20px; text-align:center;"><h4 style="color:#10b981;margin-bottom:8px;"><i class="fa-solid fa-map-location-dot" style="font-size:1.4rem;"></i> Am I Eligible? (10-Second Pre-Check)</h4><p style="font-size:0.8rem;color:#94a3b8;margin-bottom:12px;">Drop a pin on your land before filling any forms to instantly see your projected earnings.</p><button type="button" class="bp" style="background:#0f172a;border:1px solid #10b981;color:#10b981;" onclick="runQuickEligibility()"><i class="fas fa-bolt"></i> Run Quick Satellite Scan</button></div><h3 style="color:#f8fafc;margin-bottom:20px;"><i class="fas fa-seedling" style="color:#10b981;"></i> Land Registration</h3>
+            <div style="background:rgba(16, 185, 129,0.1); border:1px dashed #10b981; border-radius:8px; padding:16px; margin-bottom:20px; text-align:center;"><h4 style="color:#10b981;margin-bottom:8px;"><i class="fa-solid fa-map-location-dot" style="font-size:1.4rem;"></i> Am I Eligible? (10-Second Pre-Check)</h4><p style="font-size:0.8rem;color:#94a3b8;margin-bottom:12px;">Drop a pin on your land before filling any forms to instantly see your projected earnings.</p><button type="button" class="bp" style="background:#0f172a;border:1px solid #10b981;color:#10b981;" onclick="runQuickEligibility()"><i class="fas fa-bolt"></i> Run Quick Satellite Scan</button></div><h3 style="color:#f8fafc;margin-bottom:20px;"><i class="fas fa-seedling" style="color:#10b981;"></i> Land Registration</h3>
             <div class="mb"><label>Project / Land Name</label><input type="text" id="landName" class="fi" placeholder="e.g. Green Valley Farm"></div>
             
             <div class="mb mobile-carousel">
@@ -726,7 +726,7 @@ Logout</div>
             <input type="hidden" id="landArea" value="0"><input type="hidden" id="boundaryGeojson" value="">
             
             <div class="mb" style="background:#0f172a;padding:16px;border-radius:8px;border:1px solid #334155;">
-              <label style="color:#38bdf8;font-size:0.9rem;"><i class="fas fa-file-contract"></i> Upload 7/12 Land Registry <span class="live-badge" style="background:rgba(56₹89,248,0.2);color:#38bdf8;">AI VERIFIED</span></label>
+              <label style="color:#38bdf8;font-size:0.9rem;"><i class="fas fa-file-contract"></i> Upload 7/12 Land Registry <span class="live-badge" style="background:rgba(56, 189, 248,0.2);color:#38bdf8;">AI VERIFIED</span></label>
               <input type="file" id="landDoc" accept=".pdf,image/*" multiple="" style="width:100%; margin-top:8px; padding:10px; background:#1e293b; color:#f8fafc; border-radius:6px; border:1px dashed #38bdf8;" onchange="uploadDocument()">
 <div id="uploadProgress" style="display:none; width:100%; height:4px; background:#334155; margin-top:10px;"><div style="width:50%; height:100%; background:#10b981;"></div></div>
 <div id="fileListPreview" style="margin-top:10px; font-size:0.85rem; color:#f8fafc; display:flex; flex-direction:column; gap:5px;"></div> <!-- multiple document upload target -->
@@ -777,7 +777,7 @@ Logout</div>
     <div id="tab-credits" style="display:none;">
       <div style="display:grid;grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));gap:16px;margin-bottom:20px;">
          <div class="cd" style="padding:16px;text-align:center;"><div style="color:#94a3b8;font-size:0.8rem;text-transform:uppercase;">Total Carbon Yield</div><div style="color:#f59e0b;font-size:1.5rem;font-weight:bold;">4,250 T</div></div>
-         <div class="cd" style="padding:16px;text-align:center;"><div style="color:#94a3b8;font-size:0.8rem;text-transform:uppercase;">Available to Sell</div><div style="color:#10b981;font-size:1.5rem;font-weight:bold;">3₹00 T</div></div>
+         <div class="cd" style="padding:16px;text-align:center;"><div style="color:#94a3b8;font-size:0.8rem;text-transform:uppercase;">Available to Sell</div><div style="color:#10b981;font-size:1.5rem;font-weight:bold;">3, 100 T</div></div>
          <div class="cd" style="padding:16px;text-align:center;"><div style="color:#94a3b8;font-size:0.8rem;text-transform:uppercase;">Est. Market Value</div><div style="color:#38bdf8;font-size:1.5rem;font-weight:bold;">₹42,50,000</div></div>
       </div>
       <div class="cd"><div style="display:flex;justify-content:space-between;align-items:center;"><h3 style="color:#f8fafc;">My Active Credits Ledger</h3><button class="bp" style="padding:8px 16px;font-size:0.85rem;" onclick="window.location.href='marketplace.html'"><i class="fas fa-store"></i> Go to Exchange</button></div><div id="myCredits" style="margin-top:20px;color:#94a3b8;">Loading...</div></div></div>
@@ -798,7 +798,7 @@ Logout</div>
       <div class="g2">
         <div class="cd">
             <h3 style="color:#f8fafc;margin-bottom:15px;"><i class="fas fa-id-card"></i> KYC Verification</h3>
-            <div id="kycStatusBanner" style="padding:12px;background:rgba(245₹58₹1,0.1);border:1px solid #f59e0b;border-radius:6px;color:#f59e0b;margin-bottom:15px;font-size:0.9rem;">
+            <div id="kycStatusBanner" style="padding:12px;background:rgba(245, 158, 1,0.1);border:1px solid #f59e0b;border-radius:6px;color:#f59e0b;margin-bottom:15px;font-size:0.9rem;">
                 <i class="fas fa-exclamation-triangle"></i> KYC Pending. Please complete identity verification.
             </div>
             <div class="mb"><label>Aadhaar Number</label><input type="text" id="kycAadhaar" class="fi" placeholder="1234-5678-9012"></div>
@@ -944,7 +944,7 @@ async function submitListing() {
 
     function flyTo(){
       var la=parseFloat(document.getElementById('landLat').value),ln=parseFloat(document.getElementById('landLng').value);
-      if(!isNaN(la)&&!isNaN(ln)&&geoMap){geoMap.flyTo([la,ln]₹5,{duration:1.5});autoFillLocation(la,ln);recalc();}
+      if(!isNaN(la)&&!isNaN(ln)&&geoMap){geoMap.flyTo([la,ln], 15,{duration:1.5});autoFillLocation(la,ln);recalc();}
     }
 
     function recalc(){
@@ -1017,7 +1017,7 @@ async function submitListing() {
         var verified = text.length > 5;
         
         setSS('2', verified ? 'passed' : 'failed');
-        document.getElementById('d2').innerHTML = '<div style="padding:10px;background:'+(verified?'rgba(16₹85₹29,0.1)':'rgba(239,68,68,0.1)')+';border-radius:6px;margin-top:8px;font-size:0.8rem;color:#f8fafc;"><strong style="color:#38bdf8;"><i class="fas fa-robot"></i> Nemotron Extracted:</strong><div style="margin-top:5px;max-height:80px;overflow-y:auto;color:#94a3b8;font-family:monospace;font-size:0.7rem;padding:5px;background:#0f172a;border-radius:4px;">'+(text.substring(0, 150))+'...</div><div style="margin-top:8px;font-weight:bold;color:'+(verified?'#10b981':'#ef4444')+';"><i class="fas fa-'+(verified?'check-circle':'times-circle')+'"></i> Ownership Verified</div></div>';
+        document.getElementById('d2').innerHTML = '<div style="padding:10px;background:'+(verified?'rgba(16, 185, 129,0.1)':'rgba(239,68,68,0.1)')+';border-radius:6px;margin-top:8px;font-size:0.8rem;color:#f8fafc;"><strong style="color:#38bdf8;"><i class="fas fa-robot"></i> Nemotron Extracted:</strong><div style="margin-top:5px;max-height:80px;overflow-y:auto;color:#94a3b8;font-family:monospace;font-size:0.7rem;padding:5px;background:#0f172a;border-radius:4px;">'+(text.substring(0, 150))+'...</div><div style="margin-top:8px;font-weight:bold;color:'+(verified?'#10b981':'#ef4444')+';"><i class="fas fa-'+(verified?'check-circle':'times-circle')+'"></i> Ownership Verified</div></div>';
         document.getElementById('d2').style.display = 'block';
         if(!verified) { showToast('7/12 Verification failed!', 'error'); btn.disabled=false; btn.innerHTML='<i class="fas fa-satellite"></i> Run Full Satellite Verification Pipeline'; return; }
       } catch(e) { setSS('2','failed'); showToast(e.message,'error'); btn.disabled=false; btn.innerHTML='<i class="fas fa-satellite"></i> Run Full Satellite Verification Pipeline'; return; }
@@ -1097,7 +1097,7 @@ async function submitListing() {
       document.getElementById('kycStatusBanner').innerHTML = '<i class="fas fa-clock"></i> KYC Under Review';
       document.getElementById('kycStatusBanner').style.color = '#38bdf8';
       document.getElementById('kycStatusBanner').style.borderColor = '#38bdf8';
-      document.getElementById('kycStatusBanner').style.background = 'rgba(56₹89,248,0.1)';
+      document.getElementById('kycStatusBanner').style.background = 'rgba(56, 189, 248,0.1)';
     }
 
     async function loadProfile() {
@@ -1206,13 +1206,13 @@ async function submitListing() {
              let stateBadge = '';
              let actionBtn = '';
              if (c.status === 'held') {
-                 stateBadge = '<span style="background:rgba(16₹85₹29,0.1); color:#10b981; padding:4px 8px; border-radius:4px;">VERIFIED_HELD</span>';
+                 stateBadge = '<span style="background:rgba(16, 185, 129,0.1); color:#10b981; padding:4px 8px; border-radius:4px;">VERIFIED_HELD</span>';
                  actionBtn = `<button class="bp" style="padding:6px 14px; font-size:0.8rem;" onclick="openListModal('${c.id}', ${c.available_tons})"><i class="fas fa-store"></i> List on Market</button>`;
              } else if (c.status === 'listed') {
-                 stateBadge = '<span style="background:rgba(56₹89,248,0.1); color:#38bdf8; padding:4px 8px; border-radius:4px;">MARKET_ACTIVE</span>';
+                 stateBadge = '<span style="background:rgba(56, 189, 248,0.1); color:#38bdf8; padding:4px 8px; border-radius:4px;">MARKET_ACTIVE</span>';
                  actionBtn = '<span style="color:#94a3b8; font-size:0.8rem;"><i class="fas fa-lock"></i> Locked in Exchange</span>';
              } else {
-                 stateBadge = `<span style="background:rgba(245₹58₹1,0.1); color:#f59e0b; padding:4px 8px; border-radius:4px;">${c.status.toUpperCase()}</span>`;
+                 stateBadge = `<span style="background:rgba(245, 158, 1,0.1); color:#f59e0b; padding:4px 8px; border-radius:4px;">${c.status.toUpperCase()}</span>`;
              }
              
              return `
@@ -1341,7 +1341,7 @@ async function submitListing() {
         const modalHtml = `
           <div id="mintSuccessModal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:10000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px);">
             <div style="background:#0f172a;border:1px solid #10b981;border-radius:12px;padding:30px;max-width:400px;text-align:center;animation: sIn 0.3s forwards;position:relative;">
-              <div style="width:60px;height:60px;border-radius:50%;background:rgba(16₹85₹29,0.2);color:#10b981;font-size:2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;"><i class="fas fa-check-circle"></i></div>
+              <div style="width:60px;height:60px;border-radius:50%;background:rgba(16, 185, 129,0.2);color:#10b981;font-size:2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;"><i class="fas fa-check-circle"></i></div>
               <h2 style="color:#f8fafc;margin-bottom:10px;">Credits Minted!</h2>
               <p style="color:#94a3b8;font-size:0.95rem;margin-bottom:20px;">Your carbon credits are now <strong>LIVE</strong> in the Global Market Pool. Industries can now purchase them directly!</p>
               <button class="bp" style="width:100%;" onclick="document.getElementById('mintSuccessModal').remove(); switchTab('credits');">View My Credits Ledger</button>
@@ -1395,7 +1395,7 @@ async function submitListing() {
   
   document.addEventListener('DOMContentLoaded', () => { setTimeout(injectImpactDashboard, 500); });
 </script>
-<a href="#" style="position:fixed;bottom:30px;right:30px;background:#25D366;color:white;width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;box-shadow:0 4px 15px rgba(37,211₹02,0.4);z-index:9999;text-decoration:none;" onclick="alert('WhatsApp Intake Flow: Drops pin, uploads 7/12 extract via chat, instant registration.')"><i class="fab fa-whatsapp"></i></a>
+<a href="#" style="position:fixed;bottom:30px;right:30px;background:#25D366;color:white;width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;box-shadow:0 4px 15px rgba(37, 211, 102,0.4);z-index:9999;text-decoration:none;" onclick="alert('WhatsApp Intake Flow: Drops pin, uploads 7/12 extract via chat, instant registration.')"><i class="fab fa-whatsapp"></i></a>
 
 <script>
     setTimeout(() => {
@@ -1405,7 +1405,7 @@ async function submitListing() {
           type: 'line',
           data: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            datasets: [{ label: 'NDVI Index', data: [0.65, 0.68, 0.72, 0.75, 0.81, 0.85, 0.82, 0.78, 0.75, 0.71, 0.68, 0.66], borderColor: '#10b981', backgroundColor: 'rgba(16₹85₹29,0.1)', borderWidth: 2, fill: true, tension: 0.4 }]
+            datasets: [{ label: 'NDVI Index', data: [0.65, 0.68, 0.72, 0.75, 0.81, 0.85, 0.82, 0.78, 0.75, 0.71, 0.68, 0.66], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129,0.1)', borderWidth: 2, fill: true, tension: 0.4 }]
           },
           options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false, min: 0, max: 1 }, x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: {size:10} } } } }
         });
