@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
     
 
     <!-- Global Mobile Back Button -->
-    <button id="mob-global-back" onclick="if(document.getElementById('mob-notif-panel')?.style.display==='block'){document.getElementById('mob-notif-panel').style.display='none'}else if(document.getElementById('mob-project-detail-modal')?.style.display==='block'){document.getElementById('mob-project-detail-modal').style.display='none'}else{window.location.href='index.html'}" style="position: fixed; top: 35px; left: 15px; z-index: 99999999; background: rgba(30,41,59,0.8); backdrop-filter: blur(5px); border: 1px solid #334155; color: #F8FAFC; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+    <button id="mob-global-back" onclick="if(document.getElementById('mob-notif-panel')?.style.display==='block'){document.getElementById('mob-notif-panel').style.display='none'}else if(document.getElementById('mob-project-detail-modal')?.style.display==='block'){document.getElementById('mob-project-detail-modal').style.display='none'}else{window.location.href='index.html'}" style="position: fixed; top: 50px; left: 15px; z-index: 99999999; background: rgba(30,41,59,0.8); backdrop-filter: blur(5px); border: 1px solid #334155; color: #F8FAFC; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
         <i class="fa-solid fa-arrow-left"></i>
     </button>
     <div class="desktop-dashboard">
@@ -1901,10 +1901,10 @@ tbody.innerHTML = res.credits.map(c => `
       padding: 12px 0 22px;
       z-index: 999;
     }
-    .mob-tab { padding: 0 5px; 
+    .mob-tab {
       color: var(--muted);
       text-align: center;
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       cursor: pointer;
       transition: color 0.2s;
       flex: 1;
@@ -2561,16 +2561,13 @@ tbody.innerHTML = res.credits.map(c => `
       <i class="fa-solid fa-file-invoice-dollar"></i> History
     </div>
     <div class="mob-tab active" data-view="portfolio" onclick="mobSwitchTab('portfolio', this)">
-      <i class="fa-solid fa-chart-bar"></i> Portfolio
+      <i class="fa-solid fa-user"></i> Profile
     </div>
     <div class="mob-tab" data-view="exchange" onclick="mobSwitchTab('exchange', this)">
       <i class="fa-solid fa-arrow-trend-up"></i> Exchange
     </div>
     <div class="mob-tab" data-view="esg" onclick="mobSwitchTab('esg', this)">
       <i class="fa-solid fa-leaf"></i> ESG
-    </div>
-    <div class="mob-tab" onclick="if(window.HapticEngine) HapticEngine.lightTick(); toggleProfileDropdown(event)">
-      <i class="fa-solid fa-user"></i> Profile
     </div>
   </div>
 
