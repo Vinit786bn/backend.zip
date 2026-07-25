@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
     }
   });
 </script>
-<style>@media(max-width:768px){ body, .tab-content { padding-bottom: 90px !important; } }</style></head>
+</head>
 <body>
 
     <!-- Global Mobile Profile Button -->
@@ -212,7 +212,9 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
     
 
     <!-- Global Mobile Back Button -->
-    
+    <button id="mob-global-back" onclick="if(document.getElementById('mob-notif-panel')?.style.display==='block'){document.getElementById('mob-notif-panel').style.display='none'}else if(document.getElementById('mob-project-detail-modal')?.style.display==='block'){document.getElementById('mob-project-detail-modal').style.display='none'}else{window.location.href='index.html'}" style="position: fixed; top: 35px; left: 15px; z-index: 99999999; background: rgba(30,41,59,0.8); backdrop-filter: blur(5px); border: 1px solid #334155; color: #F8FAFC; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+        <i class="fa-solid fa-arrow-left"></i>
+    </button>
     <div class="desktop-dashboard">
 
   <nav class="navbar">
@@ -1899,7 +1901,7 @@ tbody.innerHTML = res.credits.map(c => `
       padding: 12px 0 22px;
       z-index: 999;
     }
-    .mob-tab { padding: 0 2px; 
+    .mob-tab { padding: 0 5px; 
       color: var(--muted);
       text-align: center;
       font-size: 0.7rem;
@@ -2555,9 +2557,6 @@ tbody.innerHTML = res.credits.map(c => `
 
   <!-- BOTTOM NAV -->
   <div class="mob-nav">
-    <div class="mob-tab" onclick="if(window.HapticEngine) HapticEngine.lightTick(); window.location.href='index.html'">
-      <i class="fa-solid fa-arrow-left"></i> Back
-    </div>
     <div class="mob-tab" data-view="history" onclick="mobSwitchTab('history', this)">
       <i class="fa-solid fa-file-invoice-dollar"></i> History
     </div>
@@ -3167,48 +3166,4 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 </script>
     
-
-    <style>
-      .company-bottom-bar { display: none; }
-      @media (max-width: 768px) {
-        .company-bottom-bar {
-          position: fixed;
-          bottom: 0; left: 0; right: 0;
-          background: rgba(10, 14, 23, 0.95);
-          backdrop-filter: blur(10px);
-          border-top: 1px solid #1e293b;
-          display: flex;
-          justify-content: space-around;
-          padding: 15px 0 25px 0;
-          z-index: 99999;
-        }
-        .comp-tab {
-          color: #94a3b8;
-          text-align: center;
-          font-size: 0.75rem;
-          cursor: pointer;
-          transition: color 0.2s;
-        }
-        .comp-tab i {
-          display: block;
-          font-size: 1.4rem;
-          margin-bottom: 5px;
-        }
-        .comp-tab.active { color: #00E676; }
-      }
-    </style>
-    <div class="company-bottom-bar">
-      <div class="comp-tab" onclick="if(window.HapticEngine) HapticEngine.lightTick(); window.location.href='index.html'">
-        <i class="fa-solid fa-arrow-left"></i> Back
-      </div>
-      <div class="comp-tab active" onclick="if(window.HapticEngine) HapticEngine.lightTick(); switchTab('exchange'); document.querySelectorAll('.comp-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active');">
-        <i class="fa-solid fa-chart-line"></i> Exchange
-      </div>
-      <div class="comp-tab" onclick="if(window.HapticEngine) HapticEngine.lightTick(); switchTab('portfolio'); document.querySelectorAll('.comp-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active');">
-        <i class="fa-solid fa-folder-open"></i> Portfolio
-      </div>
-      <div class="comp-tab" onclick="if(window.HapticEngine) HapticEngine.lightTick(); toggleProfileDropdown(event)">
-        <i class="fa-solid fa-user"></i> Profile
-      </div>
-    </div>
 </body></html>
