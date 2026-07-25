@@ -1,4 +1,4 @@
-html { scroll-behavior: smooth; }
+﻿html { scroll-behavior: smooth; }
 /* ============================================
    CARBON WALLET - GLOBAL DESIGN SYSTEM
    ============================================ */
@@ -11,7 +11,7 @@ html { scroll-behavior: smooth; }
   --primary: #00E676;
   --primary-hover: #00C853;
   --secondary: #00E5FF;
-  --accent: #8A2BE2;
+  --accent: #00C853;
   --warning: #FFAB00;
   --danger: #FF3D00;
   --border-color: rgba(0, 230, 118, 0.2);
@@ -438,7 +438,7 @@ a:hover { color: var(--primary-hover); }
 }
 .dropdown-item:hover {
   background: #0f172a;
-  color: #38bdf8;
+  color: #00E676;
 }
 .dropdown-item i {
   width: 20px;
@@ -1120,5 +1120,114 @@ a:hover { color: var(--primary-hover); }
   font-size: 1.1rem;
 }
 
+
+
+
+/* ============================================
+   MOBILE OVERRIDES (Capacitor Native Feel)
+   ============================================ */
+@media (max-width: 768px) {
+  
+  
+  .bottom-nav {
+    display: flex !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-color);
+    z-index: 9999;
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  .bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.7rem;
+    gap: 4px;
+    width: 25%;
+  }
+  
+  .bottom-nav-item i {
+    font-size: 1.25rem;
+  }
+  
+  .bottom-nav-item.active {
+    color: var(--primary);
+  }
+
+  .grid-2, .grid-3, .grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .btn {
+    min-height: 48px;
+  }
+  
+  .form-input, .form-select {
+    min-height: 48px;
+  }
+  
+  .table-responsive {
+    border: none;
+  }
+  
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+  
+  thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+  
+  tr {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
+  
+  td {
+    border: none;
+    position: relative;
+    padding-left: 50%;
+    text-align: right;
+    margin-bottom: 0.5rem;
+  }
+  
+  td:before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    width: 45%;
+    padding-right: 10px;
+    white-space: nowrap;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  
+  body { padding-bottom: 0px; }
+}
+
+.bottom-nav {
+  display: none;
+}
+
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
 
 

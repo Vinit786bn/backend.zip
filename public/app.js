@@ -1,6 +1,21 @@
+﻿// ============================================
+// Carbon Wallet â€” Shared Frontend Logic
 // ============================================
-// Carbon Wallet — Shared Frontend Logic
-// ============================================
+
+// Global API Router for Mobile
+let API_BASE = '';
+if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+  console.log('Mobile Platform Detected. Intercepting API calls to dev server...');
+  API_BASE = 'http://localhost:3000'; // Target local network IP
+  const originalFetch = window.fetch;
+  window.fetch = async function() {
+    let args = Array.prototype.slice.call(arguments);
+    if (typeof args[0] === 'string' && args[0].startsWith('/api/')) {
+      args[0] = API_BASE + args[0];
+    }
+    return originalFetch.apply(this, args);
+  };
+}
 
 const API = {
   // Auth
@@ -494,7 +509,10 @@ window.formatRupee = function(num) { return new Intl.NumberFormat('en-IN', { sty
 function initWebSocket() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     // Use the API URL base if configured, otherwise use current host
-    const host = window.location.host;
+    let host = window.location.host;
+    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+        host = '192.168.0.113:3000';
+    }
     const wsUrl = protocol + '//' + host;
     
     console.log('[WS] Connecting to ' + wsUrl);
@@ -527,4 +545,54 @@ function initWebSocket() {
 
 // Auto-init on load
 window.addEventListener('load', initWebSocket);
+
+
+// ============================================
+// CAPACITOR NATIVE HOOKS
+// ============================================
+if (window.Capacitor) {
+  const Haptics = window.Capacitor.Plugins.Haptics;
+  const NativeBiometric = window.Capacitor.Plugins.NativeBiometric;
+  
+  window.triggerHaptic = async function(style = 'LIGHT') {
+    if (Haptics) {
+      try {
+        await Haptics.impact({ style: style });
+      } catch(e) {}
+    }
+  };
+
+  window.nativeBiometricLogin = async function() {
+    if (!NativeBiometric) return false;
+    try {
+      const result = await NativeBiometric.isAvailable();
+      if (!result.isAvailable) return false;
+      
+      const verified = await NativeBiometric.verifyIdentity({
+        reason: "Log in to Carbon Wallet",
+        title: "Biometric Login"
+      });
+      
+      if (verified) {
+        const token = localStorage.getItem('cw_token');
+        if (token) {
+           return true;
+        }
+      }
+      return false;
+    } catch(e) {
+      console.error(e);
+      return false;
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.btn, button, .bottom-nav-item').forEach(el => {
+      el.addEventListener('click', () => window.triggerHaptic('LIGHT'));
+    });
+  });
+} else {
+  window.triggerHaptic = function() {}; 
+  window.nativeBiometricLogin = async function() { return false; };
+}
 

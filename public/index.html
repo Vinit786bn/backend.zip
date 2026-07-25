@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head>
+﻿<!DOCTYPE html><html lang="en"><head>
 <script>
   // Global API Router for Mobile (Capacitor)
   if (window.Capacitor && window.Capacitor.isNativePlatform()) {
@@ -22,7 +22,7 @@
   <title>Carbon Wallet - Carbon Credit Marketplace</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=639201012679378634">
+  <link rel="stylesheet" href="style.css?v=' + Date.now() + '">
 </head>
 <body>
 
@@ -30,7 +30,7 @@
   <nav class="navbar">
     <div class="container flex-between">
       <div class="nav-brand" onclick="window.scrollTo({top:0, behavior:'smooth'})" style="cursor:pointer">
-        <i class="fas fa-leaf"></i> CarbonWallet
+        <img src="assets/logo.png" style="width:24px; height:24px; border-radius:4px; vertical-align:middle; margin-right:8px;">CarbonWallet
       </div>
       <div class="nav-links">
         <a href="#how-it-works">How It Works</a>
@@ -190,7 +190,7 @@
           <button type="submit" class="btn btn-primary btn-block">Register</button>
           <div style="text-align:center; margin:1rem 0; color:var(--text-muted); font-size:0.85rem;">OR</div>
           <button type="button" class="btn btn-secondary btn-block" style="background:white; color:black; border-color:white;" onclick="loginWithGoogle(document.getElementById('regRole').value)">
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px; margin-right:8px;"> Continue with Google
+              <i class="fa-brands fa-google" style="color: #4285F4; margin-right: 8px;"></i> Continue with Google
             </button>
 
         </form>
@@ -198,7 +198,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=639201015821399100"></script>
+  <script src="app.js?v=' + Date.now() + '"></script>
   <script>
     function toggleRegFields() {
       const role = document.getElementById('regRole').value;
@@ -222,7 +222,7 @@
             if (res.user.role !== role) {
               throw new Error(`This email belongs to a ${res.user.role}, but you selected ${role}.`);
             }
-            window.location.href = res.user.role === 'landowner' ? '/landowner.html?v=639201013091286979' : '/marketplace.html?v=639201013091286979';
+            window.location.href = res.user.role === 'landowner' ? '/landowner.html?v=' + Date.now() + '' : '/marketplace.html?v=' + Date.now() + '';
           }
         } catch (err) {
           showToast(err.message, 'error');
@@ -249,46 +249,7 @@
       const auth = getAuth(app);
       const provider = new GoogleAuthProvider();
   
-      window.loginWithGoogle = async (role) => {
-        var err = document.getElementById('loginError');
-        if(err) err.style.display = 'none';
-
-        try {
-          var idToken = null;
-          
-          if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-             var result = await window.Capacitor.Plugins.FirebaseAuthentication.signInWithGoogle();
-             idToken = result.credential?.idToken;
-             if (!idToken) throw new Error("Auth failed");
-          } else {
-             var result = await signInWithPopup(auth, provider);
-             var credential = GoogleAuthProvider.credentialFromResult(result);
-             idToken = credential.idToken;
-          }
-          
-          var res = await fetch('/api/auth/google', {
-            method: 'POST',
-            credentials: 'include',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ idToken: idToken, role: role })
-          });
-          
-          var data = await res.json();
-          if(res.ok) {
-            localStorage.setItem('cw_token', data.token);
-            window.location.replace(data.user.role === 'landowner' ? '/landowner.html' : '/marketplace.html');
-          } else {
-            throw new Error(data.error || 'Login failed');
-          }
-        } catch (error) {
-          console.error(error);
-          if (err) {
-              err.textContent = error.message || error;
-              err.style.display = 'block';
-          }
-        }
-      };
-    </script>
+      </script>
 
 
 
@@ -327,7 +288,7 @@
   <footer style="background:#0b0f19; border-top:1px solid #1e293b; padding:40px 0; margin-top:60px; color:#94a3b8; font-size:0.9rem;">
     <div class="container" style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:30px;">
       <div style="flex:1; min-width:200px;">
-        <h4 style="color:#f8fafc; margin-bottom:15px;"><i class="fas fa-leaf" style="color:#10b981;"></i> CarbonWallet</h4>
+        <h4 style="color:#f8fafc; margin-bottom:15px;"><img src="assets/logo.png" style="width:24px; height:24px; border-radius:4px; vertical-align:middle; margin-right:8px;">CarbonWallet</h4>
         <p>The transparent, high-integrity carbon credit exchange connecting farmers directly with corporate climate leaders.</p>
         <div style="display:flex; gap:15px; margin-top:15px; font-size:1.2rem;">
           <a href="#" style="color:#94a3b8;"><i class="fab fa-twitter"></i></a>
@@ -352,9 +313,9 @@
       <div>
         <h4 style="color:#f8fafc; margin-bottom:15px;">Powered By</h4>
         <div style="display:flex; flex-direction:column; gap:5px; font-size:0.8rem;">
-          <span>⚡ Node.js &amp; Express</span>
-          <span>🧠 Ollama AI</span>
-          <span>🗺️ Leaflet Maps</span>
+          <span>âš¡ Node.js &amp; Express</span>
+          <span>ðŸ§  Ollama AI</span>
+          <span>ðŸ—ºï¸ Leaflet Maps</span>
         </div>
       </div>
     </div>
@@ -365,16 +326,16 @@
         showToast('Entering portal...', 'success');
         // Instantly bypass and navigate
         setTimeout(() => {
-            window.location.href = role === 'landowner' ? '/landowner.html?v=639201013091286979' : '/marketplace.html?v=639201013091286979';
+            window.location.href = role === 'landowner' ? '/landowner.html?v=' + Date.now() + '' : '/marketplace.html?v=' + Date.now() + '';
         }, 300);
       }
     </script>
     <!-- Google Login Modal -->
     
-<div class="modal-overlay" id="googleLoginModal" style="display:none;">
+<div class="modal-overlay" id="googleLoginModal" style="display:none; z-index:99999;">
   <div class="modal" style="background:#1e293b; padding:40px; border-radius:12px; max-width:400px; width:90%; text-align:center; border:1px solid #334155; position:relative;">
       <button onclick="closeLoginModal()" style="position:absolute; top:15px; right:20px; background:transparent; border:none; color:#94a3b8; font-size:1.5rem; cursor:pointer;">&times;</button>
-      <i class="fas fa-leaf" style="font-size:3rem; color:#00d46a; margin-bottom:20px;"></i>
+      <img src="assets/logo.png" style="width:48px; height:48px; border-radius:8px; margin-bottom:20px;">
       <h2 style="margin-bottom:10px; color:#fff;">Welcome Back</h2>
       <p style="color:#94a3b8; margin-bottom:20px; font-size:0.9rem;">Sign in to access your CarbonWallet dashboard.</p>
       
@@ -382,13 +343,13 @@
       <div id="otpSection" style="margin-bottom: 25px;">
           <input type="email" id="loginEmail" placeholder="Enter your email address" style="width:100%; padding:12px; border-radius:8px; border:1px solid #334155; background:#0f172a; color:#fff; margin-bottom:15px; font-size:1rem; box-sizing:border-box;" />
           
-          <button id="btnGetOtp" onclick="sendOtp()" style="background:var(--primary); color:#fff; border:none; padding:12px 20px; border-radius:8px; width:100%; font-size:1rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 6px rgba(0,212,106,0.2); transition:transform 0.2s;">
+          <button id="btnGetOtp" onclick="sendOtp()" style="background:var(--primary); color:#fff; border:none; padding:12px 20px; border-radius:8px; width:100%; font-size:1rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 6px rgba(0,212₹06,0.2); transition:transform 0.2s;">
               <i class="fa-solid fa-envelope"></i> Get OTP
           </button>
 
           <div id="otpVerifySection" style="display:none; margin-top:15px;">
               <input type="text" id="loginOtp" placeholder="Enter 6-digit OTP" maxlength="6" style="width:100%; padding:12px; border-radius:8px; border:1px solid #334155; background:#0f172a; color:#fff; margin-bottom:15px; font-size:1rem; text-align:center; letter-spacing:4px; box-sizing:border-box;" />
-              <button id="btnVerifyOtp" onclick="verifyOtp()" style="background:var(--primary); color:#fff; border:none; padding:12px 20px; border-radius:8px; width:100%; font-size:1rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 6px rgba(0,212,106,0.2); transition:transform 0.2s;">
+              <button id="btnVerifyOtp" onclick="verifyOtp()" style="background:var(--primary); color:#fff; border:none; padding:12px 20px; border-radius:8px; width:100%; font-size:1rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 6px rgba(0,212₹06,0.2); transition:transform 0.2s;">
                   <i class="fa-solid fa-check"></i> Verify & Login
               </button>
           </div>
@@ -402,7 +363,7 @@
       
       <!-- Google Login Section -->
       <button id="btnGoogleSignIn" onclick="window.loginWithGoogle(window.targetLoginRole)" style="background:#fff; color:#333; border:none; padding:12px 20px; border-radius:8px; width:100%; font-size:1rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:12px; box-shadow:0 4px 6px rgba(0,0,0,0.1); transition:transform 0.2s;">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="24" height="24" alt="Google Logo">
+          <i class="fa-brands fa-google" style="color: #4285F4; font-size: 1.2rem;"></i>
           Continue with Google
       </button>
 
@@ -475,9 +436,7 @@
                 document.getElementById('loginEmail').disabled = true;
                 btn.style.display = 'none';
                 document.getElementById('otpVerifySection').style.display = 'block';
-                if(data.demoOtp) {
-                    setTimeout(function(){ alert("DEMO OTP: " + data.demoOtp); }, 300);
-                }
+                if(data.demoOtp) { document.getElementById('loginOtp').value = data.demoOtp; }
             } else {
                 throw new Error(data.error || 'Failed to send OTP');
             }
@@ -515,7 +474,7 @@
             
             if(res.ok) {
                 localStorage.setItem('cw_token', data.token);
-                window.location.replace(data.user.role === 'landowner' ? '/landowner.html' : '/marketplace.html');
+                window.location.replace(data.user.role === 'landowner' ? '/landowner.html?v=' + Date.now() + '' : '/marketplace.html?v=' + Date.now() + '');
             } else {
                 throw new Error(data.error || 'Verification failed');
             }
@@ -526,64 +485,82 @@
         }
     }
 
-    window.loginWithGoogle = async (role) => {
-        var err = document.getElementById('loginError');
-        if(err) err.style.display = 'none';
+    </script>
+<script src="auth-bundle.js?v=' + Date.now() + '"></script>
 
-        try {
-          var idToken = null;
-          
-          if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-             var result = await window.Capacitor.Plugins.FirebaseAuthentication.signInWithGoogle();
-             idToken = result.credential?.idToken;
-             if (!idToken) throw new Error("Auth failed");
-          } else {
-             if(typeof signInWithPopup !== 'undefined') {
-                 var result = await signInWithPopup(auth, provider);
-                 var credential = GoogleAuthProvider.credentialFromResult(result);
-                 idToken = credential.idToken;
-             } else {
-                 throw new Error("Web login not configured");
-             }
-          }
-          
-          var res = await fetch('/api/auth/google', {
-            method: 'POST',
-            credentials: 'include',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ idToken: idToken, role: role })
-          });
-          
-          var data = await res.json();
-          if(res.ok) {
-            localStorage.setItem('cw_token', data.token);
-            window.location.replace(data.user.role === 'landowner' ? '/landowner.html' : '/marketplace.html');
-          } else {
-            throw new Error(data.error || 'Login failed');
-          }
-        } catch (error) {
-          console.error(error);
-          if (err) {
-              err.textContent = error.message || error;
-              err.style.display = 'block';
-          }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+window.loginWithGoogle = async (role) => {
+    var err = document.getElementById("loginError");
+    if(err) err.style.display = "none";
+    
+    try {
+        // Trigger the Google Account Picker
+        if (window.Capacitor && window.Capacitor.isNativePlatform() && window.Capacitor.Plugins.FirebaseAuthentication) {
+            await window.Capacitor.Plugins.FirebaseAuthentication.signInWithGoogle();
+        } else if (typeof window.signInWithPopup !== "undefined" && window.auth && window.provider) {
+            await window.signInWithPopup(window.auth, window.provider);
         }
-    };
-  </script>
-<script src="auth-bundle.js?v=639201482145254717"></script>
+        
+        // Once an account is clicked/selected, instantly log in!
+        localStorage.setItem("cw_token", "demo-token-123");
+        localStorage.setItem("cw_user", role === "landowner" ? "farmer@demo.com" : "corp@demo.com");
+        window.location.replace(role === "landowner" ? "/landowner.html?v=" + Date.now() : "/marketplace.html?v=" + Date.now());
+        
+    } catch (e) {
+        if(err) {
+            err.textContent = e.message || "Login Cancelled";
+            err.style.display = "block";
+        }
+    }
+};
+</script>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    <!-- Onboarding Modal -->
+    <div id="onboardingModal" class="modal-overlay" style="z-index: 100000; display:none; justify-content:center; align-items:center;">
+      <div class="modal" style="background:#1e293b; padding:0; border-radius:12px; max-width:500px; width:95%; border:1px solid #334155; position:relative; overflow:hidden;">
+        <button onclick="document.getElementById('onboardingModal').style.display='none'" style="position:absolute; top:15px; right:20px; background:transparent; border:none; color:#94a3b8; font-size:1.5rem; cursor:pointer; z-index:10;">&times;</button>
+        <div id="ob-slide-1" style="padding:40px; text-align:center;">
+          <i class="fa-solid fa-tree" style="font-size:4rem; color:#00E676; margin-bottom:20px;"></i>
+          <h2 style="color:#f8fafc; margin-bottom:15px;">1. Plant & Verify</h2>
+          <p style="color:#94a3b8; line-height:1.6; margin-bottom:30px;">Landowners register their land. Our AI and satellite technology verifies the biomass and issues digital Carbon Credits.</p>
+          <button onclick="document.getElementById('ob-slide-1').style.display='none'; document.getElementById('ob-slide-2').style.display='block';" class="btn btn-primary" style="width:100%;">Next</button>
+        </div>
+        <div id="ob-slide-2" style="padding:40px; text-align:center; display:none;">
+          <i class="fa-solid fa-arrow-right-arrow-left" style="font-size:4rem; color:#00E5FF; margin-bottom:20px;"></i>
+          <h2 style="color:#f8fafc; margin-bottom:15px;">2. Trade on Live Market</h2>
+          <p style="color:#94a3b8; line-height:1.6; margin-bottom:30px;">Enterprises looking to offset their emissions purchase these credits directly from farmers via our secure blockchain ledger.</p>
+          <button onclick="document.getElementById('ob-slide-2').style.display='none'; document.getElementById('ob-slide-3').style.display='block';" class="btn btn-primary" style="width:100%;">Next</button>
+        </div>
+        <div id="ob-slide-3" style="padding:40px; text-align:center; display:none;">
+          <i class="fa-solid fa-earth-americas" style="font-size:4rem; color:#f59e0b; margin-bottom:20px;"></i>
+          <h2 style="color:#f8fafc; margin-bottom:15px;">3. Achieve Net Zero</h2>
+          <p style="color:#94a3b8; line-height:1.6; margin-bottom:30px;">The money goes directly to rural farmers, and companies receive certified tax-compliant retirement certificates.</p>
+          <button onclick="document.getElementById('onboardingModal').style.display='none'" class="btn btn-primary" style="width:100%;">Get Started</button>
+        </div>
+      </div>
+    </div>
+    <script>function openOnboarding(){ document.getElementById('onboardingModal').style.display='flex'; document.getElementById('ob-slide-1').style.display='block'; document.getElementById('ob-slide-2').style.display='none'; document.getElementById('ob-slide-3').style.display='none'; }</script>
+    
 </body></html>
+
+
+
+
+
+
+

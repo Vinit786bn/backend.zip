@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head>
+﻿<!DOCTYPE html><html lang="en"><head>
 <script>
   // Global API Router for Mobile (Capacitor)
   if (window.Capacitor && window.Capacitor.isNativePlatform()) {
@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
               <div class="metric-card"><div class="metric-title">Total Users</div><div class="metric-value" id="dash-users">0</div></div>
               <div class="metric-card"><div class="metric-title">Verified Hectares</div><div class="metric-value" id="dash-ha">0</div></div>
               <div class="metric-card"><div class="metric-title">Tons Minted</div><div class="metric-value" id="dash-tons">0</div></div>
-              <div class="metric-card"><div class="metric-title">Platform Revenue</div><div class="metric-value" id="dash-rev">₹0</div></div>
+              <div class="metric-card"><div class="metric-title">Platform Revenue</div><div class="metric-value" id="dash-rev">â‚¹0</div></div>
            </div>
            <div style="background:#121212; border:1px solid #333; border-radius:8px; padding:20px; height:300px; margin-bottom:30px;">
               <canvas id="marketChart"></canvas>
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
               <div class="metric-card"><div class="metric-title">Pending review</div><div class="metric-value" id="queue-pending">0</div></div>
               <div class="metric-card"><div class="metric-title">Verified hectares</div><div class="metric-value" id="queue-ha">0</div></div>
               <div class="metric-card"><div class="metric-title">Tons minted</div><div class="metric-value" id="queue-tons">0</div></div>
-              <div class="metric-card"><div class="metric-title">Platform revenue</div><div class="metric-value" id="queue-rev">₹0</div></div>
+              <div class="metric-card"><div class="metric-title">Platform revenue</div><div class="metric-value" id="queue-rev">â‚¹0</div></div>
            </div>
            
            <div style="background:#121212; border:1px solid #333; border-radius:8px; overflow:hidden;">
@@ -335,7 +335,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
           document.getElementById('dash-users').textContent = data.stats.users;
           document.getElementById('dash-ha').textContent = data.stats.hectares || '1,240';
           document.getElementById('dash-tons').textContent = data.stats.credits || '8,930';
-          document.getElementById('dash-rev').textContent = '₹' + (data.stats.revenue ? data.stats.revenue.toLocaleString() : '6.1L');
+          document.getElementById('dash-rev').textContent = 'â‚¹' + (data.stats.revenue ? data.stats.revenue.toLocaleString() : '6.1L');
           
           const ctx = document.getElementById('marketChart');
           if(ctx) {
@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
           document.getElementById('queue-pending').textContent = currentQueue.length;
           document.getElementById('queue-ha').textContent = '1,240';
           document.getElementById('queue-tons').textContent = '8,930';
-          document.getElementById('queue-rev').textContent = '₹6.1L';
+          document.getElementById('queue-rev').textContent = 'â‚¹6.1L';
 
           const tbody = document.getElementById('queue-table-body');
           if (currentQueue.length === 0) {
@@ -488,8 +488,8 @@ tbody.innerHTML = currentQueue.map(q => {
              <td style="font-family:monospace;">${tx.id.substring(0,8)}</td>
              <td style="color:#f59e0b;">${tx.buyer_name}</td>
              <td style="color:#10b981;">${tx.seller_name}</td>
-             <td>₹${(tx.tons * tx.price_per_ton).toLocaleString()}</td>
-             <td>₹${(tx.tons * tx.price_per_ton * 0.15).toLocaleString()}</td>
+             <td>â‚¹${(tx.tons * tx.price_per_ton).toLocaleString()}</td>
+             <td>â‚¹${(tx.tons * tx.price_per_ton * 0.15).toLocaleString()}</td>
              <td>${tx.status}</td>
           </tr>
        `).join('');
@@ -666,7 +666,7 @@ tbody.innerHTML = currentQueue.map(q => {
             <h3 style="margin:0; color:#f8fafc; font-family:monospace;">Pune Agroforestry</h3>
             <span style="color:#FFAB00; font-weight:bold; font-size:0.8rem;">PENDING</span>
          </div>
-         <div style="color:#94a3b8; font-size:0.9rem;">250 Hectares • Awaiting 7/12 Verification</div>
+         <div style="color:#94a3b8; font-size:0.9rem;">250 Hectares â€¢ Awaiting 7/12 Verification</div>
       </div>
     </div>
     
@@ -784,3 +784,4 @@ tbody.innerHTML = currentQueue.map(q => {
     }
   </script>
 </body></html>
+
