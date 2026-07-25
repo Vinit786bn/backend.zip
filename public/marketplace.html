@@ -1899,7 +1899,7 @@ tbody.innerHTML = res.credits.map(c => `
       padding: 12px 0 22px;
       z-index: 999;
     }
-    .mob-tab {
+    .mob-tab { padding: 0 2px; 
       color: var(--muted);
       text-align: center;
       font-size: 0.7rem;
@@ -2555,15 +2555,23 @@ tbody.innerHTML = res.credits.map(c => `
 
   <!-- BOTTOM NAV -->
   <div class="mob-nav">
-    <div class="mob-tab" data-view="history" onclick="mobSwitchTab('history', this)"><i class="fa-solid fa-file-invoice-dollar"></i> History</div>
-      <div class="mob-tab active" data-view="portfolio" onclick="mobSwitchTab('portfolio', this)">
+    <div class="mob-tab" onclick="if(window.HapticEngine) HapticEngine.lightTick(); window.location.href='index.html'">
+      <i class="fa-solid fa-arrow-left"></i> Back
+    </div>
+    <div class="mob-tab" data-view="history" onclick="mobSwitchTab('history', this)">
+      <i class="fa-solid fa-file-invoice-dollar"></i> History
+    </div>
+    <div class="mob-tab active" data-view="portfolio" onclick="mobSwitchTab('portfolio', this)">
       <i class="fa-solid fa-chart-bar"></i> Portfolio
     </div>
     <div class="mob-tab" data-view="exchange" onclick="mobSwitchTab('exchange', this)">
       <i class="fa-solid fa-arrow-trend-up"></i> Exchange
     </div>
     <div class="mob-tab" data-view="esg" onclick="mobSwitchTab('esg', this)">
-      <i class="fa-solid fa-leaf"></i> ESG Goals
+      <i class="fa-solid fa-leaf"></i> ESG
+    </div>
+    <div class="mob-tab" onclick="if(window.HapticEngine) HapticEngine.lightTick(); toggleProfileDropdown(event)">
+      <i class="fa-solid fa-user"></i> Profile
     </div>
   </div>
 
