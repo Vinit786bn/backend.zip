@@ -771,7 +771,7 @@ a:hover { color: var(--primary-hover); }
 /* --- WIZARD UI (Landowner) --- */
 .mobile-wizard-wrapper { display: none; }
 @media (max-width: 768px) {
-  .desktop-dashboard { display: none !important; }
+  .desktop-dashboard:not(.mobile-visible) { display: none !important; }
   .mobile-wizard-wrapper {
     display: flex;
     flex-direction: column;

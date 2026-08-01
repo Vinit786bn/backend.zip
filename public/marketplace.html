@@ -1,5 +1,7 @@
 <!DOCTYPE html><html lang="en"><head>
 <script>
+
+
   // Global API Router for Mobile
   if (window.Capacitor && window.Capacitor.isNativePlatform()) {
     console.log('Mobile Platform Detected. Intercepting API calls to dev server...');
@@ -118,7 +120,45 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
       animation: rowFlash 1.5s ease-out forwards;
     }
     
-  </style>
+  
+  /* ─── Clean Mobile Credit Cards ─────────────────── */
+  .mob-credit-card { display:flex; align-items:center; justify-content:space-between; background:#131722; border:1px solid #1e2535; border-radius:12px; padding:14px 16px; margin-bottom:10px; gap:12px; }
+  .mob-card-left { flex:1; min-width:0; }
+  .mob-card-ticker { font-size:0.95rem; font-weight:700; color:#00bcd4; font-family:monospace; letter-spacing:0.5px; }
+  .mob-card-meta { font-size:0.72rem; color:#64748b; margin-top:3px; }
+  .mob-card-detail { font-size:0.8rem; color:#94a3b8; margin-top:6px; }
+  .mob-card-price { font-weight:700; color:#00e676; }
+  .mob-card-unit { color:#64748b; }
+  .mob-trade-btn { background:linear-gradient(135deg,#2962ff,#0039cb); color:#fff; border:none; border-radius:8px; padding:10px 18px; font-size:0.82rem; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:0 2px 10px rgba(41,98,255,0.4); flex-shrink:0; position:relative; z-index:999999; pointer-events:auto; }
+
+  /* ─── Mobile Trade Bottom Sheet ─────────────────── */
+  #mobTradeSheet { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.75); align-items:flex-end; }
+  #mobTradeSheetInner { background:#0f1117; border-radius:20px 20px 0 0; width:100%; padding-bottom:32px; max-height:93vh; overflow-y:auto; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1); }
+  .mts-handle { width:40px; height:4px; background:#334155; border-radius:99px; margin:14px auto 0; }
+  .mts-hdr { padding:16px 20px 14px; border-bottom:1px solid #1e2535; }
+  .mts-tic { font-size:1.1rem; font-weight:700; color:#00bcd4; font-family:monospace; }
+  .mts-met { font-size:0.78rem; color:#64748b; margin-top:4px; }
+  #mts-map-el { height:160px; background:#1a1d2e; }
+  .mts-body { padding:18px 20px 8px; }
+  .mts-tog { display:flex; gap:8px; margin-bottom:18px; }
+  .mts-tog-btn { flex:1; padding:9px; border:1px solid #334155; border-radius:6px; background:transparent; color:#94a3b8; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
+  .mts-tog-btn.active { background:#38bdf8; color:#0f1117; border-color:#38bdf8; }
+  .mts-pr { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .mts-pr-lbl { font-size:0.75rem; color:#64748b; }
+  .mts-pr-val { font-size:1.4rem; font-weight:700; color:#00e676; }
+  .mts-pr-right { text-align:right; }
+  .mts-pr-vol { font-size:0.95rem; color:#94a3b8; font-weight:600; }
+  .mts-inp-row { background:#131722; border:1px solid #1e2535; border-radius:10px; padding:12px 16px; margin-bottom:12px; }
+  .mts-inp-lbl { font-size:0.7rem; color:#64748b; margin-bottom:5px; letter-spacing:0.5px; }
+  .mts-inp { width:100%; background:transparent; border:none; color:#e2e8f0; font-size:1.2rem; font-weight:600; outline:none; }
+  .mts-tot { display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-top:1px solid #1e2535; margin-bottom:16px; }
+  .mts-tot-lbl { font-size:0.82rem; color:#64748b; }
+  .mts-tot-val { font-size:1.15rem; font-weight:700; color:#e2e8f0; }
+  .mts-actions { display:flex; gap:10px; }
+  .mts-btn-retire { flex:1; background:#ef4444; color:#fff; border:2px solid #7f1d1d; border-radius:10px; padding:16px 10px; font-size:0.9rem; font-weight:700; cursor:pointer; }
+  .mts-btn-hold { flex:1; background:#2962ff; color:#fff; border:none; border-radius:10px; padding:16px 10px; font-size:0.9rem; font-weight:700; cursor:pointer; }
+
+</style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -517,6 +557,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
 
     <!-- ==================== PROJECT DETAIL / TRUST SCREEN ==================== -->
     <div id="tab-project" class="tab-pane">
+    <div id="mob-back-btn" style="display:none; padding:10px 15px; background:#0f172a; position:sticky; top:0; z-index:1000;"><button onclick="goBackToListing()" style="background:#1e293b; color:#64748b; border:1px solid #334155; padding:8px 16px; border-radius:6px; font-size:0.85rem; cursor:pointer;"><i class="fas fa-arrow-left"></i> Back to Listings</button></div>
       <button onclick="switchTab('exchange')" style="background:transparent; border:none; color:#2962ff; cursor:pointer; margin-bottom:15px; font-size:0.9rem;"><i class="fas fa-arrow-left"></i> Back to Exchange</button>
       
       <div class="grid-3" style="grid-template-columns: 2fr 1fr;" id="project-detail-container">
@@ -633,6 +674,18 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
     }
 
     function switchTab(tabId) {
+      // On mobile: keep desktop-dashboard visible for all tabs, restore mobile only when going home
+      if(window.innerWidth <= 768 || (window.Capacitor && window.Capacitor.isNativePlatform()) || navigator.userAgent.includes('Mobile')) {
+         document.querySelector('.desktop-dashboard').classList.add('mobile-visible');
+         var _mc = document.querySelector('.mobile-container'); if(_mc) _mc.style.setProperty('display', 'none', 'important');
+         if(tabId !== 'project') {
+             var meta = document.querySelector('meta[name="viewport"]');
+             if(meta) meta.setAttribute('content', 'width=device-width, initial-scale=1.0');
+         } else {
+             var meta = document.querySelector('meta[name="viewport"]');
+             if(meta) meta.setAttribute('content', 'width=1200, user-scalable=yes');
+         }
+      }
       document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
       document.getElementById('tab-' + tabId).classList.add('active');
       document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
@@ -658,289 +711,6 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
           pdMap.setView([selectedCredit.lat||17, selectedCredit.lng||75], 13);
         }, 300);
       }
-    }
-
-    // ========== CHARTS ==========
-    function initCharts() {
-      // Emissions vs Offsets
-      const ctxEm = document.getElementById('emissionsChart').getContext('2d');
-      new Chart(ctxEm, {
-        type: 'line',
-        data: {
-          labels: ['2020','2021','2022','2023','2024','2025'],
-          datasets: [
-            { label: 'Emissions (Tons)', data: [15000, 14500, 13000, 12500, 11000, 9500], borderColor: '#f23645', backgroundColor: 'transparent', tension: 0.4 },
-            { label: 'Offsets Retired', data: [0, 500, 2000, 3500, 5000, 7500], borderColor: '#089981', backgroundColor: 'rgba(8,153,129,0.1)', fill: true, tension: 0.4 }
-          ]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#2a2e39' }, ticks:{ color:'#787b86' } }, x: { grid: { display:false }, ticks:{ color:'#787b86' } } }, plugins: { legend: { labels: { color: '#d1d4dc' } } } }
-      });
-
-      // Asset Allocation
-      const ctxAl = document.getElementById('allocationChart').getContext('2d');
-      new Chart(ctxAl, {
-        type: 'doughnut',
-        data: {
-          labels: ['Agriculture', 'Forestry', 'Grassland'],
-          datasets: [{ data: [60, 30, 10], backgroundColor: ['#2962ff', '#089981', '#f59e0b'], borderWidth: 0 }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#d1d4dc' } } } }
-      });
-
-      // Market Trends Candlestick (Simulated as line for simplicity in vanilla Chart.js)
-      const ctxTr = document.getElementById('trendChart').getContext('2d');
-      new Chart(ctxTr, {
-        type: 'line',
-        data: {
-          labels: ['Jan','Feb','Mar','Apr','May','Jun'],
-          datasets: [{ label: 'Avg Price (₹)', data: [1200, 1250, 1180, 1350, 1420, 1500], borderColor: '#2962ff', backgroundColor: 'rgba(41,98,255,0.1)', fill: true, tension: 0.1 }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#2a2e39' }, ticks:{ color:'#787b86' } }, x: { grid: { display:false }, ticks:{ color:'#787b86' } } }, plugins: { legend: { display: false } } }
-      });
-    }
-
-    // ========== DATA FETCHING ==========
-    
-// Append the new logic inside the script tag
-window.jsPDF = window.jspdf.jsPDF;
-
-async function loadPortfolio() {
-      try {
-        const res = await API.myCredits();
-        const holdings = res.owned.filter(c => c.status === 'held' && c.available_tons > 0);
-        const retiredCerts = res.certificates.filter(c => c.status === 'active' && c.project_name === 'Retired Offset');
-        
-        const totalRetired = retiredCerts.reduce((sum, c) => sum + c.tons, 0);
-        const totalHeld = holdings.reduce((sum, c) => sum + c.available_tons, 0);
-        
-        document.getElementById('port-retired').textContent = totalRetired === 0 ? 'Nil' : totalRetired;
-        document.getElementById('port-held').textContent = totalHeld === 0 ? 'Nil' : totalHeld;
-        
-        const target = 15000;
-        const progress = Math.min(100, Math.round((totalRetired / target) * 100));
-        document.getElementById('port-progress').textContent = progress + '%';
-        document.getElementById('progress-bar').style.width = progress + '%';
-
-        const tbody = document.querySelector('#holdingsTable tbody');
-        tbody.innerHTML = holdings.length === 0 ? '<tr><td colspan="7" style="text-align:center; color:#787b86;">Nil (0 Tons Held)</td></tr>' : holdings.map(h => {
-          // Find purchase price from res.purchased
-          const purchaseRecord = res.purchased.find(p => p.credit_id === h.id);
-          const purchasedPrice = purchaseRecord ? purchaseRecord.price_per_ton : (h.price_per_ton * 0.9); // fallback to 10% less if not found
-          
-          return `
-          <tr>
-            <td class="ticker">${h.ticker || 'N/A'}</td>
-            <td>${h.land_name || 'Portfolio'}</td>
-            <td>${h.vintage_year || new Date().getFullYear()}</td>
-            <td class="vol">${h.available_tons} Tons</td>
-            <td style="color:#94a3b8;">₹${purchasedPrice.toFixed(2)} / Ton</td>
-            <td style="color:#38bdf8; font-weight:bold;">₹${h.price_per_ton.toFixed(2)} / Ton</td>
-            <td>
-              <button class="btn" style="background:rgba(8,153,129,0.1); color:#089981; padding:4px 8px; border:none; border-radius:4px; cursor:pointer; margin-right:5px;" onclick="alert('Downloading Certificate for '+ '${h.ticker}' +'...')"><i class="fas fa-download"></i> Cert</button>
-              <button style="background:transparent; border:1px solid #f23645; color:#f23645; padding:4px 12px; border-radius:4px; cursor:pointer;" onclick="window.sellHolding('${h.id}')">Sell</button>
-            </td>
-          </tr>
-          `;
-        }).join('');
-
-        // Load Transactions & Bills (History Tab)
-        const billsBody = document.querySelector('#historyTable tbody');
-        billsBody.innerHTML = res.purchased.length === 0 ? '<tr><td colspan="6" style="text-align:center; color:#787b86;">Nil (No transactions yet)</td></tr>' : res.purchased.map(t => `
-          <tr>
-            <td>${new Date(t.created_at).toLocaleDateString()}</td>
-            <td>Purchase</td>
-            <td>${t.land_name || 'Portfolio'}</td>
-            <td>${t.tons} T</td>
-            <td style="color:#089981;">₹${t.total_price.toFixed(2)}</td>
-            <td>${t.status}</td>
-          </tr>
-        `).join('');
-        
-        // Also load Retire Tab data
-        const retireBody = document.querySelector('#retireTable tbody');
-        retireBody.innerHTML = holdings.length === 0 ? '<tr><td colspan="4" style="text-align:center; color:#787b86;">No credits available to retire</td></tr>' : holdings.map(h => `
-          <tr>
-            <td class="ticker">${h.ticker || 'N/A'}</td>
-            <td>${h.land_name || 'Portfolio'}</td>
-            <td class="vol">${h.available_tons}</td>
-            <td><button style="background:#089981; border:none; color:white; padding:6px 12px; border-radius:4px; cursor:pointer;" onclick="retireCredit('${h.id}')"><i class="fas fa-fire"></i> Retire (Burn)</button></td>
-          </tr>
-        `).join('');
-
-      } catch (e) { console.error('Portfolio load error', e); }
-    }
-
-function downloadBill(tx) {
-  try {
-      const doc = new jsPDF();
-      
-      // Header
-      doc.setFontSize(22);
-      doc.setTextColor(41, 98, 255); // #2962ff
-      doc.text("Carbon Wallet", 14, 20);
-      
-      doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      doc.text("Official Carbon Credit Purchase Receipt", 14, 28);
-      
-      // Transaction Info
-      doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0);
-      doc.text(`Transaction ID: ${tx.id}`, 14, 45);
-      doc.text(`Date: ${new Date(tx.created_at).toLocaleString()}`, 14, 52);
-      doc.text(`Certificate No: ${tx.certificate_id || 'Pending'}`, 14, 59);
-      
-      // Table Data
-      doc.autoTable({
-        startY: 70,
-        head: [['Description', 'Details']],
-        body: [
-          ['Project Name', tx.land_name || 'Mixed Portfolio'],
-          ['Seller Name', tx.seller_name || 'Verified Seller'],
-          ['Carbon Credits Volume', `${tx.tons} Tons (tCO2e)`],
-          ['Price Per Ton', `INR ${tx.price_per_ton.toFixed(2)}`],
-          ['Total Amount Paid', `INR ${tx.total_price.toFixed(2)}`],
-          ['Status', tx.status.toUpperCase()]
-        ],
-        theme: 'grid',
-        headStyles: { fillColor: [41, 98, 255] }
-      });
-      
-      // Footer
-      const finalY = doc.lastAutoTable.finalY || 130;
-      doc.setFontSize(10);
-      doc.setTextColor(150, 150, 150);
-      doc.text("This is a computer generated receipt. The credits have been securely settled on the Carbon Wallet registry.", 14, finalY + 20);
-      doc.text("Thank you for contributing to a sustainable future.", 14, finalY + 26);
-      
-      doc.save(`CarbonWallet_Bill_${tx.id.substring(0,8)}.pdf`);
-  } catch(e) {
-      console.error(e);
-      alert('Failed to generate PDF. Make sure you are connected to the internet to load jsPDF.');
-  }
-}
-
-
-    async function loadExchange() {
-      const region = document.getElementById('ex-region').value;
-      try {
-        const res = await API.marketplace({ region: region !== 'All Regions' ? region : null });
-        activeCredits = res.credits;
-        const tbody = document.querySelector('#exchangeTable tbody');
-        
-        if(res.credits.length === 0) {
-           tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:#787b86;">No active orders found</td></tr>`;
-           return;
-        }
-
-        
-tbody.innerHTML = res.credits.map(c => `
-          <tr class="desktop-row" onclick="openProject('${c.id}')">
-            <td class="ticker">${c.ticker || 'GEN-CRBN'}</td>
-            <td><div>${c.project_type || 'Agroforestry'}</div><div style="font-size:0.75rem; color:#787b86;">${c.seller_name.split(' ')[0]}</div></td>
-            <td>2025</td>
-            <td class="vol">${c.available_tons}</td>
-            <td class="price-up">?${c.price_per_ton.toFixed(2)}</td>
-            <td><button class="btn" style="background:#2962ff; color:white; padding:4px 12px; font-size:0.8rem; border:none; border-radius:4px; cursor:pointer;" onclick="event.stopPropagation(); openProject('${c.id}')">Trade</button></td>
-          </tr>
-          <tr class="mobile-row" onclick="openProject('${c.id}')">
-            <td colspan="6">
-              <div class="m-card">
-                <div class="m-top">
-                  <div>
-                    <div class="m-ticker">${c.ticker || 'GEN-CRBN'}</div>
-                    <div class="m-vintage">Vintage: 2025</div>
-                  </div>
-                  <div class="m-price">?${c.price_per_ton.toFixed(2)}</div>
-                </div>
-                <div class="m-mid">
-                  <div style="font-size: 0.8rem; color: #94a3b8; display: flex; justify-content: space-between;">
-                    <span>Liquidity</span>
-                    <span>${c.available_tons} Tons</span>
-                  </div>
-                  <div class="m-bar-bg"><div class="m-bar-fill" style="width: ${Math.min(100, (c.available_tons/2000)*100)}%;"></div></div>
-                </div>
-                <div class="m-tags">
-                  <div class="m-pill">${c.project_type || 'Agroforestry'}</div>
-                  <div class="m-pill">Verified</div>
-                </div>
-              </div>
-            </td>
-          </tr>
-`).join('');
-
-      } catch (e) { console.error('Exchange load error', e); }
-    }
-
-    // ========== BLOCKCHAIN ==========
-
-    async function openBlockchainModal() {
-       if(!selectedCredit) return;
-       openModal('blockchainModal');
-       
-       const timeline = document.getElementById('blockchain-timeline');
-       timeline.innerHTML = '<div style="text-align:center; color:#38bdf8;"><i class="fas fa-spinner fa-spin"></i> Fetching blockchain data...</div>';
-       
-       try {
-          const res = await fetch('/api/blockchain/verify/' + selectedCredit.id, { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') } });
-          const data = await res.json();
-          
-          if(data.ledger && data.ledger.length > 0) {
-             // We'll update the main trust screen hash with the latest block hash
-             if (document.getElementById('pd-hash')) document.getElementById('pd-hash').textContent = data.ledger[data.ledger.length - 1].hash;
-             
-             timeline.innerHTML = data.ledger.map((block, i) => `
-                <div style="border-left: 2px solid #334155; margin-left: 10px; padding-left: 20px; padding-bottom: 20px; position: relative;">
-                   <div style="position: absolute; left: -6px; top: 0; width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></div>
-                   
-                   <div style="font-size:0.75rem; color:#94a3b8; margin-bottom:5px;">Block #${block.index} • ${new Date(block.timestamp).toLocaleString()}</div>
-                   <div style="font-weight:bold; color:#f8fafc; margin-bottom:5px; text-transform:uppercase;">ACTION: ${block.transaction.action}</div>
-                   
-                   <div style="background:#1e293b; border:1px solid #334155; padding:10px; border-radius:4px; font-family:monospace; font-size:0.7rem; color:#94a3b8; word-break: break-all;">
-                      <div><span style="color:#38bdf8;">PREV HASH:</span> ${block.previous_hash}</div>
-                      <div style="margin-top:5px;"><span style="color:#10b981;">BLOCK HASH:</span> ${block.hash}</div>
-                   </div>
-                </div>
-             `).reverse().join(''); // Reverse to show latest first
-          } else {
-             timeline.innerHTML = '<div style="color:#f23645;">Error: No provenance found for this asset.</div>';
-          }
-       } catch(e) {
-          timeline.innerHTML = '<div style="color:#f23645;">Error fetching ledger.</div>';
-       }
-    }
-    
-    // ========== EXECUTION ==========
-    function openProject(id) {
-      selectedCredit = activeCredits.find(c => c.id === id);
-      if(!selectedCredit) return;
-      
-      document.getElementById('pd-ticker').textContent = selectedCredit.ticker || 'GEN-CRBN';
-      document.getElementById('pd-seller-name').textContent = selectedCredit.seller_name || 'Unknown Seller';
-      document.getElementById('pd-seller-role').textContent = selectedCredit.is_resale ? 'Corporate Reseller' : 'Landowner / FPO';
-      document.getElementById('pd-type').innerHTML = `<i class="fas fa-map-marker-alt"></i> ${selectedCredit.project_type} | ${selectedCredit.location_state || ''}, ${selectedCredit.location_district || ''}`;
-      document.getElementById('pd-name').textContent = selectedCredit.land_name || 'Portfolio';
-      document.getElementById('pd-price').textContent = `₹${(selectedCredit.price_per_ton).toFixed(2)}`;
-      document.getElementById('pd-vintage').textContent = selectedCredit.vintage_year;
-      document.getElementById('pd-vol').textContent = (selectedCredit.available_tons).toFixed(1) + ' Tons';
-      
-      document.getElementById('tradeQty').value = Math.min(100, selectedCredit.available_tons);
-      document.getElementById('tradeQty').max = selectedCredit.available_tons;
-      
-      updateTradeTotal();
-      switchTab('project');
-      
-      // Load live hash
-      let pdHashEl = document.getElementById('pd-hash');
-      if (!pdHashEl) { pdHashEl = { textContent: '' }; }
-      if (document.getElementById('pd-hash')) document.getElementById('pd-hash').textContent = "Fetching Live Block Hash...";
-      fetch('/api/blockchain/verify/' + id, { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') } })
-        .then(res => res.json())
-        .then(data => {
-            if(data.ledger && data.ledger.length > 0) {
-               document.getElementById('pd-hash').textContent = data.ledger[data.ledger.length - 1].hash;
-            }
-        }).catch(() => {});
     }
 
     function updateTradeTotal() {
@@ -980,9 +750,12 @@ tbody.innerHTML = res.credits.map(c => `
       let qty = parseInt(document.getElementById('tradeQty').value);
       
       const btn = action === 'retire' ? document.getElementById('btnRetire') : document.getElementById('btnHold');
-      const originalHtml = btn.innerHTML;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...';
-      btn.disabled = true;
+      let originalHtml = '';
+      if(btn) {
+         originalHtml = btn.innerHTML;
+         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...';
+         btn.disabled = true;
+      }
 
       try {
         const payload = { credit_id: selectedCredit.id, tons: qty, action: action, order_type: orderType };
@@ -1013,13 +786,11 @@ tbody.innerHTML = res.credits.map(c => `
            if (typeof loadPortfolio === 'function') loadPortfolio(); if (typeof loadMyCredits === 'function') loadMyCredits();
            loadExchange();
            switchTab(data.is_limit ? 'exchange' : 'portfolio');
-           btn.innerHTML = originalHtml;
-           btn.disabled = false;
+           if(btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
         }, 1500);
       } catch(e) { 
         showToast(e.message, 'error'); 
-        btn.innerHTML = originalHtml;
-        btn.disabled = false;
+        if(btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
       }
     }
 
@@ -1630,7 +1401,7 @@ tbody.innerHTML = res.credits.map(c => `
     <style>
       .mobile-matrix-wrapper { display: none; }
       @media (max-width: 768px) {
-        .desktop-dashboard { display: none !important; }
+        /* desktop-dashboard visibility controlled by JS */
         .mobile-matrix-wrapper {
           display: flex;
           flex-direction: column;
@@ -1738,7 +1509,7 @@ tbody.innerHTML = res.credits.map(c => `
       function initESGGauge() {
         if (gaugeChart) return;
         const ctx = document.getElementById('esgGauge').getContext('2d');
-        gaugeChart = new Chart(ctx, {
+        if(ctx) gaugeChart = new Chart(ctx, {
           type: 'doughnut',
           data: {
             labels: ['Progress', 'Remaining'],
@@ -1764,7 +1535,7 @@ tbody.innerHTML = res.credits.map(c => `
   <style>
     .mobile-matrix-wrapper { display: none; }
     @media (max-width: 768px) {
-      .desktop-dashboard { display: none !important; }
+      /* desktop-dashboard visibility controlled by JS */
       .mobile-matrix-wrapper {
         display: flex;
         flex-direction: column;
@@ -1817,7 +1588,7 @@ tbody.innerHTML = res.credits.map(c => `
       if(viewId === 'esg') initESGGauge();
     }
     
-    async function executeTrade(btn) {
+    async function executeTradeObsolete(btn) {
        const auth = await requireBiometric("Execute ₹6,00,000 Corporate Trade");
        if(auth) {
          if(window.HapticEngine) HapticEngine.heavyThud();
@@ -1831,8 +1602,8 @@ tbody.innerHTML = res.credits.map(c => `
     let chartP1, chartP2, chartEsg;
     function initPortfolioCharts() {
        if(chartP1) return;
-       const ctx1 = document.getElementById('trajChart').getContext('2d');
-       chartP1 = new Chart(ctx1, {
+       const el1 = document.getElementById('trajChart');
+       if(el1) { const ctx1 = el1.getContext('2d'); chartP1 = new Chart(ctx1, {
          type: 'line',
          data: {
            labels: ['2023', '2024', '2025', '2026'],
@@ -1841,9 +1612,10 @@ tbody.innerHTML = res.credits.map(c => `
          },
          options: { responsive: true, plugins: { legend: { display:false } }, scales: { x: { display:false }, y: { display:false } } }
        });
+       }
        
        const ctx2 = document.getElementById('assetChart').getContext('2d');
-       chartP2 = new Chart(ctx2, {
+       if(ctx2) chartP2 = new Chart(ctx2, {
          type: 'doughnut',
          data: { labels: ['Agroforestry', 'AWD Rice', 'Soil Carbon'], datasets: [{ data: [60, 25, 15], backgroundColor: ['#00E5FF', '#00E676', '#FFAB00'], borderWidth: 0 }] },
          options: { responsive: true, plugins: { legend: { position: 'bottom', labels:{color:'#94a3b8'} } } }
@@ -1853,7 +1625,7 @@ tbody.innerHTML = res.credits.map(c => `
     function initESGGauge() {
        if(chartEsg) return;
        const ctx = document.getElementById('esgGaugeChart').getContext('2d');
-       chartEsg = new Chart(ctx, {
+       if(ctx) chartEsg = new Chart(ctx, {
          type: 'doughnut',
          data: { labels: ['Progress', 'Remaining'], datasets: [{ data: [45, 55], backgroundColor: ['#00E676', '#1e293b'], borderWidth: 0, cutout: '80%', circumference: 270, rotation: 225 }] },
          options: { responsive: true, plugins: { legend: { display: false } } }
@@ -2837,26 +2609,32 @@ async function mobLoadExchange() {
     var vintage = c.vintage_year || new Date().getFullYear();
     var volume = c.available_tons || 0;
     var price = c.price_per_ton || 0;
-    var total = volume * price;
     var state = c.location_state || 'India';
+    var priceStr = String.fromCharCode(8377) + price.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
     var volStr = volume.toLocaleString('en-IN');
-    var priceStr = price.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
-    var totalStr = total.toLocaleString('en-IN', {minimumFractionDigits:2});
-
-    cardsHtml += '<div class="market-card" id="mc-' + c.id + '" onclick="mobExpandCard(' + c.id + ', \'' + ticker + '\', \'' + methodType + '\', \'' + seller + '\', ' + volume + ', ' + price + ', ' + total + ', ' + c.id + ')">';
-    cardsHtml += '<div class="mc-top"><div>';
-    cardsHtml += '<div class="mc-ticker">' + ticker + '</div>';
-    cardsHtml += '<div style="font-size:0.7rem; color:var(--muted); font-family:monospace;">' + state + '</div>';
+    var creditStr = btoa(unescape(encodeURIComponent(JSON.stringify(c))));
+    var priceStr = String.fromCharCode(8377) + price.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+    var volStr = volume.toLocaleString('en-IN');
+    
+    cardsHtml += '<div class="mob-credit-card" id="mc-' + c.id + '" data-id="' + c.id + '" data-price="' + price + '" data-vol="' + volume + '" data-ticker="' + ticker + '" data-method="' + methodType + '" data-seller="' + seller + '" data-state="' + state + '">';
+    cardsHtml += '<div class="mob-card-left">';
+    cardsHtml += '<div class="mob-card-ticker">' + ticker + '</div>';
+    cardsHtml += '<div class="mob-card-meta">' + methodType + ' &middot; ' + state + '</div>';
+    cardsHtml += '<div class="mob-card-meta">' + volStr + ' Tons Available</div>';
     cardsHtml += '</div>';
-    cardsHtml += '<div class="mc-vintage">Vint. ' + vintage + '</div></div>';
-    cardsHtml += '<div class="mc-method">' + methodType + ' — ' + seller + ' <span>✓ Verified</span></div>';
-    cardsHtml += '<div class="mc-bottom">';
-    cardsHtml += '<div class="mc-volume"><strong>' + volStr + '</strong> Tons Available</div>';
-    cardsHtml += '<div><div class="mc-price">₹' + priceStr + '</div><div class="mc-price-sub">per Ton</div></div>';
+    cardsHtml += '<div class="mob-card-right">';
+    cardsHtml += '<div class="mob-card-price">' + priceStr + '</div>';
+    cardsHtml += '<button onclick="var card=this.closest(\'.mob-credit-card\');window.openMobTrade&&openMobTrade(card.dataset.id,+card.dataset.price,+card.dataset.vol,card.dataset.ticker,card.dataset.method,card.dataset.seller,card.dataset.state);" class="mob-trade-btn">TRADE</button>';
     cardsHtml += '</div></div>';
+    cardsHtml += '</div>';
   }
-
   listEl.innerHTML = cardsHtml;
+  // Make credits available to openProject
+  if(typeof activeCredits === 'undefined' || !activeCredits || activeCredits.length === 0) {
+    activeCredits = credits || [];
+  }
+  
+
 }
 
 // ── EXPAND CARD → SHOW TRADE MODAL ──
@@ -3247,4 +3025,144 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 </script>
     
+
+<!-- MOBILE TRADE SHEET -->
+<div id="mobTradeSheet">
+  <div id="mobTradeSheetInner">
+    <div class="mts-handle"></div>
+    <div class="mts-hdr">
+      <div class="mts-tic" id="mts-tic">&#8212;</div>
+      <div class="mts-met" id="mts-met">&#8212;</div>
+    </div>
+    <div id="mts-map-el"></div>
+    <div class="mts-body">
+      <div class="mts-tog">
+        <button class="mts-tog-btn active" id="mts-m-btn" onclick="setMtsOrd('market')">Market Order</button>
+        <button class="mts-tog-btn" id="mts-l-btn" onclick="setMtsOrd('limit')">Limit Order</button>
+      </div>
+      <div class="mts-pr">
+        <div>
+          <div class="mts-pr-lbl">DYNAMIC PRICE</div>
+          <div class="mts-pr-val" id="mts-pv">&#8377;0.00</div>
+        </div>
+        <div class="mts-pr-right">
+          <div class="mts-pr-lbl">AVAILABLE</div>
+          <div class="mts-pr-vol" id="mts-vol">0 T</div>
+        </div>
+      </div>
+      <div class="mts-inp-row">
+        <div class="mts-inp-lbl">QUANTITY (TONS)</div>
+        <input class="mts-inp" type="number" id="mts-qty" value="100" min="1" oninput="updMtsTotal()">
+      </div>
+      <div class="mts-inp-row" id="mts-lim-row" style="display:none;">
+        <div class="mts-inp-lbl">LIMIT PRICE (&#8377; PER TON)</div>
+        <input class="mts-inp" type="number" id="mts-lim" placeholder="Enter limit price" oninput="updMtsTotal()">
+      </div>
+      <div class="mts-tot">
+        <div class="mts-tot-lbl">Estimated Total</div>
+        <div class="mts-tot-val" id="mts-tot">&#8377;0</div>
+      </div>
+      <div class="mts-actions">
+        <button class="mts-btn-retire" onclick="execMts('retire')">&#127807; Buy &amp; Retire</button>
+        <button class="mts-btn-hold" onclick="execMts('hold')">&#128230; Buy &amp; Hold</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var _mtsCredit = null, _mtsMap = null, _mtsOrd = 'market';
+
+function openMobTrade(id, price, volume, ticker, method, seller, state) {
+  try {
+    price = Number(price) || 0;
+    volume = Number(volume) || 0;
+    _mtsCredit = { id:id, price_per_ton:price, available_tons:volume, ticker:ticker, project_type:method, seller_name:seller, location_state:state };
+    
+    document.getElementById('mts-tic').textContent = ticker;
+    document.getElementById('mts-met').textContent = method + '  ·  ' + seller + '  ✓ Verified';
+    document.getElementById('mts-pv').textContent = '₹' + price.toLocaleString('en-IN',{minimumFractionDigits:2});
+    document.getElementById('mts-vol').textContent = volume.toLocaleString('en-IN') + ' T';
+    
+    var qtyEl = document.getElementById('mts-qty');
+    if(qtyEl) {
+      qtyEl.value = Math.min(100, volume);
+      qtyEl.max = volume;
+      var q = parseInt(qtyEl.value) || 0;
+      var tot = q * price;
+      document.getElementById('mts-tot').textContent = '₹' + tot.toLocaleString('en-IN',{minimumFractionDigits:2});
+    }
+    
+    var sh = document.getElementById('mobTradeSheet');
+    var inner = document.getElementById('mobTradeSheetInner');
+    if(!sh || !inner) {
+      alert("Popup elements missing from DOM!");
+      return;
+    }
+    
+    sh.style.setProperty('display', 'flex', 'important');
+    sh.style.setProperty('opacity', '1', 'important');
+    sh.style.setProperty('visibility', 'visible', 'important');
+    
+    setTimeout(() => {
+      inner.style.setProperty('transform', 'translateY(0)', 'important');
+      inner.style.setProperty('transition', 'transform 0.3s cubic-bezier(0.4,0,0.2,1)', 'important');
+      if(typeof _initMtsMap === 'function') _initMtsMap(state);
+    }, 10);
+  } catch(e) {
+    alert("OMT CRASH: " + e.message);
+  }
+}
+
+document.getElementById('mobTradeSheet').addEventListener('click', function(e) { if(e.target===this) closeMobTradeSheet(); });
+
+function _initMtsMap(state) {
+  if(typeof L === 'undefined') return;
+  var el = document.getElementById('mts-map-el');
+  if(!el) return;
+  if(_mtsMap) { _mtsMap.remove(); _mtsMap = null; }
+  var coords = {'Gujarat':[22.26,71.19],'Maharashtra':[19.75,75.71],'Karnataka':[15.32,75.71],'Rajasthan':[27.02,74.22],'Tamil Nadu':[11.13,78.66],'Madhya Pradesh':[22.97,78.66]};
+  var ll = coords[state] || [20.59,78.96];
+  _mtsMap = L.map('mts-map-el',{zoomControl:false,scrollWheelZoom:false,attributionControl:false}).setView(ll,8);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(_mtsMap);
+  L.circle(ll,{radius:30000,color:'#00bcd4',fillColor:'#00bcd4',fillOpacity:0.2,weight:2}).addTo(_mtsMap);
+  L.marker(ll).addTo(_mtsMap);
+}
+
+function setMtsOrd(type) {
+  _mtsOrd = type;
+  document.getElementById('mts-m-btn').className = 'mts-tog-btn' + (type==='market'?' active':'');
+  document.getElementById('mts-l-btn').className = 'mts-tog-btn' + (type==='limit'?' active':'');
+  document.getElementById('mts-lim-row').style.display = type==='limit'?'block':'none';
+  updMtsTotal();
+}
+
+function updMtsTotal() {
+  if(!_mtsCredit) return;
+  var qty = parseFloat(document.getElementById('mts-qty').value)||0;
+  var p = _mtsOrd==='limit' ? (parseFloat(document.getElementById('mts-lim').value)||_mtsCredit.price_per_ton) : _mtsCredit.price_per_ton;
+  document.getElementById('mts-tot').textContent = '₹' + (qty*p).toLocaleString('en-IN',{minimumFractionDigits:2});
+}
+
+function execMts(action) {
+  if(!_mtsCredit) return;
+  closeMobTradeSheet();
+  selectedCredit = _mtsCredit; orderType = _mtsOrd;
+  var qEl = document.getElementById('tradeQty');
+  if(qEl) qEl.value = document.getElementById('mts-qty').value;
+  var lEl = document.getElementById('limitPrice');
+  if(lEl && _mtsOrd==='limit') lEl.value = document.getElementById('mts-lim').value;
+  if(typeof executeTrade==='function') setTimeout(function(){ executeTrade(action); }, 400);
+}
+
+function goBackToListing() {
+  var mobileContainer = document.querySelector('.mobile-container');
+  var desktopDashboard = document.querySelector('.desktop-dashboard');
+  if(mobileContainer) mobileContainer.style.setProperty('display', 'block', 'important');
+  if(desktopDashboard) desktopDashboard.classList.remove('mobile-visible');
+  var meta = document.querySelector('meta[name="viewport"]');
+  if(meta) meta.setAttribute('content', 'width=device-width, initial-scale=1.0');
+  document.getElementById('mob-back-btn').style.display = 'none';
+}
+</script>
 </body></html>

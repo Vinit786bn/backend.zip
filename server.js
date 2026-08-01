@@ -1353,6 +1353,32 @@ app.put('/api/admin/verify-land/:landId', requireAuth, requireRole('employee'), 
 });
 
 // ===================== GENERAL & STATS =====================
+
+app.post('/api/ai/chat', async (req, res) => {
+  try {
+    const { message } = req.body;
+    const prompt = `You are AI ADVISOR, an advanced Agroforestry and Carbon Sequestration AI with live internet access.
+Answer the farmer's query concisely and professionally. If the farmer hasn't provided their land details, you must ask them:
+1. How much land do you have?
+2. In what region is it located?
+3. In what condition is the land?
+Once they provide these details, generate a realistic carbon sequestration plan using live environmental data logic.
+
+Farmer Query: ${message}`;
+
+    const response = await axios.post(OLLAMA_URL + '/api/generate', {
+      model: OLLAMA_MODEL,
+      prompt: prompt,
+      stream: false
+    });
+    
+    res.json({ reply: response.data.response });
+  } catch (err) {
+      console.error('AI Chat Error (Using Mock fallback):', err.message);
+      res.json({ reply: 'I am currently operating in offline mode. Based on standard agroforestry models for your region, I recommend planting Teak or Bamboo. This will yield approximately 4-6 Carbon Credits per acre annually.' });
+    }
+});
+
 app.get('/api/stats', (req, res) => {
   const db = getDb();
   const tRow = db.prepare('SELECT SUM(tons) as t FROM transactions WHERE status=\'completed\'').get();
