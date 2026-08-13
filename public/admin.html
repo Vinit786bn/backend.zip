@@ -141,6 +141,53 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
   </script>
   </head>
 <body>
+
+<div id="admin-lock-overlay" style="position:fixed;inset:0;background:#0f172a;z-index:9999999;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+  <div style="background:#1e293b;padding:40px;border-radius:12px;width:100%;max-width:400px;text-align:center;border:1px solid #334155;box-shadow:0 10px 25px rgba(0,0,0,0.5);">
+    <i class="fa-solid fa-user-shield" style="font-size:3rem;color:#38bdf8;margin-bottom:20px;"></i>
+    <h2 style="color:#f8fafc;margin-bottom:10px;">Admin Secure Access</h2>
+    <p style="color:#94a3b8;margin-bottom:20px;">Please authenticate to access the command center.</p>
+    <div id="admin-lock-error" style="color:#ef4444;font-size:0.9rem;margin-bottom:15px;display:none;"></div>
+    <form id="admin-lock-form" onsubmit="event.preventDefault(); doAdminLogin();">
+      <input type="email" id="admin-email" placeholder="Admin Email" required style="width:100%;padding:12px;margin-bottom:15px;background:#0f172a;border:1px solid #334155;color:white;border-radius:6px;box-sizing:border-box;font-family:inherit;">
+      <input type="password" id="admin-password" placeholder="Password" required style="width:100%;padding:12px;margin-bottom:20px;background:#0f172a;border:1px solid #334155;color:white;border-radius:6px;box-sizing:border-box;font-family:inherit;">
+      <button type="submit" style="width:100%;padding:14px;background:#38bdf8;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;font-family:inherit;">Unlock Dashboard</button>
+    </form>
+    <p style="margin-top:20px;font-size:0.8rem;color:#64748b;">Return to <a href="/index.html" style="color:#38bdf8;text-decoration:none;">Homepage</a></p>
+  </div>
+</div>
+<script>
+async function doAdminLogin() {
+  if (typeof API === 'undefined') { alert('API not loaded'); return; }
+  const e = document.getElementById('admin-email').value;
+  const p = document.getElementById('admin-password').value;
+  const err = document.getElementById('admin-lock-error');
+  try {
+    const res = await API.employeeLogin({ email:e, password:p });
+    if(res.success && res.user && res.user.role === 'employee') {
+      document.getElementById('admin-lock-overlay').style.display = 'none';
+      if(window.loadQueueData) window.loadQueueData();
+    } else {
+      err.textContent = res.error || "Access Denied. You are not an admin.";
+      err.style.display = 'block';
+    }
+  } catch(ex) {
+    err.textContent = "Login failed. Check connection.";
+    err.style.display = 'block';
+  }
+}
+
+window.addEventListener('load', async () => {
+  if (typeof API === 'undefined') return;
+  try {
+    const res = await API.me();
+    if (res.user && res.user.role === 'employee') {
+      document.getElementById('admin-lock-overlay').style.display = 'none';
+    }
+  } catch(e) {}
+});
+</script>
+
   <div class="app-layout">
     <!-- SIDEBAR -->
     <div class="admin-sidebar">
