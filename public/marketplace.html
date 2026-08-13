@@ -3581,7 +3581,8 @@ var _mtsCredit=null, _mtsTicker=null, _mtsMap=null;
 window.mtsCalcTotal = function() {
   var p=document.getElementById('mts-price'), q=document.getElementById('mts-qty'), t=document.getElementById('mts-total');
   if(!p||!q||!t) return;
-  var price=parseFloat((p.textContent||'').replace(/[^0-9.]/g,''))||0;
+  var priceText=(p.textContent||'').replace(/Rs\.?/i,'').replace(/,/g,'');
+    var price=parseFloat(priceText)||0;
   var qty=parseInt(q.value)||0;
   t.textContent='Rs.'+(qty*price).toLocaleString('en-IN',{maximumFractionDigits:0});
 };
