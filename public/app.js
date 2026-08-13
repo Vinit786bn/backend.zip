@@ -392,7 +392,7 @@ function generateBoundaryPolygon(lat, lng, areaHectares) {
 // Utility Functions
 // ============================================
 function formatCurrency(amount) {
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+    return '₹' + new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
 }
 
 function formatNumber(num) {
@@ -595,4 +595,5 @@ if (window.Capacitor) {
   window.triggerHaptic = function() {}; 
   window.nativeBiometricLogin = async function() { return false; };
 }
+
 

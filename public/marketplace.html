@@ -1,7 +1,18 @@
-<!DOCTYPE html><html lang="en"><head>
+﻿<!DOCTYPE html><html lang="en"><head>
+
+  <script>
+    // Safe getContext override to prevent crashes on missing charts
+    const originalGetElementById = document.getElementById;
+    document.getElementById = function(id) {
+      const el = originalGetElementById.call(document, id);
+      if (!el && (id.includes('Chart') || id.includes('Gauge'))) {
+        return { getContext: function() { return { canvas: {} }; }, style: {} };
+      }
+      return el;
+    };
+  </script>
+  
 <script>
-
-
   // Global API Router for Mobile
   if (window.Capacitor && window.Capacitor.isNativePlatform()) {
     console.log('Mobile Platform Detected. Intercepting API calls to dev server...');
@@ -120,45 +131,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
       animation: rowFlash 1.5s ease-out forwards;
     }
     
-  
-  /* ─── Clean Mobile Credit Cards ─────────────────── */
-  .mob-credit-card { display:flex; align-items:center; justify-content:space-between; background:#131722; border:1px solid #1e2535; border-radius:12px; padding:14px 16px; margin-bottom:10px; gap:12px; }
-  .mob-card-left { flex:1; min-width:0; }
-  .mob-card-ticker { font-size:0.95rem; font-weight:700; color:#00bcd4; font-family:monospace; letter-spacing:0.5px; }
-  .mob-card-meta { font-size:0.72rem; color:#64748b; margin-top:3px; }
-  .mob-card-detail { font-size:0.8rem; color:#94a3b8; margin-top:6px; }
-  .mob-card-price { font-weight:700; color:#00e676; }
-  .mob-card-unit { color:#64748b; }
-  .mob-trade-btn { background:linear-gradient(135deg,#2962ff,#0039cb); color:#fff; border:none; border-radius:8px; padding:10px 18px; font-size:0.82rem; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:0 2px 10px rgba(41,98,255,0.4); flex-shrink:0; position:relative; z-index:999999; pointer-events:auto; }
-
-  /* ─── Mobile Trade Bottom Sheet ─────────────────── */
-  #mobTradeSheet { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.75); align-items:flex-end; }
-  #mobTradeSheetInner { background:#0f1117; border-radius:20px 20px 0 0; width:100%; padding-bottom:32px; max-height:93vh; overflow-y:auto; transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.4,0,0.2,1); }
-  .mts-handle { width:40px; height:4px; background:#334155; border-radius:99px; margin:14px auto 0; }
-  .mts-hdr { padding:16px 20px 14px; border-bottom:1px solid #1e2535; }
-  .mts-tic { font-size:1.1rem; font-weight:700; color:#00bcd4; font-family:monospace; }
-  .mts-met { font-size:0.78rem; color:#64748b; margin-top:4px; }
-  #mts-map-el { height:160px; background:#1a1d2e; }
-  .mts-body { padding:18px 20px 8px; }
-  .mts-tog { display:flex; gap:8px; margin-bottom:18px; }
-  .mts-tog-btn { flex:1; padding:9px; border:1px solid #334155; border-radius:6px; background:transparent; color:#94a3b8; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s; }
-  .mts-tog-btn.active { background:#38bdf8; color:#0f1117; border-color:#38bdf8; }
-  .mts-pr { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-  .mts-pr-lbl { font-size:0.75rem; color:#64748b; }
-  .mts-pr-val { font-size:1.4rem; font-weight:700; color:#00e676; }
-  .mts-pr-right { text-align:right; }
-  .mts-pr-vol { font-size:0.95rem; color:#94a3b8; font-weight:600; }
-  .mts-inp-row { background:#131722; border:1px solid #1e2535; border-radius:10px; padding:12px 16px; margin-bottom:12px; }
-  .mts-inp-lbl { font-size:0.7rem; color:#64748b; margin-bottom:5px; letter-spacing:0.5px; }
-  .mts-inp { width:100%; background:transparent; border:none; color:#e2e8f0; font-size:1.2rem; font-weight:600; outline:none; }
-  .mts-tot { display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-top:1px solid #1e2535; margin-bottom:16px; }
-  .mts-tot-lbl { font-size:0.82rem; color:#64748b; }
-  .mts-tot-val { font-size:1.15rem; font-weight:700; color:#e2e8f0; }
-  .mts-actions { display:flex; gap:10px; }
-  .mts-btn-retire { flex:1; background:#ef4444; color:#fff; border:2px solid #7f1d1d; border-radius:10px; padding:16px 10px; font-size:0.9rem; font-weight:700; cursor:pointer; }
-  .mts-btn-hold { flex:1; background:#2962ff; color:#fff; border:none; border-radius:10px; padding:16px 10px; font-size:0.9rem; font-weight:700; cursor:pointer; }
-
-</style>
+  </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -244,6 +217,10 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
     }
   });
 </script>
+
+  <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+
 </head>
 <body>
 
@@ -294,7 +271,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
   </nav>
 
   <!-- Live Market Ticker -->
-  <div style="background: #0f172a; border-bottom: 1px solid #334155; padding: 8px 0; overflow: hidden; white-space: nowrap; font-size: 0.8rem; font-family: monospace;">
+  <div style="margin-top: 70px; background: #0f172a; border-bottom: 1px solid #334155; padding: 8px 0; overflow: hidden; white-space: nowrap; font-size: 0.8rem; font-family: monospace;">
      <div style="display: inline-block; padding-left: 100%; animation: ticker 25s linear infinite;">
         <span style="color:#94a3b8; margin-right:40px;">IND-AGRO-26 <span style="color:#10b981;">▲ ₹3,625 (+2.3%)</span></span>
         <span style="color:#94a3b8; margin-right:40px;">IND-SOIL-25 <span style="color:#ef4444;">▼ ₹3,000 (-0.8%)</span></span>
@@ -557,7 +534,6 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
 
     <!-- ==================== PROJECT DETAIL / TRUST SCREEN ==================== -->
     <div id="tab-project" class="tab-pane">
-    <div id="mob-back-btn" style="display:none; padding:10px 15px; background:#0f172a; position:sticky; top:0; z-index:1000;"><button onclick="goBackToListing()" style="background:#1e293b; color:#64748b; border:1px solid #334155; padding:8px 16px; border-radius:6px; font-size:0.85rem; cursor:pointer;"><i class="fas fa-arrow-left"></i> Back to Listings</button></div>
       <button onclick="switchTab('exchange')" style="background:transparent; border:none; color:#2962ff; cursor:pointer; margin-bottom:15px; font-size:0.9rem;"><i class="fas fa-arrow-left"></i> Back to Exchange</button>
       
       <div class="grid-3" style="grid-template-columns: 2fr 1fr;" id="project-detail-container">
@@ -674,18 +650,6 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
     }
 
     function switchTab(tabId) {
-      // On mobile: keep desktop-dashboard visible for all tabs, restore mobile only when going home
-      if(window.innerWidth <= 768 || (window.Capacitor && window.Capacitor.isNativePlatform()) || navigator.userAgent.includes('Mobile')) {
-         document.querySelector('.desktop-dashboard').classList.add('mobile-visible');
-         var _mc = document.querySelector('.mobile-container'); if(_mc) _mc.style.setProperty('display', 'none', 'important');
-         if(tabId !== 'project') {
-             var meta = document.querySelector('meta[name="viewport"]');
-             if(meta) meta.setAttribute('content', 'width=device-width, initial-scale=1.0');
-         } else {
-             var meta = document.querySelector('meta[name="viewport"]');
-             if(meta) meta.setAttribute('content', 'width=1200, user-scalable=yes');
-         }
-      }
       document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
       document.getElementById('tab-' + tabId).classList.add('active');
       document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
@@ -711,6 +675,289 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
           pdMap.setView([selectedCredit.lat||17, selectedCredit.lng||75], 13);
         }, 300);
       }
+    }
+
+    // ========== CHARTS ==========
+    function initCharts() {
+      // Emissions vs Offsets
+      const ctxEm = document.getElementById('emissionsChart').getContext('2d');
+      new Chart(ctxEm, {
+        type: 'line',
+        data: {
+          labels: ['2020','2021','2022','2023','2024','2025'],
+          datasets: [
+            { label: 'Emissions (Tons)', data: [15000, 14500, 13000, 12500, 11000, 9500], borderColor: '#f23645', backgroundColor: 'transparent', tension: 0.4 },
+            { label: 'Offsets Retired', data: [0, 500, 2000, 3500, 5000, 7500], borderColor: '#089981', backgroundColor: 'rgba(8,153,129,0.1)', fill: true, tension: 0.4 }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#2a2e39' }, ticks:{ color:'#787b86' } }, x: { grid: { display:false }, ticks:{ color:'#787b86' } } }, plugins: { legend: { labels: { color: '#d1d4dc' } } } }
+      });
+
+      // Asset Allocation
+      const ctxAl = document.getElementById('allocationChart').getContext('2d');
+      new Chart(ctxAl, {
+        type: 'doughnut',
+        data: {
+          labels: ['Agriculture', 'Forestry', 'Grassland'],
+          datasets: [{ data: [60, 30, 10], backgroundColor: ['#2962ff', '#089981', '#f59e0b'], borderWidth: 0 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#d1d4dc' } } } }
+      });
+
+      // Market Trends Candlestick (Simulated as line for simplicity in vanilla Chart.js)
+      const ctxTr = document.getElementById('trendChart').getContext('2d');
+      new Chart(ctxTr, {
+        type: 'line',
+        data: {
+          labels: ['Jan','Feb','Mar','Apr','May','Jun'],
+          datasets: [{ label: 'Avg Price (₹)', data: [1200, 1250, 1180, 1350, 1420, 1500], borderColor: '#2962ff', backgroundColor: 'rgba(41,98,255,0.1)', fill: true, tension: 0.1 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#2a2e39' }, ticks:{ color:'#787b86' } }, x: { grid: { display:false }, ticks:{ color:'#787b86' } } }, plugins: { legend: { display: false } } }
+      });
+    }
+
+    // ========== DATA FETCHING ==========
+    
+// Append the new logic inside the script tag
+window.jsPDF = window.jspdf.jsPDF;
+
+async function loadPortfolio() {
+      try {
+        const res = await API.myCredits();
+        const holdings = res.owned.filter(c => c.status === 'held' && c.available_tons > 0);
+        const retiredCerts = res.certificates.filter(c => c.status === 'active' && c.project_name === 'Retired Offset');
+        
+        const totalRetired = retiredCerts.reduce((sum, c) => sum + c.tons, 0);
+        const totalHeld = holdings.reduce((sum, c) => sum + c.available_tons, 0);
+        
+        document.getElementById('port-retired').textContent = totalRetired === 0 ? 'Nil' : totalRetired;
+        document.getElementById('port-held').textContent = totalHeld === 0 ? 'Nil' : totalHeld;
+        
+        const target = 15000;
+        const progress = Math.min(100, Math.round((totalRetired / target) * 100));
+        document.getElementById('port-progress').textContent = progress + '%';
+        document.getElementById('progress-bar').style.width = progress + '%';
+
+        const tbody = document.querySelector('#holdingsTable tbody');
+        tbody.innerHTML = holdings.length === 0 ? '<tr><td colspan="7" style="text-align:center; color:#787b86;">Nil (0 Tons Held)</td></tr>' : holdings.map(h => {
+          // Find purchase price from res.purchased
+          const purchaseRecord = res.purchased.find(p => p.credit_id === h.id);
+          const purchasedPrice = purchaseRecord ? purchaseRecord.price_per_ton : (h.price_per_ton * 0.9); // fallback to 10% less if not found
+          
+          return `
+          <tr>
+            <td class="ticker">${h.ticker || 'N/A'}</td>
+            <td>${h.land_name || 'Portfolio'}</td>
+            <td>${h.vintage_year || new Date().getFullYear()}</td>
+            <td class="vol">${h.available_tons} Tons</td>
+            <td style="color:#94a3b8;">₹${purchasedPrice.toFixed(2)} / Ton</td>
+            <td style="color:#38bdf8; font-weight:bold;">₹${h.price_per_ton.toFixed(2)} / Ton</td>
+            <td>
+              <button class="btn" style="background:rgba(8,153,129,0.1); color:#089981; padding:4px 8px; border:none; border-radius:4px; cursor:pointer; margin-right:5px;" onclick="alert('Downloading Certificate for '+ '${h.ticker}' +'...')"><i class="fas fa-download"></i> Cert</button>
+              <button style="background:transparent; border:1px solid #f23645; color:#f23645; padding:4px 12px; border-radius:4px; cursor:pointer;" onclick="window.sellHolding('${h.id}')">Sell</button>
+            </td>
+          </tr>
+          `;
+        }).join('');
+
+        // Load Transactions & Bills (History Tab)
+        const billsBody = document.querySelector('#historyTable tbody');
+        billsBody.innerHTML = res.purchased.length === 0 ? '<tr><td colspan="6" style="text-align:center; color:#787b86;">Nil (No transactions yet)</td></tr>' : res.purchased.map(t => `
+          <tr>
+            <td>${new Date(t.created_at).toLocaleDateString()}</td>
+            <td>Purchase</td>
+            <td>${t.land_name || 'Portfolio'}</td>
+            <td>${t.tons} T</td>
+            <td style="color:#089981;">₹${t.total_price.toFixed(2)}</td>
+            <td>${t.status}</td>
+          </tr>
+        `).join('');
+        
+        // Also load Retire Tab data
+        const retireBody = document.querySelector('#retireTable tbody');
+        retireBody.innerHTML = holdings.length === 0 ? '<tr><td colspan="4" style="text-align:center; color:#787b86;">No credits available to retire</td></tr>' : holdings.map(h => `
+          <tr>
+            <td class="ticker">${h.ticker || 'N/A'}</td>
+            <td>${h.land_name || 'Portfolio'}</td>
+            <td class="vol">${h.available_tons}</td>
+            <td><button style="background:#089981; border:none; color:white; padding:6px 12px; border-radius:4px; cursor:pointer;" onclick="retireCredit('${h.id}')"><i class="fas fa-fire"></i> Retire (Burn)</button></td>
+          </tr>
+        `).join('');
+
+      } catch (e) { console.error('Portfolio load error', e); }
+    }
+
+function downloadBill(tx) {
+  try {
+      const doc = new jsPDF();
+      
+      // Header
+      doc.setFontSize(22);
+      doc.setTextColor(41, 98, 255); // #2962ff
+      doc.text("Carbon Wallet", 14, 20);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text("Official Carbon Credit Purchase Receipt", 14, 28);
+      
+      // Transaction Info
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Transaction ID: ${tx.id}`, 14, 45);
+      doc.text(`Date: ${new Date(tx.created_at).toLocaleString()}`, 14, 52);
+      doc.text(`Certificate No: ${tx.certificate_id || 'Pending'}`, 14, 59);
+      
+      // Table Data
+      doc.autoTable({
+        startY: 70,
+        head: [['Description', 'Details']],
+        body: [
+          ['Project Name', tx.land_name || 'Mixed Portfolio'],
+          ['Seller Name', tx.seller_name || 'Verified Seller'],
+          ['Carbon Credits Volume', `${tx.tons} Tons (tCO2e)`],
+          ['Price Per Ton', `INR ${tx.price_per_ton.toFixed(2)}`],
+          ['Total Amount Paid', `INR ${tx.total_price.toFixed(2)}`],
+          ['Status', tx.status.toUpperCase()]
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [41, 98, 255] }
+      });
+      
+      // Footer
+      const finalY = doc.lastAutoTable.finalY || 130;
+      doc.setFontSize(10);
+      doc.setTextColor(150, 150, 150);
+      doc.text("This is a computer generated receipt. The credits have been securely settled on the Carbon Wallet registry.", 14, finalY + 20);
+      doc.text("Thank you for contributing to a sustainable future.", 14, finalY + 26);
+      
+      doc.save(`CarbonWallet_Bill_${tx.id.substring(0,8)}.pdf`);
+  } catch(e) {
+      console.error(e);
+      alert('Failed to generate PDF. Make sure you are connected to the internet to load jsPDF.');
+  }
+}
+
+
+    async function loadExchange() {
+      const region = document.getElementById('ex-region').value;
+      try {
+        const res = await API.marketplace({ region: region !== 'All Regions' ? region : null });
+        activeCredits = res.credits;
+        const tbody = document.querySelector('#exchangeTable tbody');
+        
+        if(res.credits.length === 0) {
+           tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:#787b86;">No active orders found</td></tr>`;
+           return;
+        }
+
+        
+tbody.innerHTML = res.credits.map(c => `
+          <tr class="desktop-row" onclick="openProject('${c.id}')">
+            <td class="ticker">${c.ticker || 'GEN-CRBN'}</td>
+            <td><div>${c.project_type || 'Agroforestry'}</div><div style="font-size:0.75rem; color:#787b86;">${(c.seller_name || 'System').split(' ')[0]}</div></td>
+            <td>2025</td>
+            <td class="vol">${c.available_tons}</td>
+            <td class="price-up">?${(c.price_per_ton || 0).toFixed(2)}</td>
+            <td><button class="btn" style="background:#2962ff; color:white; padding:4px 12px; font-size:0.8rem; border:none; border-radius:4px; cursor:pointer;" onclick="openProject('${c.id}')">Trade</button></td>
+          </tr>
+          <tr class="mobile-row" onclick="openProject('${c.id}')">
+            <td colspan="6">
+              <div class="m-card">
+                <div class="m-top">
+                  <div>
+                    <div class="m-ticker">${c.ticker || 'GEN-CRBN'}</div>
+                    <div class="m-vintage">Vintage: 2025</div>
+                  </div>
+                  <div class="m-price">?${(c.price_per_ton || 0).toFixed(2)}</div>
+                </div>
+                <div class="m-mid">
+                  <div style="font-size: 0.8rem; color: #94a3b8; display: flex; justify-content: space-between;">
+                    <span>Liquidity</span>
+                    <span>${c.available_tons} Tons</span>
+                  </div>
+                  <div class="m-bar-bg"><div class="m-bar-fill" style="width: ${Math.min(100, (c.available_tons/2000)*100)}%;"></div></div>
+                </div>
+                <div class="m-tags">
+                  <div class="m-pill">${c.project_type || 'Agroforestry'}</div>
+                  <div class="m-pill">Verified</div>
+                </div>
+              </div>
+            </td>
+          </tr>
+`).join('');
+
+      } catch (e) { console.error('Exchange load error', e); }
+    }
+
+    // ========== BLOCKCHAIN ==========
+
+    async function openBlockchainModal() {
+       if(!selectedCredit) return;
+       openModal('blockchainModal');
+       
+       const timeline = document.getElementById('blockchain-timeline');
+       timeline.innerHTML = '<div style="text-align:center; color:#38bdf8;"><i class="fas fa-spinner fa-spin"></i> Fetching blockchain data...</div>';
+       
+       try {
+          const res = await fetch('/api/blockchain/verify/' + selectedCredit.id, { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') } });
+          const data = await res.json();
+          
+          if(data.ledger && data.ledger.length > 0) {
+             // We'll update the main trust screen hash with the latest block hash
+             if (document.getElementById('pd-hash')) document.getElementById('pd-hash').textContent = data.ledger[data.ledger.length - 1].hash;
+             
+             timeline.innerHTML = data.ledger.map((block, i) => `
+                <div style="border-left: 2px solid #334155; margin-left: 10px; padding-left: 20px; padding-bottom: 20px; position: relative;">
+                   <div style="position: absolute; left: -6px; top: 0; width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></div>
+                   
+                   <div style="font-size:0.75rem; color:#94a3b8; margin-bottom:5px;">Block #${block.index} • ${new Date(block.timestamp).toLocaleString()}</div>
+                   <div style="font-weight:bold; color:#f8fafc; margin-bottom:5px; text-transform:uppercase;">ACTION: ${block.transaction.action}</div>
+                   
+                   <div style="background:#1e293b; border:1px solid #334155; padding:10px; border-radius:4px; font-family:monospace; font-size:0.7rem; color:#94a3b8; word-break: break-all;">
+                      <div><span style="color:#38bdf8;">PREV HASH:</span> ${block.previous_hash}</div>
+                      <div style="margin-top:5px;"><span style="color:#10b981;">BLOCK HASH:</span> ${block.hash}</div>
+                   </div>
+                </div>
+             `).reverse().join(''); // Reverse to show latest first
+          } else {
+             timeline.innerHTML = '<div style="color:#f23645;">Error: No provenance found for this asset.</div>';
+          }
+       } catch(e) {
+          timeline.innerHTML = '<div style="color:#f23645;">Error fetching ledger.</div>';
+       }
+    }
+    
+    // ========== EXECUTION ==========
+    function openProject(id) {
+      selectedCredit = activeCredits.find(c => String(c.id) === String(id));
+      if(!selectedCredit) return;
+      
+      document.getElementById('pd-ticker').textContent = selectedCredit.ticker || 'GEN-CRBN';
+      document.getElementById('pd-seller-name').textContent = selectedCredit.seller_name || 'Unknown Seller';
+      document.getElementById('pd-seller-role').textContent = selectedCredit.is_resale ? 'Corporate Reseller' : 'Landowner / FPO';
+      document.getElementById('pd-type').innerHTML = `<i class="fas fa-map-marker-alt"></i> ${selectedCredit.project_type} | ${selectedCredit.location_state || ''}, ${selectedCredit.location_district || ''}`;
+      document.getElementById('pd-name').textContent = selectedCredit.land_name || 'Portfolio';
+      document.getElementById('pd-price').textContent = `₹${(selectedCredit.price_per_ton).toFixed(2)}`;
+      document.getElementById('pd-vintage').textContent = selectedCredit.vintage_year;
+      document.getElementById('pd-vol').textContent = (selectedCredit.available_tons).toFixed(1) + ' Tons';
+      
+      document.getElementById('tradeQty').value = Math.min(100, selectedCredit.available_tons);
+      document.getElementById('tradeQty').max = selectedCredit.available_tons;
+      
+      updateTradeTotal();
+      switchTab('project');
+      
+      // Load live hash
+      let pdHashEl = document.getElementById('pd-hash');
+      if (!pdHashEl) { pdHashEl = { textContent: '' }; }
+      if (document.getElementById('pd-hash')) document.getElementById('pd-hash').textContent = "Fetching Live Block Hash...";
+      fetch('/api/blockchain/verify/' + id, { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('cw_token') } })
+        .then(res => res.json())
+        .then(data => {
+            if(data.ledger && data.ledger.length > 0) {
+               document.getElementById('pd-hash').textContent = data.ledger[data.ledger.length - 1].hash;
+            }
+        }).catch(() => {});
     }
 
     function updateTradeTotal() {
@@ -750,12 +997,9 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
       let qty = parseInt(document.getElementById('tradeQty').value);
       
       const btn = action === 'retire' ? document.getElementById('btnRetire') : document.getElementById('btnHold');
-      let originalHtml = '';
-      if(btn) {
-         originalHtml = btn.innerHTML;
-         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...';
-         btn.disabled = true;
-      }
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...';
+      btn.disabled = true;
 
       try {
         const payload = { credit_id: selectedCredit.id, tons: qty, action: action, order_type: orderType };
@@ -786,11 +1030,13 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
            if (typeof loadPortfolio === 'function') loadPortfolio(); if (typeof loadMyCredits === 'function') loadMyCredits();
            loadExchange();
            switchTab(data.is_limit ? 'exchange' : 'portfolio');
-           if(btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
+           btn.innerHTML = originalHtml;
+           btn.disabled = false;
         }, 1500);
       } catch(e) { 
         showToast(e.message, 'error'); 
-        if(btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
       }
     }
 
@@ -1401,7 +1647,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
     <style>
       .mobile-matrix-wrapper { display: none; }
       @media (max-width: 768px) {
-        /* desktop-dashboard visibility controlled by JS */
+        .desktop-dashboard { display: none !important; }
         .mobile-matrix-wrapper {
           display: flex;
           flex-direction: column;
@@ -1509,7 +1755,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
       function initESGGauge() {
         if (gaugeChart) return;
         const ctx = document.getElementById('esgGauge').getContext('2d');
-        if(ctx) gaugeChart = new Chart(ctx, {
+        gaugeChart = new Chart(ctx, {
           type: 'doughnut',
           data: {
             labels: ['Progress', 'Remaining'],
@@ -1535,7 +1781,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
   <style>
     .mobile-matrix-wrapper { display: none; }
     @media (max-width: 768px) {
-      /* desktop-dashboard visibility controlled by JS */
+      .desktop-dashboard { display: none !important; }
       .mobile-matrix-wrapper {
         display: flex;
         flex-direction: column;
@@ -1588,7 +1834,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
       if(viewId === 'esg') initESGGauge();
     }
     
-    async function executeTradeObsolete(btn) {
+    async function executeTrade(btn) {
        const auth = await requireBiometric("Execute ₹6,00,000 Corporate Trade");
        if(auth) {
          if(window.HapticEngine) HapticEngine.heavyThud();
@@ -1602,8 +1848,8 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
     let chartP1, chartP2, chartEsg;
     function initPortfolioCharts() {
        if(chartP1) return;
-       const el1 = document.getElementById('trajChart');
-       if(el1) { const ctx1 = el1.getContext('2d'); chartP1 = new Chart(ctx1, {
+       const ctx1 = document.getElementById('trajChart').getContext('2d');
+       chartP1 = new Chart(ctx1, {
          type: 'line',
          data: {
            labels: ['2023', '2024', '2025', '2026'],
@@ -1612,10 +1858,9 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
          },
          options: { responsive: true, plugins: { legend: { display:false } }, scales: { x: { display:false }, y: { display:false } } }
        });
-       }
        
        const ctx2 = document.getElementById('assetChart').getContext('2d');
-       if(ctx2) chartP2 = new Chart(ctx2, {
+       chartP2 = new Chart(ctx2, {
          type: 'doughnut',
          data: { labels: ['Agroforestry', 'AWD Rice', 'Soil Carbon'], datasets: [{ data: [60, 25, 15], backgroundColor: ['#00E5FF', '#00E676', '#FFAB00'], borderWidth: 0 }] },
          options: { responsive: true, plugins: { legend: { position: 'bottom', labels:{color:'#94a3b8'} } } }
@@ -1625,7 +1870,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
     function initESGGauge() {
        if(chartEsg) return;
        const ctx = document.getElementById('esgGaugeChart').getContext('2d');
-       if(ctx) chartEsg = new Chart(ctx, {
+       chartEsg = new Chart(ctx, {
          type: 'doughnut',
          data: { labels: ['Progress', 'Remaining'], datasets: [{ data: [45, 55], backgroundColor: ['#00E676', '#1e293b'], borderWidth: 0, cutout: '80%', circumference: 270, rotation: 225 }] },
          options: { responsive: true, plugins: { legend: { display: false } } }
@@ -1662,7 +1907,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
   }
 
   @media (max-width: 768px) {
-    body > *:not(.mob-wrap) {
+    body > *:not(.mob-wrap):not([id*="mob"]) {
       display: none !important;
     }
     .mob-wrap {
@@ -2128,7 +2373,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
     </div>
 
     <!-- Notification Panel -->
-    <div id="mob-notif-panel" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:9999999; overflow-y:auto; padding:20px;">
+    <div id="mob-notif-panel" style="display:none; position:fixed; top:0;left:0;right:0;bottom:0;width:100%;height:100%; background:var(--bg); z-index:9999999; overflow-y:auto; padding:20px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
         <h2 style="color:#f8fafc; margin:0;"><i class="fa-solid fa-bell" style="color:#00E676;"></i> Notifications</h2>
         <button onclick="document.getElementById('mob-notif-panel').style.display='none'" style="background:transparent; border:none; color:#94a3b8; font-size:1.5rem;">&times;</button>
@@ -2600,6 +2845,7 @@ async function mobLoadExchange() {
   }
 
   // Render cards using string concatenation (not template literals)
+  window._mobExchangeCredits = credits;
   var cardsHtml = '';
   for (var i = 0; i < credits.length; i++) {
     var c = credits[i];
@@ -2609,46 +2855,81 @@ async function mobLoadExchange() {
     var vintage = c.vintage_year || new Date().getFullYear();
     var volume = c.available_tons || 0;
     var price = c.price_per_ton || 0;
+    var total = volume * price;
     var state = c.location_state || 'India';
-    var priceStr = String.fromCharCode(8377) + price.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
     var volStr = volume.toLocaleString('en-IN');
-    var creditStr = btoa(unescape(encodeURIComponent(JSON.stringify(c))));
-    var priceStr = String.fromCharCode(8377) + price.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
-    var volStr = volume.toLocaleString('en-IN');
-    
-    cardsHtml += '<div class="mob-credit-card" id="mc-' + c.id + '" data-id="' + c.id + '" data-price="' + price + '" data-vol="' + volume + '" data-ticker="' + ticker + '" data-method="' + methodType + '" data-seller="' + seller + '" data-state="' + state + '">';
-    cardsHtml += '<div class="mob-card-left">';
-    cardsHtml += '<div class="mob-card-ticker">' + ticker + '</div>';
-    cardsHtml += '<div class="mob-card-meta">' + methodType + ' &middot; ' + state + '</div>';
-    cardsHtml += '<div class="mob-card-meta">' + volStr + ' Tons Available</div>';
+    var priceStr = price.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+    var cid = String(c.id);
+    cardsHtml += '<div class="market-card" id="mc-' + cid + '" onclick="window.mobOpenTradeById(\''  + cid + '\')">';
+    cardsHtml += '<div class="mc-top"><div>';
+    cardsHtml += '<div class="mc-ticker">' + ticker + '</div>';
+    cardsHtml += '<div style="font-size:0.7rem; color:var(--muted); font-family:monospace;">' + state + '</div>';
     cardsHtml += '</div>';
-    cardsHtml += '<div class="mob-card-right">';
-    cardsHtml += '<div class="mob-card-price">' + priceStr + '</div>';
-    cardsHtml += '<button onclick="var card=this.closest(\'.mob-credit-card\');window.openMobTrade&&openMobTrade(card.dataset.id,+card.dataset.price,+card.dataset.vol,card.dataset.ticker,card.dataset.method,card.dataset.seller,card.dataset.state);" class="mob-trade-btn">TRADE</button>';
-    cardsHtml += '</div></div>';
+    cardsHtml += '<div class="mc-vintage">Vint. ' + vintage + '</div></div>';
+    cardsHtml += '<div class="mc-method">' + methodType + ' — ' + seller + ' <span>✓ Verified</span></div>';
+    cardsHtml += '<div class="mc-bottom">';
+    cardsHtml += '<div class="mc-volume"><strong>' + volStr + '</strong> Tons Available</div>';
+    cardsHtml += '<div><div class="mc-price">₹' + priceStr + '</div><div class="mc-price-sub">per Ton</div></div>';
+    cardsHtml += '</div>';
+    cardsHtml += '<button class="mob-trade-btn" onclick="window.mobOpenTradeById(\''  + cid + '\')" style="width:100%;margin-top:12px;padding:13px;background:linear-gradient(135deg,#00E676,#00BCD4);color:#071820;font-weight:900;font-size:1rem;border:none;border-radius:12px;cursor:pointer;letter-spacing:1.5px;font-family:monospace;text-transform:uppercase;box-shadow:0 4px 20px rgba(0,230,118,0.35);">&#x26A1; TRADE NOW</button>';
     cardsHtml += '</div>';
   }
-  listEl.innerHTML = cardsHtml;
-  // Make credits available to openProject
-  if(typeof activeCredits === 'undefined' || !activeCredits || activeCredits.length === 0) {
-    activeCredits = credits || [];
-  }
-  
 
+    listEl.innerHTML = cardsHtml;
 }
 
 // ── EXPAND CARD → SHOW TRADE MODAL ──
 function mobExpandCard(id, ticker, method, seller, volume, price, total, creditId) {
-  if(window.HapticEngine) HapticEngine.lightTick();
-  document.getElementById('mob-trade-ticker').textContent = ticker;
-  document.getElementById('mob-trade-desc').textContent = method + ' — ' + seller;
-  document.getElementById('mob-trade-price').textContent = '₹' + price.toLocaleString('en-IN', {minimumFractionDigits:2});
-  document.getElementById('mob-trade-volume').textContent = volume.toLocaleString('en-IN') + ' Tons';
-  document.getElementById('mob-trade-total').textContent = '₹' + total.toLocaleString('en-IN');
-  pendingMobTrade = { id: creditId, tons: volume, price, total };
-  document.getElementById('mob-trade-modal').style.display = 'flex';
-  mobInitSwipe();
+  if(window.HapticEngine) try{ HapticEngine.lightTick(); }catch(e){}
+  // Show the mobile trade bottom sheet
+  var sheet = document.getElementById('mobTradeSheet');
+  if (!sheet) { console.error('mobTradeSheet not found!'); alert('Trade modal missing. Please refresh.'); return; }
+  var basePrice = parseFloat(price) || 2260;
+  var vol = parseInt(volume) || 0;
+  // Set content
+  var elT = document.getElementById('mts-ticker'); if(elT) elT.textContent = ticker || '--';
+  var elM = document.getElementById('mts-meta'); if(elM) elM.textContent = (method||'GCP Afforestation') + ' · ' + (seller||'India') + ' · ✔ Verified';
+  var elP = document.getElementById('mts-price'); if(elP) elP.textContent = '₹' + basePrice.toLocaleString('en-IN', {minimumFractionDigits:2});
+  var elV = document.getElementById('mts-vol'); if(elV) elV.textContent = vol.toLocaleString('en-IN') + ' Tons';
+  var elQ = document.getElementById('mts-qty'); if(elQ){ elQ.value = Math.min(100, vol); elQ.max = vol; }
+  mtsCalcTotal();
+  // Store credit data globally
+  window._mtsActiveCreditId = creditId || id;
+  window._mtsActiveTicker = ticker;
+  window._mtsActivePrice = basePrice;
+  // Show sheet
+  sheet.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  // Start price ticker
+  if(window._mtsTicker) clearInterval(window._mtsTicker);
+  window._mtsTicker = setInterval(function(){
+    var delta = (Math.random()-0.45)*12;
+    var newP = Math.max(basePrice*0.95, basePrice+delta);
+    var pEl = document.getElementById('mts-price');
+    var cEl = document.getElementById('mts-change');
+    if(pEl) pEl.textContent = '₹' + newP.toLocaleString('en-IN',{minimumFractionDigits:2});
+    if(cEl){ var pct=Math.abs((delta/basePrice)*100).toFixed(2); cEl.textContent=(delta>=0?'▲':'▼')+' '+pct+'%'; cEl.style.color=delta>=0?'#00e676':'#ef4444'; }
+    window._mtsActivePrice = newP;
+    mtsCalcTotal();
+  }, 2000);
+  // Init map
+  setTimeout(function(){
+    var el = document.getElementById('mts-map');
+    if (!el || typeof L === 'undefined') return;
+    try {
+      if(window._mtsMap){ window._mtsMap.remove(); window._mtsMap=null; }
+      var lat = 17 + Math.random()*8;
+      var lng = 72 + Math.random()*8;
+      window._mtsMap = L.map('mts-map',{zoomControl:false,attributionControl:false}).setView([lat,lng],12);
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(window._mtsMap);
+      L.circle([lat,lng],{color:'#00e676',fillColor:'#00e676',fillOpacity:0.25,radius:2500}).addTo(window._mtsMap);
+      var loading = document.getElementById('mts-map-loading');
+      if(loading) loading.style.display='none';
+    } catch(e){ console.warn('Map init failed:', e); }
+  }, 400);
 }
+
+
 
 // ── SWIPE TO TRADE SLIDER ──
 function mobInitSwipe() {
@@ -3026,143 +3307,363 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
     
 
-<!-- MOBILE TRADE SHEET -->
-<div id="mobTradeSheet">
-  <div id="mobTradeSheetInner">
-    <div class="mts-handle"></div>
-    <div class="mts-hdr">
-      <div class="mts-tic" id="mts-tic">&#8212;</div>
-      <div class="mts-met" id="mts-met">&#8212;</div>
+
+
+<!-- ═══════════ CW TRADE POPUP MODAL ═══════════ -->
+<div id="cwTradeModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:#0f1117;border:1px solid #1e2535;border-radius:20px;width:92%;max-width:880px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 30px 80px rgba(0,0,0,0.7);">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid #1e2535;">
+      <div>
+        <div style="font-family:monospace;font-size:1.2rem;font-weight:700;color:#00bcd4;" id="ctm-ticker">--</div>
+        <div style="font-size:0.78rem;color:#64748b;margin-top:3px;" id="ctm-meta">--</div>
+      </div>
+      <button onclick="closeCwTradeModal()" style="background:transparent;border:1px solid #334155;color:#94a3b8;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.1rem;">&#10005;</button>
     </div>
-    <div id="mts-map-el"></div>
-    <div class="mts-body">
-      <div class="mts-tog">
-        <button class="mts-tog-btn active" id="mts-m-btn" onclick="setMtsOrd('market')">Market Order</button>
-        <button class="mts-tog-btn" id="mts-l-btn" onclick="setMtsOrd('limit')">Limit Order</button>
-      </div>
-      <div class="mts-pr">
-        <div>
-          <div class="mts-pr-lbl">DYNAMIC PRICE</div>
-          <div class="mts-pr-val" id="mts-pv">&#8377;0.00</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+      <div style="border-right:1px solid #1e2535;">
+        <div id="ctm-map" style="height:220px;background:#0a0e17;"></div>
+        <div style="padding:16px 20px;background:#080b10;border-bottom:1px solid #1e2535;">
+          <div style="font-size:0.7rem;color:#64748b;letter-spacing:1px;margin-bottom:6px;">LIVE PRICE FEED</div>
+          <div style="display:flex;align-items:baseline;gap:10px;">
+            <span style="font-size:2rem;font-weight:700;color:#00e676;font-family:monospace;" id="ctm-price">&#8377;0.00</span>
+            <span style="font-size:0.85rem;font-weight:600;color:#00e676;" id="ctm-change">&#9650; 0.0%</span>
+          </div>
+          <div style="font-size:0.75rem;color:#64748b;margin-top:4px;">Vol: <span style="color:#94a3b8;font-weight:600;" id="ctm-vol">0 Tons</span></div>
         </div>
-        <div class="mts-pr-right">
-          <div class="mts-pr-lbl">AVAILABLE</div>
-          <div class="mts-pr-vol" id="mts-vol">0 T</div>
+        <div style="padding:16px 20px;">
+          <div style="font-size:0.7rem;color:#64748b;margin-bottom:10px;letter-spacing:1px;">ORDER TYPE</div>
+          <div style="display:flex;gap:8px;">
+            <button id="ctm-btn-market" onclick="ctmSetOrder('market')" style="flex:1;padding:10px;border-radius:8px;border:none;background:#38bdf8;color:#0f1117;font-weight:700;cursor:pointer;">Market</button>
+            <button id="ctm-btn-limit" onclick="ctmSetOrder('limit')" style="flex:1;padding:10px;border-radius:8px;border:1px solid #334155;background:transparent;color:#94a3b8;font-weight:700;cursor:pointer;">Limit</button>
+          </div>
+          <div id="ctm-limit-row" style="display:none;margin-top:12px;">
+            <div style="font-size:0.72rem;color:#64748b;margin-bottom:5px;">TARGET PRICE (&#8377;/TON)</div>
+            <input type="number" id="ctm-limit-price" style="width:100%;background:#131722;border:1px solid #334155;color:#e2e8f0;padding:10px;border-radius:8px;font-size:1rem;box-sizing:border-box;" placeholder="Enter limit price">
+          </div>
         </div>
       </div>
-      <div class="mts-inp-row">
-        <div class="mts-inp-lbl">QUANTITY (TONS)</div>
-        <input class="mts-inp" type="number" id="mts-qty" value="100" min="1" oninput="updMtsTotal()">
-      </div>
-      <div class="mts-inp-row" id="mts-lim-row" style="display:none;">
-        <div class="mts-inp-lbl">LIMIT PRICE (&#8377; PER TON)</div>
-        <input class="mts-inp" type="number" id="mts-lim" placeholder="Enter limit price" oninput="updMtsTotal()">
-      </div>
-      <div class="mts-tot">
-        <div class="mts-tot-lbl">Estimated Total</div>
-        <div class="mts-tot-val" id="mts-tot">&#8377;0</div>
-      </div>
-      <div class="mts-actions">
-        <button class="mts-btn-retire" onclick="execMts('retire')">&#127807; Buy &amp; Retire</button>
-        <button class="mts-btn-hold" onclick="execMts('hold')">&#128230; Buy &amp; Hold</button>
+      <div style="padding:20px 24px;">
+        <div style="background:#131722;border:1px solid #1e2535;border-radius:10px;padding:14px 18px;margin-bottom:14px;">
+          <div style="font-size:0.7rem;color:#64748b;margin-bottom:6px;letter-spacing:1px;">QUANTITY (TONS)</div>
+          <input type="number" id="ctm-qty" min="1" oninput="ctmUpdateTotal()" style="width:100%;background:transparent;border:none;color:#e2e8f0;font-size:1.4rem;font-weight:700;outline:none;box-sizing:border-box;" value="100">
+        </div>
+        <div style="background:#131722;border:1px solid #1e2535;border-radius:10px;padding:14px 18px;margin-bottom:14px;font-size:0.85rem;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="color:#64748b;">Price/Ton</span><span style="color:#e2e8f0;font-family:monospace;" id="ctm-unit-price">&#8377;0.00</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="color:#64748b;">Platform Fee (0.5%)</span><span style="color:#e2e8f0;font-family:monospace;" id="ctm-fee">&#8377;0</span></div>
+          <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid #1e2535;"><span style="color:#94a3b8;font-weight:600;">Total Cost</span><span style="color:#00e5ff;font-size:1.1rem;font-weight:700;font-family:monospace;" id="ctm-total">&#8377;0</span></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;">
+          <span style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#10b981;padding:4px 10px;border-radius:20px;font-size:0.7rem;">&#10004; AI 7/12 Verified</span>
+          <span style="background:rgba(41,98,255,0.1);border:1px solid rgba(41,98,255,0.3);color:#60a5fa;padding:4px 10px;border-radius:20px;font-size:0.7rem;">&#128752; Satellite dMRV</span>
+          <span style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:#f59e0b;padding:4px 10px;border-radius:20px;font-size:0.7rem;">&#128274; Buffer Pool</span>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button onclick="ctmExecute('hold',event)" style="flex:1;background:#2962ff;color:#fff;border:none;border-radius:12px;padding:18px 10px;font-size:0.9rem;font-weight:700;cursor:pointer;">
+            <div>&#128188; BUY &amp; HOLD</div>
+            <div style="font-size:0.72rem;font-weight:400;margin-top:3px;opacity:0.8;">Portfolio &amp; Resale</div>
+          </button>
+          <button onclick="ctmExecute('retire',event)" style="flex:1;background:#ef4444;color:#fff;border:2px solid #7f1d1d;border-radius:12px;padding:18px 10px;font-size:0.9rem;font-weight:700;cursor:pointer;">
+            <div>&#128293; BUY &amp; RETIRE</div>
+            <div style="font-size:0.72rem;font-weight:400;margin-top:3px;opacity:0.8;">ESG &amp; Burn Protocol</div>
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-var _mtsCredit = null, _mtsMap = null, _mtsOrd = 'market';
+(function() {
+  var _ctmCredit = null;
+  var _ctmOrderType = 'market';
+  var _ctmMap = null;
+  var _ctmTicker = null;
 
-function openMobTrade(id, price, volume, ticker, method, seller, state) {
-  try {
-    price = Number(price) || 0;
-    volume = Number(volume) || 0;
-    _mtsCredit = { id:id, price_per_ton:price, available_tons:volume, ticker:ticker, project_type:method, seller_name:seller, location_state:state };
-    
-    document.getElementById('mts-tic').textContent = ticker;
-    document.getElementById('mts-met').textContent = method + '  ·  ' + seller + '  ✓ Verified';
-    document.getElementById('mts-pv').textContent = '₹' + price.toLocaleString('en-IN',{minimumFractionDigits:2});
-    document.getElementById('mts-vol').textContent = volume.toLocaleString('en-IN') + ' T';
-    
-    var qtyEl = document.getElementById('mts-qty');
-    if(qtyEl) {
-      qtyEl.value = Math.min(100, volume);
-      qtyEl.max = volume;
-      var q = parseInt(qtyEl.value) || 0;
-      var tot = q * price;
-      document.getElementById('mts-tot').textContent = '₹' + tot.toLocaleString('en-IN',{minimumFractionDigits:2});
-    }
-    
-    var sh = document.getElementById('mobTradeSheet');
-    var inner = document.getElementById('mobTradeSheetInner');
-    if(!sh || !inner) {
-      alert("Popup elements missing from DOM!");
-      return;
-    }
-    
-    sh.style.setProperty('display', 'flex', 'important');
-    sh.style.setProperty('opacity', '1', 'important');
-    sh.style.setProperty('visibility', 'visible', 'important');
-    
-    setTimeout(() => {
-      inner.style.setProperty('transform', 'translateY(0)', 'important');
-      inner.style.setProperty('transition', 'transform 0.3s cubic-bezier(0.4,0,0.2,1)', 'important');
-      if(typeof _initMtsMap === 'function') _initMtsMap(state);
-    }, 10);
-  } catch(e) {
-    alert("OMT CRASH: " + e.message);
+  window.openCwTradeModal = function(credit) {
+    _ctmCredit = credit;
+    _ctmOrderType = 'market';
+    document.getElementById('ctm-ticker').textContent = credit.ticker || credit.id || '--';
+    document.getElementById('ctm-meta').textContent = (credit.project_type||'GCP Afforestation') + ' · ' + (credit.location_state||'India') + ' · ✔ Verified';
+    var price = parseFloat(credit.price_per_ton) || 0;
+    var vol = parseInt(credit.available_tons) || 0;
+    document.getElementById('ctm-price').textContent = '₹' + price.toLocaleString('en-IN', {minimumFractionDigits:2});
+    document.getElementById('ctm-vol').textContent = vol.toLocaleString('en-IN') + ' Tons';
+    document.getElementById('ctm-unit-price').textContent = '₹' + price.toLocaleString('en-IN', {minimumFractionDigits:2});
+    var qtyEl = document.getElementById('ctm-qty');
+    qtyEl.value = Math.min(100, vol);
+    qtyEl.max = vol;
+    ctmUpdateTotal();
+    ctmSetOrder('market');
+    document.getElementById('cwTradeModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    setTimeout(function() { ctmInitMap(credit); }, 150);
+    if (_ctmTicker) clearInterval(_ctmTicker);
+    _ctmTicker = setInterval(function() {
+      var base = parseFloat(credit.price_per_ton) || 2260;
+      var delta = (Math.random() - 0.45) * 8;
+      var newP = base + delta;
+      var pEl = document.getElementById('ctm-price');
+      var cEl = document.getElementById('ctm-change');
+      if (pEl) pEl.textContent = '₹' + newP.toLocaleString('en-IN', {minimumFractionDigits:2});
+      if (cEl) { var pct = Math.abs((delta/base)*100).toFixed(2); cEl.textContent = (delta>=0?'▲':'▼')+' '+pct+'%'; cEl.style.color = delta>=0?'#00e676':'#ef4444'; }
+    }, 1800);
+  };
+
+  function ctmInitMap(credit) {
+    var el = document.getElementById('ctm-map');
+    if (!el) return;
+    if (typeof L === 'undefined') { el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#475569;font-size:0.85rem;">Map loading...</div>'; return; }
+    if (_ctmMap) { try { _ctmMap.remove(); } catch(e) {} _ctmMap = null; }
+    var lat = credit.lat || (19 + Math.random()*6);
+    var lng = credit.lng || (72 + Math.random()*6);
+    _ctmMap = L.map('ctm-map', {zoomControl:false, attributionControl:false}).setView([lat, lng], 13);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(_ctmMap);
+    L.circle([lat, lng], {color:'#00e676', fillColor:'#00e676', fillOpacity:0.2, radius:2000}).addTo(_ctmMap);
+    L.marker([lat, lng]).addTo(_ctmMap);
   }
-}
 
-document.getElementById('mobTradeSheet').addEventListener('click', function(e) { if(e.target===this) closeMobTradeSheet(); });
+  window.ctmSetOrder = function(type) {
+    _ctmOrderType = type;
+    var mBtn = document.getElementById('ctm-btn-market');
+    var lBtn = document.getElementById('ctm-btn-limit');
+    mBtn.style.cssText = 'flex:1;padding:10px;border-radius:8px;font-weight:700;cursor:pointer;' + (type==='market'?'background:#38bdf8;color:#0f1117;border:none;':'background:transparent;color:#94a3b8;border:1px solid #334155;');
+    lBtn.style.cssText = 'flex:1;padding:10px;border-radius:8px;font-weight:700;cursor:pointer;' + (type==='limit'?'background:#38bdf8;color:#0f1117;border:none;':'background:transparent;color:#94a3b8;border:1px solid #334155;');
+    document.getElementById('ctm-limit-row').style.display = type==='limit'?'block':'none';
+  };
 
-function _initMtsMap(state) {
-  if(typeof L === 'undefined') return;
-  var el = document.getElementById('mts-map-el');
-  if(!el) return;
-  if(_mtsMap) { _mtsMap.remove(); _mtsMap = null; }
-  var coords = {'Gujarat':[22.26,71.19],'Maharashtra':[19.75,75.71],'Karnataka':[15.32,75.71],'Rajasthan':[27.02,74.22],'Tamil Nadu':[11.13,78.66],'Madhya Pradesh':[22.97,78.66]};
-  var ll = coords[state] || [20.59,78.96];
-  _mtsMap = L.map('mts-map-el',{zoomControl:false,scrollWheelZoom:false,attributionControl:false}).setView(ll,8);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(_mtsMap);
-  L.circle(ll,{radius:30000,color:'#00bcd4',fillColor:'#00bcd4',fillOpacity:0.2,weight:2}).addTo(_mtsMap);
-  L.marker(ll).addTo(_mtsMap);
-}
+  window.ctmUpdateTotal = function() {
+    if (!_ctmCredit) return;
+    var price = parseFloat(_ctmCredit.price_per_ton)||0;
+    var qty = parseInt(document.getElementById('ctm-qty').value)||0;
+    var sub = qty*price;
+    var fee = sub*0.005;
+    document.getElementById('ctm-fee').textContent = '₹'+fee.toLocaleString('en-IN',{maximumFractionDigits:0});
+    document.getElementById('ctm-total').textContent = '₹'+(sub+fee).toLocaleString('en-IN',{maximumFractionDigits:0});
+  };
 
-function setMtsOrd(type) {
-  _mtsOrd = type;
-  document.getElementById('mts-m-btn').className = 'mts-tog-btn' + (type==='market'?' active':'');
-  document.getElementById('mts-l-btn').className = 'mts-tog-btn' + (type==='limit'?' active':'');
-  document.getElementById('mts-lim-row').style.display = type==='limit'?'block':'none';
-  updMtsTotal();
-}
+  window.closeCwTradeModal = function() {
+    document.getElementById('cwTradeModal').style.display = 'none';
+    document.body.style.overflow = '';
+    if (_ctmTicker) { clearInterval(_ctmTicker); _ctmTicker = null; }
+    if (_ctmMap) { try { _ctmMap.remove(); } catch(e) {} _ctmMap = null; }
+  };
 
-function updMtsTotal() {
-  if(!_mtsCredit) return;
-  var qty = parseFloat(document.getElementById('mts-qty').value)||0;
-  var p = _mtsOrd==='limit' ? (parseFloat(document.getElementById('mts-lim').value)||_mtsCredit.price_per_ton) : _mtsCredit.price_per_ton;
-  document.getElementById('mts-tot').textContent = '₹' + (qty*p).toLocaleString('en-IN',{minimumFractionDigits:2});
-}
+  document.getElementById('cwTradeModal').addEventListener('click', function(e) { if (e.target===this) window.closeCwTradeModal(); });
 
-function execMts(action) {
-  if(!_mtsCredit) return;
-  closeMobTradeSheet();
-  selectedCredit = _mtsCredit; orderType = _mtsOrd;
-  var qEl = document.getElementById('tradeQty');
-  if(qEl) qEl.value = document.getElementById('mts-qty').value;
-  var lEl = document.getElementById('limitPrice');
-  if(lEl && _mtsOrd==='limit') lEl.value = document.getElementById('mts-lim').value;
-  if(typeof executeTrade==='function') setTimeout(function(){ executeTrade(action); }, 400);
-}
+  window.ctmExecute = async function(action, evt) {
+    if (!_ctmCredit) return;
+    var qty = parseInt(document.getElementById('ctm-qty').value);
+    if (!qty||qty<=0) { alert('Enter a valid quantity'); return; }
+    var btn = evt && evt.currentTarget ? evt.currentTarget : (evt && evt.target ? evt.target.closest('button') : null);
+    var orig = btn ? btn.innerHTML : '';
+    if (btn) { btn.innerHTML = '⏳ Processing...'; btn.disabled = true; }
+    var payload = {credit_id:_ctmCredit.id, tons:qty, action:action, order_type:_ctmOrderType};
+    if (_ctmOrderType==='limit') payload.target_price = parseFloat(document.getElementById('ctm-limit-price').value);
+    try {
+      var res = await fetch('/api/credits/purchase', {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+(localStorage.getItem('cw_token')||'')}, credentials:'include', body:JSON.stringify(payload)});
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error||'Trade failed');
+      window.closeCwTradeModal();
+      if (typeof showToast==='function') showToast('✅ Trade executed! '+qty+' tons '+(action==='retire'?'retired':'added to portfolio'), 'success');
+      if (typeof loadExchange==='function') setTimeout(loadExchange, 800);
+      if (typeof loadPortfolio==='function') setTimeout(loadPortfolio, 800);
+      if (typeof mobLoadPortfolio==='function') setTimeout(mobLoadPortfolio, 800); // Mobile refresh
+    } catch(e) {
+      alert('Error: '+e.message);
+      if (btn) { btn.innerHTML = orig; btn.disabled = false; }
+    }
+  };
 
-function goBackToListing() {
-  var mobileContainer = document.querySelector('.mobile-container');
-  var desktopDashboard = document.querySelector('.desktop-dashboard');
-  if(mobileContainer) mobileContainer.style.setProperty('display', 'block', 'important');
-  if(desktopDashboard) desktopDashboard.classList.remove('mobile-visible');
-  var meta = document.querySelector('meta[name="viewport"]');
-  if(meta) meta.setAttribute('content', 'width=device-width, initial-scale=1.0');
-  document.getElementById('mob-back-btn').style.display = 'none';
-}
+  // ── OVERRIDE openMobTrade FOR MOBILE BUTTONS ──
+  window.openMobTrade = function(id, price, volume, ticker, method, seller, state) {
+    if (typeof window.openCwTradeModal === 'function') {
+      window.openCwTradeModal({
+        id: id,
+        price_per_ton: price,
+        available_tons: volume,
+        ticker: ticker,
+        project_type: method,
+        seller_name: seller,
+        location_state: state
+      });
+    }
+  };
+
+  // ── EVENT DELEGATION: intercept clicks on the exchange table action buttons ──
+  // This fires regardless of when the table renders
+  document.addEventListener('click', async function(e) {
+    var btn = e.target.closest('#exchangeTable button, #exchangeTable td a, .action-cell button');
+    if (!btn) return;
+    var tr = btn.closest('tr');
+    if (!tr || !tr.cells || tr.cells.length < 2) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    var ticker = tr.cells[0] ? tr.cells[0].innerText.trim() : '';
+    if (!ticker) return;
+
+    try {
+      var r = await fetch('/api/credits/marketplace', {headers:{'Authorization':'Bearer '+(localStorage.getItem('cw_token')||'')}});
+      var d = await r.json();
+      var match = (d.credits||[]).find(function(c){ return c.ticker === ticker; });
+      if (match) {
+        window.openCwTradeModal(match);
+      } else {
+        // Build from row cells as fallback
+        var priceText = tr.cells[4] ? tr.cells[4].innerText.replace(/[^0-9.]/g,'') : '2260';
+        var volText = tr.cells[3] ? tr.cells[3].innerText.replace(/[^0-9]/g,'') : '1000';
+        window.openCwTradeModal({
+          id: 'EX-'+Date.now(),
+          ticker: ticker,
+          price_per_ton: parseFloat(priceText)||2260,
+          available_tons: parseInt(volText)||1000,
+          project_type: tr.cells[1] ? tr.cells[1].innerText.trim() : 'GCP Afforestation',
+          location_state: tr.cells[2] ? tr.cells[2].innerText.trim() : 'India'
+        });
+      }
+    } catch(err) {
+      console.error('CW Trade Modal error:', err);
+    }
+  }, true); // use capture so we fire before any other handler
+
+})();
 </script>
+
+
+
+
+
+<!-- MOBILE TRADE SHEET -->
+<div id="mobTradeSheet" onclick="if(window.event && window.event.target===this)window.closeMobTradeSheet()" style="display:none;position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,0.75);">
+  <div style="position:absolute;bottom:0;left:0;right:0;background:#0f1117;border-radius:24px 24px 0 0;border-top:1px solid #1e2535;max-height:92vh;overflow-y:auto;">
+    <div style="width:40px;height:4px;background:#334155;border-radius:2px;margin:14px auto 0;"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px 12px;">
+      <div>
+        <div id="mts-ticker" style="font-family:monospace;font-size:1.1rem;font-weight:800;color:#00bcd4;">--</div>
+        <div id="mts-meta" style="font-size:0.72rem;color:#64748b;margin-top:3px;">--</div>
+      </div>
+      <button onclick="window.closeMobTradeSheet()" style="background:#1e2535;border:none;color:#94a3b8;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1rem;flex-shrink:0;">X</button>
+    </div>
+    <div id="mts-map" style="height:180px;background:#0a1628;margin:0 16px;border-radius:12px;overflow:hidden;position:relative;">
+      <div id="mts-map-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#475569;font-size:0.85rem;">Loading satellite view...</div>
+    </div>
+    <div style="margin:12px 16px;background:#131722;border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:0.65rem;color:#64748b;letter-spacing:1px;margin-bottom:4px;">LIVE PRICE / TON</div>
+        <div id="mts-price" style="font-family:monospace;font-size:1.6rem;font-weight:800;color:#00e676;">0.00</div>
+      </div>
+      <div style="text-align:right;">
+        <div id="mts-change" style="font-size:0.8rem;font-weight:700;color:#00e676;">0.00%</div>
+        <div id="mts-vol" style="font-size:0.7rem;color:#64748b;margin-top:3px;">0 Tons</div>
+      </div>
+    </div>
+    <div style="margin:0 16px 12px;background:#131722;border-radius:12px;padding:14px 16px;">
+      <div style="font-size:0.65rem;color:#64748b;letter-spacing:1px;margin-bottom:8px;">QUANTITY (TONS)</div>
+      <input id="mts-qty" type="number" min="1" value="100" oninput="window.mtsCalcTotal()" style="width:100%;background:transparent;border:none;color:#e2e8f0;font-size:1.5rem;font-weight:700;outline:none;box-sizing:border-box;">
+      <div style="border-top:1px solid #1e2535;margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;">
+        <span style="color:#64748b;font-size:0.82rem;">Total Cost</span>
+        <span id="mts-total" style="color:#00e5ff;font-weight:700;font-family:monospace;">0</span>
+      </div>
+    </div>
+    <div style="margin:0 16px 14px;display:flex;gap:6px;flex-wrap:wrap;">
+      <span style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#10b981;padding:4px 10px;border-radius:20px;font-size:0.68rem;">AI Verified</span>
+      <span style="background:rgba(41,98,255,0.1);border:1px solid rgba(41,98,255,0.3);color:#60a5fa;padding:4px 10px;border-radius:20px;font-size:0.68rem;">Satellite dMRV</span>
+      <span style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:#f59e0b;padding:4px 10px;border-radius:20px;font-size:0.68rem;">Buffer Pool</span>
+    </div>
+    <div style="display:flex;gap:10px;padding:0 16px 28px;">
+      <button onclick="window.mtsExecute('hold')" style="flex:1;background:#2962ff;color:#fff;border:none;border-radius:14px;padding:18px 8px;font-size:0.85rem;font-weight:800;cursor:pointer;">BUY and HOLD</button>
+      <button onclick="window.mtsExecute('retire')" style="flex:1;background:#dc2626;color:#fff;border:none;border-radius:14px;padding:18px 8px;font-size:0.85rem;font-weight:800;cursor:pointer;">BUY and RETIRE</button>
+    </div>
+  </div>
+</div>
+<script>
+var _mtsCredit=null, _mtsTicker=null, _mtsMap=null;
+window.mtsCalcTotal = function() {
+  var p=document.getElementById('mts-price'), q=document.getElementById('mts-qty'), t=document.getElementById('mts-total');
+  if(!p||!q||!t) return;
+  var price=parseFloat((p.textContent||'').replace(/[^0-9.]/g,''))||0;
+  var qty=parseInt(q.value)||0;
+  t.textContent='Rs.'+(qty*price).toLocaleString('en-IN',{maximumFractionDigits:0});
+};
+window.closeMobTradeSheet = function() {
+  var s=document.getElementById('mobTradeSheet'); if(s) s.style.display='none';
+  document.body.style.overflow='';
+  if(_mtsTicker){clearInterval(_mtsTicker);_mtsTicker=null;}
+  if(_mtsMap){try{_mtsMap.remove();}catch(e){}_mtsMap=null;}
+};
+window.openMobTradeSheet = function(credit) {
+  _mtsCredit=credit;
+  var sheet=document.getElementById('mobTradeSheet');
+  if(!sheet){alert('Refresh the page and try again.');return;}
+  var price=parseFloat(credit.price_per_ton)||0;
+  var vol=parseInt(credit.available_tons)||0;
+  var el;
+  el=document.getElementById('mts-ticker'); if(el) el.textContent=credit.ticker||'--';
+  el=document.getElementById('mts-meta'); if(el) el.textContent=(credit.project_type||'GCP')+'  '+( credit.location_state||'India')+'  Verified';
+  el=document.getElementById('mts-price'); if(el) el.textContent='Rs.'+price.toLocaleString('en-IN',{minimumFractionDigits:2});
+  el=document.getElementById('mts-vol'); if(el) el.textContent=vol.toLocaleString('en-IN')+' Tons';
+  el=document.getElementById('mts-qty'); if(el){el.value=Math.min(100,vol);el.max=vol;}
+  window.mtsCalcTotal();
+  sheet.style.display='block';
+  document.body.style.overflow='hidden';
+  if(_mtsTicker) clearInterval(_mtsTicker);
+  _mtsTicker=setInterval(function(){
+    var base=parseFloat(credit.price_per_ton)||2260;
+    var delta=(Math.random()-0.45)*12;
+    var newP=Math.max(base*0.95,base+delta);
+    var pEl=document.getElementById('mts-price');
+    var cEl=document.getElementById('mts-change');
+    if(pEl) pEl.textContent='Rs.'+newP.toLocaleString('en-IN',{minimumFractionDigits:2});
+    if(cEl){var pct=Math.abs((delta/base)*100).toFixed(2);cEl.textContent=(delta>=0?'up ':'dn ')+pct+'%';cEl.style.color=delta>=0?'#00e676':'#ef4444';}
+    window.mtsCalcTotal();
+  },2000);
+  setTimeout(function(){
+    var mapEl=document.getElementById('mts-map');
+    if(!mapEl||typeof L==='undefined') return;
+    try{
+      if(_mtsMap){_mtsMap.remove();_mtsMap=null;}
+      var lat=credit.lat||(17+Math.random()*8), lng=credit.lng||(72+Math.random()*8);
+      _mtsMap=L.map('mts-map',{zoomControl:false,attributionControl:false}).setView([lat,lng],12);
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(_mtsMap);
+      L.circle([lat,lng],{color:'#00e676',fillColor:'#00e676',fillOpacity:0.25,radius:2500}).addTo(_mtsMap);
+      var ld=document.getElementById('mts-map-loading'); if(ld) ld.style.display='none';
+    }catch(e){console.warn('Map err:',e);}
+  },400);
+};
+window.mtsExecute = async function(action) {
+  if(!_mtsCredit){alert('No credit selected');return;}
+  var qty=parseInt((document.getElementById('mts-qty')||{}).value)||0;
+  if(qty<=0){alert('Please enter quantity');return;}
+  var token=localStorage.getItem('cw_token')||'';
+  try{
+    var res=await fetch('/api/credits/purchase',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({creditId:_mtsCredit.id,tons:qty,action:action})});
+    var d=await res.json();
+    if(d.success||d.message){window.closeMobTradeSheet();alert('Done! '+qty+' tons purchased.');if(typeof mobLoadExchange==='function')setTimeout(mobLoadExchange,800);}
+    else{throw new Error(d.error||'Failed');}
+  }catch(e){alert('Error: '+e.message);}
+};
+window.mobExpandCard = function(id,ticker,method,seller,volume,price,total,creditId) {
+  try{if(window.HapticEngine)HapticEngine.lightTick();}catch(e){}
+  window.openMobTradeSheet({id:creditId,ticker:ticker,project_type:method,seller_name:seller,available_tons:volume,price_per_ton:price,location_state:seller});
+};
+</script>
+
+<script>
+window.mobOpenTradeById = function(id) {
+  try { if(window.HapticEngine) HapticEngine.lightTick(); } catch(e){}
+  if (!window._mobExchangeCredits) { alert('Marketplace data missing. Refreshing...'); window.location.reload(); return; }
+  
+  var credit = window._mobExchangeCredits.find(function(c) { return String(c.id) === String(id); });
+  if (!credit) { alert('Credit details not found.'); return; }
+  
+  if (window.openMobTradeSheet) {
+    window.openMobTradeSheet(credit);
+  } else {
+    alert('Trade sheet system not initialized.');
+  }
+};
+</script>
+
 </body></html>
+
+
