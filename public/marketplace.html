@@ -3637,7 +3637,7 @@ window.mtsExecute = async function(action) {
   if(qty<=0){alert('Please enter quantity');return;}
   var token=localStorage.getItem('cw_token')||'';
   try{
-    var res=await fetch('/api/credits/purchase',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({creditId:_mtsCredit.id,tons:qty,action:action})});
+    var res=await fetch('/api/credits/purchase',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({credit_id:_mtsCredit.id,tons:qty,action:(action==='hold'?'buy':action)})});
     var d=await res.json();
     if(d.success||d.message){window.closeMobTradeSheet();alert('Done! '+qty+' tons purchased.');if(typeof mobLoadExchange==='function')setTimeout(mobLoadExchange,800);}
     else{throw new Error(d.error||'Failed');}
