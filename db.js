@@ -92,7 +92,30 @@ function getDb() {
         created_at TEXT
       );
 
-      CREATE TABLE IF NOT EXISTS documents (
+      CREATE TABLE IF NOT EXISTS kyc_documents (
+          id TEXT PRIMARY KEY,
+          user_id TEXT,
+          doc_type TEXT,
+          doc_number TEXT,
+          file_path TEXT,
+          status TEXT DEFAULT 'pending',
+          verified_by TEXT,
+          verified_at TEXT,
+          created_at TEXT DEFAULT (datetime('now'))
+        );
+  
+        CREATE TABLE IF NOT EXISTS land_documents (
+          id TEXT PRIMARY KEY,
+          land_id TEXT,
+          doc_type TEXT,
+          original_name TEXT,
+          file_path TEXT,
+          parse_status TEXT DEFAULT 'pending',
+          ai_parsed_data TEXT,
+          created_at TEXT DEFAULT (datetime('now'))
+        );
+  
+        CREATE TABLE IF NOT EXISTS documents (
         id TEXT PRIMARY KEY,
         user_id TEXT,
         type TEXT,
