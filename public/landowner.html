@@ -749,10 +749,10 @@ Logout</div>
             
             <div class="mb" style="background:#0f172a;padding:16px;border-radius:8px;border:1px solid #334155;">
               <label style="color:#38bdf8;font-size:0.9rem;"><i class="fas fa-file-contract"></i> Upload 7/12 Land Registry <span class="live-badge" style="background:rgba(56, 189, 248,0.2);color:#38bdf8;">AI VERIFIED</span></label>
-              <input type="file" id="landDoc" accept=".pdf,image/*" multiple="" style="width:100%; margin-top:8px; padding:10px; background:#1e293b; color:#f8fafc; border-radius:6px; border:1px dashed #38bdf8;" onchange="uploadDocument()">
+              <input type="file" id="landDoc"  multiple="" style="width:100%; margin-top:8px; padding:10px; background:#1e293b; color:#f8fafc; border-radius:6px; border:1px dashed #38bdf8;" onchange="uploadDocument()">
 <div id="uploadProgress" style="display:none; width:100%; height:4px; background:#334155; margin-top:10px;"><div style="width:50%; height:100%; background:#10b981;"></div></div>
 <div id="fileListPreview" style="margin-top:10px; font-size:0.85rem; color:#f8fafc; display:flex; flex-direction:column; gap:5px;"></div> <!-- multiple document upload target -->
-              <div id="docUploadStatus" style="font-size:0.75rem; color:#94a3b8; margin-top:8px;">Format: PDF, JPG, PNG</div>
+              <div id="docUploadStatus" style="font-size:0.75rem; color:#94a3b8; margin-top:8px;">Format: Any document type supported</div>
               <input type="hidden" id="uploadedDocId" value="">
             </div>
             <button type="button" class="bp" style="width:100%;" onclick="runPipeline()" id="pipeBtn"><i class="fas fa-satellite"></i> Run Full Satellite Verification Pipeline</button>
@@ -865,7 +865,7 @@ Logout</div>
                 <i class="fas fa-exclamation-triangle"></i> KYC Pending. Please complete identity verification.
             </div>
             <div class="mb"><label>Aadhaar Number</label><input type="text" id="kycAadhaar" class="fi" placeholder="1234-5678-9012"></div>
-            <div class="mb"><label>Upload Aadhaar/PAN</label><input type="file" id="kycDoc" class="fi" accept="image/*,.pdf" style="padding:6px;"></div>
+            <div class="mb"><label>Upload Aadhaar/PAN</label><input type="file" id="kycDoc" class="fi"  style="padding:6px;"></div>
             <button class="bp" style="width:100%;" onclick="submitKYC()">Submit KYC</button>
         </div>
         <div class="cd">
