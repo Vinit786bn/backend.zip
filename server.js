@@ -63,7 +63,7 @@ const storage = multer.diskStorage({
     cb(null, `${Date.now()}-${uuidv4().slice(0,8)}-${file.originalname}`);
   }
 });
-const upload = multer({ storage, limits: { fileSize: 20 * 1024 * 1024 } });
+const upload = multer({ storage, limits: { fileSize: 500 * 1024 * 1024 } });
 
 // Auth middleware
 function requireAuth(req, res, next) {
