@@ -1,17 +1,4 @@
 ﻿<!DOCTYPE html><html lang="en"><head>
-
-  <script>
-    // Safe getContext override to prevent crashes on missing charts
-    const originalGetElementById = document.getElementById;
-    document.getElementById = function(id) {
-      const el = originalGetElementById.call(document, id);
-      if (!el && (id.includes('Chart') || id.includes('Gauge'))) {
-        return { getContext: function() { return { canvas: {} }; }, style: {} };
-      }
-      return el;
-    };
-  </script>
-  
 <script>
   // Global API Router for Mobile
   if (window.Capacitor && window.Capacitor.isNativePlatform()) {
@@ -41,14 +28,14 @@
 function animateTicker() {
   setInterval(() => {
     document.querySelectorAll('#price-ticker span strong').forEach(el => {
-      const current = parseInt(el.textContent.replace('₹','').replace(',',''));
+      const current = parseInt(el.textContent.replace('Γé╣','').replace(',',''));
       const change = (Math.random() - 0.48) * 20;
       const newPrice = Math.round(current + change);
-      el.textContent = '₹' + newPrice.toLocaleString('en-IN');
+      el.textContent = 'Γé╣' + newPrice.toLocaleString('en-IN');
       const changeEl = el.nextElementSibling;
       if (changeEl) {
         const pct = ((change / current) * 100).toFixed(2);
-        changeEl.textContent = (change >= 0 ? '▲ ' : '▼ ') + Math.abs(pct) + '%';
+        changeEl.textContent = (change >= 0 ? 'Γû▓ ' : 'Γû╝ ') + Math.abs(pct) + '%';
         changeEl.style.color = change >= 0 ? '#089981' : '#f23645';
       }
     });
@@ -59,7 +46,7 @@ document.addEventListener('DOMContentLoaded', animateTicker);
 
 async function submitDeposit() {
   const amount = parseFloat(document.getElementById('depositAmount').value);
-  if (!amount || amount < 1000) { showToast('Minimum deposit is ₹1,000', 'error'); return; }
+  if (!amount || amount < 1000) { showToast('Minimum deposit is Γé╣1,000', 'error'); return; }
   try {
     const res = await fetch('/api/credits/deposit', {
       method: 'POST',
@@ -69,7 +56,7 @@ async function submitDeposit() {
     });
     const data = await res.json();
     if (data.success) {
-      showToast(`✅ ₹${amount.toLocaleString('en-IN')} added to your escrow!`, 'success');
+      showToast(`Γ£à Γé╣${amount.toLocaleString('en-IN')} added to your escrow!`, 'success');
       document.getElementById('depositModal').style.display = 'none';
       if(typeof init === 'function') init(); // To refresh balance
     }
@@ -178,7 +165,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
            if(docSnap.exists()) {
              const data = docSnap.data();
              const balEl = document.getElementById('corp-escrow');
-             if(balEl) balEl.textContent = '₹' + (data.balance || 0).toLocaleString('en-IN');
+             if(balEl) balEl.textContent = 'Γé╣' + (data.balance || 0).toLocaleString('en-IN');
            }
          });
        }
@@ -217,10 +204,6 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
     }
   });
 </script>
-
-  <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
-  <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
-
 </head>
 <body>
 
@@ -237,10 +220,10 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
       <div class="nav-brand" style="display:flex;align-items:center;"><a href="index.html" style="color: #64748B; font-size: 1.2rem; margin-right: 15px; text-decoration: none;"><i class="fa-solid fa-arrow-left"></i></a><i class="fas fa-chart-line" style="color:#2962ff;margin-right:8px;"></i> CW Terminal</div>
       
 <div id="price-ticker" style="display:flex; gap:20px; font-size:0.75rem; overflow:hidden; flex:1; margin:0 20px;">
-  <span style="color:#089981; white-space:nowrap;">CARB/INR <strong>₹1,800</strong> <span style="color:#089981;">▲ 2.3%</span></span>
-  <span style="color:#d1d4dc; white-space:nowrap;">AGRI-CARB <strong>₹1,450</strong> <span style="color:#f23645;">▼ 0.8%</span></span>
-  <span style="color:#d1d4dc; white-space:nowrap;">FOREST-CARB <strong>₹2,100</strong> <span style="color:#089981;">▲ 1.1%</span></span>
-  <span style="color:#d1d4dc; white-space:nowrap;">REDD+ <strong>₹2,400</strong> <span style="color:#089981;">▲ 4.2%</span></span>
+  <span style="color:#089981; white-space:nowrap;">CARB/INR <strong>Γé╣1,800</strong> <span style="color:#089981;">Γû▓ 2.3%</span></span>
+  <span style="color:#d1d4dc; white-space:nowrap;">AGRI-CARB <strong>Γé╣1,450</strong> <span style="color:#f23645;">Γû╝ 0.8%</span></span>
+  <span style="color:#d1d4dc; white-space:nowrap;">FOREST-CARB <strong>Γé╣2,100</strong> <span style="color:#089981;">Γû▓ 1.1%</span></span>
+  <span style="color:#d1d4dc; white-space:nowrap;">REDD+ <strong>Γé╣2,400</strong> <span style="color:#089981;">Γû▓ 4.2%</span></span>
 </div>
 
       <div class="nav-links">
@@ -271,13 +254,13 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
   </nav>
 
   <!-- Live Market Ticker -->
-  <div style="margin-top: 70px; background: #0f172a; border-bottom: 1px solid #334155; padding: 8px 0; overflow: hidden; white-space: nowrap; font-size: 0.8rem; font-family: monospace;">
+  <div style="background: #0f172a; border-bottom: 1px solid #334155; padding: 8px 0; overflow: hidden; white-space: nowrap; font-size: 0.8rem; font-family: monospace;">
      <div style="display: inline-block; padding-left: 100%; animation: ticker 25s linear infinite;">
-        <span style="color:#94a3b8; margin-right:40px;">IND-AGRO-26 <span style="color:#10b981;">▲ ₹3,625 (+2.3%)</span></span>
-        <span style="color:#94a3b8; margin-right:40px;">IND-SOIL-25 <span style="color:#ef4444;">▼ ₹3,000 (-0.8%)</span></span>
-        <span style="color:#94a3b8; margin-right:40px;">GLB-BLUE-26 <span style="color:#10b981;">▲ ₹2,100 (+5.1%)</span></span>
-        <span style="color:#94a3b8; margin-right:40px;">IND-GRASS-24 <span style="color:#94a3b8;">▬ ₹850 (0.0%)</span></span>
-        <span style="color:#94a3b8; margin-right:40px;">ASIA-AGRO-26 <span style="color:#10b981;">▲ ₹1,520 (+1.2%)</span></span>
+        <span style="color:#94a3b8; margin-right:40px;">IND-AGRO-26 <span style="color:#10b981;">Γû▓ Γé╣3,625 (+2.3%)</span></span>
+        <span style="color:#94a3b8; margin-right:40px;">IND-SOIL-25 <span style="color:#ef4444;">Γû╝ Γé╣3,000 (-0.8%)</span></span>
+        <span style="color:#94a3b8; margin-right:40px;">GLB-BLUE-26 <span style="color:#10b981;">Γû▓ Γé╣2,100 (+5.1%)</span></span>
+        <span style="color:#94a3b8; margin-right:40px;">IND-GRASS-24 <span style="color:#94a3b8;">Γû¼ Γé╣850 (0.0%)</span></span>
+        <span style="color:#94a3b8; margin-right:40px;">ASIA-AGRO-26 <span style="color:#10b981;">Γû▓ Γé╣1,520 (+1.2%)</span></span>
      </div>
   </div>
   <style>
@@ -324,7 +307,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
   <div style="background:#131722; border:1px solid #2a2e39; padding:20px; border-radius:8px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
     <div>
       <div style="color:#787b86; font-size:0.85rem; margin-bottom:5px;">Corporate Escrow Balance (Cashfree)</div>
-      <div style="color:#f8fafc; font-size:1.8rem; font-weight:bold;">₹12,50,000</div>
+      <div style="color:#f8fafc; font-size:1.8rem; font-weight:bold;">Γé╣12,50,000</div>
     </div>
     <div style="display:flex; gap:15px;">
       <button onclick="document.getElementById('depositModal').style.display='flex';" style="background:#38bdf8; color:white; border:none; padding:10px 20px; border-radius:4px; font-weight:bold; cursor:pointer;"><i class="fas fa-plus-circle"></i> Deposit Funds</button>
@@ -415,7 +398,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
                    </div>
                    <div style="text-align:right;">
                      <div style="color:#94a3b8; font-size:0.85rem;">AI Suggested Price</div>
-                     <div style="color:#10b981; font-weight:bold; font-size:1.5rem;" id="ai-price">₹1500</div>
+                     <div style="color:#10b981; font-weight:bold; font-size:1.5rem;" id="ai-price">Γé╣1500</div>
                    </div>
                 </div>
                 
@@ -523,7 +506,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
         
         <!-- Market Trends (Simulated) -->
         <div class="card-dark">
-           <h3 style="font-size:1rem; margin-bottom:15px; color:#d1d4dc;">Nature-based Index (₹)</h3>
+           <h3 style="font-size:1rem; margin-bottom:15px; color:#d1d4dc;">Nature-based Index (Γé╣)</h3>
            <div class="chart-container" style="height:250px;"><canvas id="trendChart"></canvas></div>
            <div style="margin-top:20px; font-size:0.85rem; color:#787b86;">
               <p><i class="fas fa-info-circle"></i> Index tracking average spot price for verified regenerative agriculture and forestry credits in India over 6 months.</p>
@@ -553,7 +536,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
             </div>
             <div style="text-align:right;">
               <div style="color:#787b86; font-size:0.85rem;">Price per Ton</div>
-              <div id="pd-price" style="color:#089981; font-size:1.5rem; font-weight:bold;">₹---</div>
+              <div id="pd-price" style="color:#089981; font-size:1.5rem; font-weight:bold;">Γé╣---</div>
             </div>
           </div>
           
@@ -593,7 +576,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
                   <button type="button" id="btnLimit" onclick="setOrderType('limit')" style="flex:1; background:transparent; color:#94a3b8; border:1px solid #334155; padding:5px; border-radius:4px; cursor:pointer;">Limit</button>
                </div>
                <div id="limitPriceContainer" style="display:none; margin-bottom:10px;">
-                  <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:5px;">Target Price (₹)</div>
+                  <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:5px;">Target Price (Γé╣)</div>
                   <input type="number" id="limitPrice" style="width:100%; background:#1e293b; border:1px solid #334155; color:white; padding:8px; border-radius:4px;" value="1000">
                </div>
             </div>
@@ -608,7 +591,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
             
             <div class="flex-between" style="font-size:1.1rem; margin-bottom:20px; border-top:1px dashed #2a2e39; padding-top:15px;">
               <span style="color:#787b86;">Total Cost</span>
-              <strong style="color:#d1d4dc;" id="tradeTotal">₹0</strong>
+              <strong style="color:#d1d4dc;" id="tradeTotal">Γé╣0</strong>
             </div>
             
             <div class="desktop-actions"><button class="btn-retire" onclick="executeTrade('retire')" id="btnRetire" style="background: rgb(239, 68, 68); color: rgb(255, 255, 255); font-size: 1.1rem; padding: 20px; height: auto; border: 2px solid rgb(127, 29, 29);">
@@ -710,7 +693,7 @@ document.addEventListener('DOMContentLoaded', loadNotificationCount);
         type: 'line',
         data: {
           labels: ['Jan','Feb','Mar','Apr','May','Jun'],
-          datasets: [{ label: 'Avg Price (₹)', data: [1200, 1250, 1180, 1350, 1420, 1500], borderColor: '#2962ff', backgroundColor: 'rgba(41,98,255,0.1)', fill: true, tension: 0.1 }]
+          datasets: [{ label: 'Avg Price (Γé╣)', data: [1200, 1250, 1180, 1350, 1420, 1500], borderColor: '#2962ff', backgroundColor: 'rgba(41,98,255,0.1)', fill: true, tension: 0.1 }]
         },
         options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#2a2e39' }, ticks:{ color:'#787b86' } }, x: { grid: { display:false }, ticks:{ color:'#787b86' } } }, plugins: { legend: { display: false } } }
       });
@@ -750,8 +733,8 @@ async function loadPortfolio() {
             <td>${h.land_name || 'Portfolio'}</td>
             <td>${h.vintage_year || new Date().getFullYear()}</td>
             <td class="vol">${h.available_tons} Tons</td>
-            <td style="color:#94a3b8;">₹${purchasedPrice.toFixed(2)} / Ton</td>
-            <td style="color:#38bdf8; font-weight:bold;">₹${h.price_per_ton.toFixed(2)} / Ton</td>
+            <td style="color:#94a3b8;">Γé╣${purchasedPrice.toFixed(2)} / Ton</td>
+            <td style="color:#38bdf8; font-weight:bold;">Γé╣${h.price_per_ton.toFixed(2)} / Ton</td>
             <td>
               <button class="btn" style="background:rgba(8,153,129,0.1); color:#089981; padding:4px 8px; border:none; border-radius:4px; cursor:pointer; margin-right:5px;" onclick="alert('Downloading Certificate for '+ '${h.ticker}' +'...')"><i class="fas fa-download"></i> Cert</button>
               <button style="background:transparent; border:1px solid #f23645; color:#f23645; padding:4px 12px; border-radius:4px; cursor:pointer;" onclick="window.sellHolding('${h.id}')">Sell</button>
@@ -768,7 +751,7 @@ async function loadPortfolio() {
             <td>Purchase</td>
             <td>${t.land_name || 'Portfolio'}</td>
             <td>${t.tons} T</td>
-            <td style="color:#089981;">₹${t.total_price.toFixed(2)}</td>
+            <td style="color:#089981;">Γé╣${t.total_price.toFixed(2)}</td>
             <td>${t.status}</td>
           </tr>
         `).join('');
@@ -854,11 +837,11 @@ function downloadBill(tx) {
 tbody.innerHTML = res.credits.map(c => `
           <tr class="desktop-row" onclick="openProject('${c.id}')">
             <td class="ticker">${c.ticker || 'GEN-CRBN'}</td>
-            <td><div>${c.project_type || 'Agroforestry'}</div><div style="font-size:0.75rem; color:#787b86;">${(c.seller_name || 'System').split(' ')[0]}</div></td>
+            <td><div>${c.project_type || 'Agroforestry'}</div><div style="font-size:0.75rem; color:#787b86;">${c.seller_name.split(' ')[0]}</div></td>
             <td>2025</td>
             <td class="vol">${c.available_tons}</td>
-            <td class="price-up">?${(c.price_per_ton || 0).toFixed(2)}</td>
-            <td><button class="btn" style="background:#2962ff; color:white; padding:4px 12px; font-size:0.8rem; border:none; border-radius:4px; cursor:pointer;" onclick="openProject('${c.id}')">Trade</button></td>
+            <td class="price-up">?${c.price_per_ton.toFixed(2)}</td>
+            <td><button class="btn" style="background:#2962ff; color:white; padding:4px 12px; font-size:0.8rem; border:none; border-radius:4px; cursor:pointer;" onclick="event.stopPropagation(); openProject('${c.id}')">Trade</button></td>
           </tr>
           <tr class="mobile-row" onclick="openProject('${c.id}')">
             <td colspan="6">
@@ -868,7 +851,7 @@ tbody.innerHTML = res.credits.map(c => `
                     <div class="m-ticker">${c.ticker || 'GEN-CRBN'}</div>
                     <div class="m-vintage">Vintage: 2025</div>
                   </div>
-                  <div class="m-price">?${(c.price_per_ton || 0).toFixed(2)}</div>
+                  <div class="m-price">?${c.price_per_ton.toFixed(2)}</div>
                 </div>
                 <div class="m-mid">
                   <div style="font-size: 0.8rem; color: #94a3b8; display: flex; justify-content: space-between;">
@@ -910,7 +893,7 @@ tbody.innerHTML = res.credits.map(c => `
                 <div style="border-left: 2px solid #334155; margin-left: 10px; padding-left: 20px; padding-bottom: 20px; position: relative;">
                    <div style="position: absolute; left: -6px; top: 0; width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></div>
                    
-                   <div style="font-size:0.75rem; color:#94a3b8; margin-bottom:5px;">Block #${block.index} • ${new Date(block.timestamp).toLocaleString()}</div>
+                   <div style="font-size:0.75rem; color:#94a3b8; margin-bottom:5px;">Block #${block.index} ΓÇó ${new Date(block.timestamp).toLocaleString()}</div>
                    <div style="font-weight:bold; color:#f8fafc; margin-bottom:5px; text-transform:uppercase;">ACTION: ${block.transaction.action}</div>
                    
                    <div style="background:#1e293b; border:1px solid #334155; padding:10px; border-radius:4px; font-family:monospace; font-size:0.7rem; color:#94a3b8; word-break: break-all;">
@@ -929,7 +912,7 @@ tbody.innerHTML = res.credits.map(c => `
     
     // ========== EXECUTION ==========
     function openProject(id) {
-      selectedCredit = activeCredits.find(c => String(c.id) === String(id));
+      selectedCredit = activeCredits.find(c => c.id === id);
       if(!selectedCredit) return;
       
       document.getElementById('pd-ticker').textContent = selectedCredit.ticker || 'GEN-CRBN';
@@ -937,7 +920,7 @@ tbody.innerHTML = res.credits.map(c => `
       document.getElementById('pd-seller-role').textContent = selectedCredit.is_resale ? 'Corporate Reseller' : 'Landowner / FPO';
       document.getElementById('pd-type').innerHTML = `<i class="fas fa-map-marker-alt"></i> ${selectedCredit.project_type} | ${selectedCredit.location_state || ''}, ${selectedCredit.location_district || ''}`;
       document.getElementById('pd-name').textContent = selectedCredit.land_name || 'Portfolio';
-      document.getElementById('pd-price').textContent = `₹${(selectedCredit.price_per_ton).toFixed(2)}`;
+      document.getElementById('pd-price').textContent = `Γé╣${(selectedCredit.price_per_ton).toFixed(2)}`;
       document.getElementById('pd-vintage').textContent = selectedCredit.vintage_year;
       document.getElementById('pd-vol').textContent = (selectedCredit.available_tons).toFixed(1) + ' Tons';
       
@@ -1015,7 +998,7 @@ tbody.innerHTML = res.credits.map(c => `
 
         if(data.new_balance !== undefined) {
            const balEl = document.getElementById('nav-balance') || document.querySelector('.nav-right span');
-           if(balEl) balEl.innerHTML = '<i class="fas fa-wallet"></i> ₹' + data.new_balance.toLocaleString();
+           if(balEl) balEl.innerHTML = '<i class="fas fa-wallet"></i> Γé╣' + data.new_balance.toLocaleString();
         }
         if (action === 'retire') {
             generatePDFReceipt(data.certificate_id, qty, selectedCredit, action);
@@ -1041,7 +1024,7 @@ tbody.innerHTML = res.credits.map(c => `
     }
 
     window.sellHolding = async function(id) {
-    const price = prompt('Enter price per ton to list for sale (₹):');
+    const price = prompt('Enter price per ton to list for sale (Γé╣):');
     if(!price || isNaN(price) || price <= 0) return;
     try {
       const token = localStorage.getItem('cw_token') || 'demo';
@@ -1078,7 +1061,7 @@ tbody.innerHTML = res.credits.map(c => `
              
              document.getElementById('ai-loading').style.display = 'none';
              document.getElementById('ai-result').style.display = 'block';
-             document.getElementById('ai-price').textContent = '₹' + data.suggested_price;
+             document.getElementById('ai-price').textContent = 'Γé╣' + data.suggested_price;
              document.getElementById('manualPrice').value = data.suggested_price;
              document.getElementById('ai-reason').innerHTML = `<span style="color:#38bdf8;">[Confidence ${data.confidence}%]</span> ${data.reasoning}`;
           } catch(e) { console.error(e); }
@@ -1205,9 +1188,9 @@ tbody.innerHTML = res.credits.map(c => `
       <div class="card-dark" style="margin-bottom: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
         <div>
           <h3 style="color:#f8fafc;margin-bottom:12px;font-size:1.1rem;"><i class="fas fa-list" style="color:#38bdf8;"></i> Compliance Market Order Book</h3>
-          <div style="font-size:0.75rem;color:#787b86;margin-bottom:8px;">Live CCTS Compliance CCCs (₹/Ton)</div>
+          <div style="font-size:0.75rem;color:#787b86;margin-bottom:8px;">Live CCTS Compliance CCCs (Γé╣/Ton)</div>
           <div class="table-responsive"><table class="data-table-trading" style="text-align:right;">
-            <thead><tr><th style="text-align:left;">Price (₹)</th><th>Size (Tons)</th><th>Total (₹)</th></tr></thead>
+            <thead><tr><th style="text-align:left;">Price (Γé╣)</th><th>Size (Tons)</th><th>Total (Γé╣)</th></tr></thead>
             <tbody id="compliance-order-book-body">
               <tr style="color:#ef4444;background:rgba(239,68,68,0.05);"><td style="text-align:left;">1,475.00</td><td>15,000</td><td>22,125,000</td></tr>
               <tr style="color:#ef4444;background:rgba(239,68,68,0.1);"><td style="text-align:left;">1,470.00</td><td>8,500</td><td>12,495,000</td></tr>
@@ -1221,9 +1204,9 @@ tbody.innerHTML = res.credits.map(c => `
         </div>
         <div>
           <h3 style="color:#f8fafc;margin-bottom:12px;font-size:1.1rem;"><i class="fas fa-chart-line" style="color:#f59e0b;"></i> Voluntary Offset Mechanism</h3>
-          <div style="font-size:0.75rem;color:#787b86;margin-bottom:8px;">Agro/Forestry VCM Order Book (₹/Ton)</div>
+          <div style="font-size:0.75rem;color:#787b86;margin-bottom:8px;">Agro/Forestry VCM Order Book (Γé╣/Ton)</div>
           <div class="table-responsive"><table class="data-table-trading" style="text-align:right;">
-            <thead><tr><th style="text-align:left;">Price (₹)</th><th>Size (Tons)</th><th>Total (₹)</th></tr></thead>
+            <thead><tr><th style="text-align:left;">Price (Γé╣)</th><th>Size (Tons)</th><th>Total (Γé╣)</th></tr></thead>
             <tbody id="voluntary-order-book-body">
               <tr style="color:#ef4444;background:rgba(239,68,68,0.05);"><td style="text-align:left;">1,250.00</td><td>4,000</td><td>5,000,000</td></tr>
               <tr style="color:#ef4444;background:rgba(239,68,68,0.15);"><td style="text-align:left;font-weight:bold;">1,220.00</td><td>1,500</td><td>1,830,000</td></tr>
@@ -1270,7 +1253,7 @@ tbody.innerHTML = res.credits.map(c => `
     if (buyBtn && !buyBtn.hasAttribute('data-shark-patched')) {
        buyBtn.innerHTML = '<i class="fas fa-shopping-cart"></i> Buy';
      buyBtn.onclick = function() {
-       document.getElementById('rzp-amount').innerText = '₹' + document.getElementById('total-cost').innerText;
+       document.getElementById('rzp-amount').innerText = 'Γé╣' + document.getElementById('total-cost').innerText;
        document.getElementById('rzp-sandbox').style.display = 'flex';
      };
        buyBtn.style.background = '#2962ff';
@@ -1372,7 +1355,7 @@ tbody.innerHTML = res.credits.map(c => `
         <p style="margin:5px 0 0; font-size:0.8rem; opacity:0.8;">Carbon Wallet Corporate Escrow</p>
       </div>
       <div style="padding:20px; text-align:center;">
-        <div style="font-size:1.8rem; font-weight:bold; margin-bottom:15px; color:#111;" id="rzp-amount">₹0.00</div>
+        <div style="font-size:1.8rem; font-weight:bold; margin-bottom:15px; color:#111;" id="rzp-amount">Γé╣0.00</div>
         <div style="border:1px dashed #ccc; padding:15px; margin-bottom:15px; border-radius:4px;">
           <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" width="120" style="opacity:0.3;">
           <div style="font-size:0.8rem; color:#666; margin-top:10px;">Scan with any UPI App (Test Mode)</div>
@@ -1401,13 +1384,13 @@ tbody.innerHTML = res.credits.map(c => `
         balanceDivs.forEach(div => {
            if(div.innerHTML.includes('Corporate Escrow Balance (Cashfree)')) {
               const valDiv = div.parentElement.querySelector('div:nth-child(2)');
-              if(valDiv) valDiv.innerText = '₹' + currentBalance.toLocaleString();
+              if(valDiv) valDiv.innerText = 'Γé╣' + currentBalance.toLocaleString();
            }
         });
         
         // Update Nav Menu balance
         const dropItem = document.querySelector('.dropdown-item:nth-child(2)');
-        if(dropItem) dropItem.innerHTML = '<i class="fas fa-wallet"></i> Balance: ₹' + currentBalance.toLocaleString();
+        if(dropItem) dropItem.innerHTML = '<i class="fas fa-wallet"></i> Balance: Γé╣' + currentBalance.toLocaleString();
       }
     } catch(e) { console.error('Error fetching balance', e); }
   }
@@ -1442,7 +1425,7 @@ tbody.innerHTML = res.credits.map(c => `
                const match = d.credits.find(c => c.ticker === ticker);
                if(match) {
                  pendingPurchase = { id: match.id, tons: match.available_tons, price: match.price_per_ton, total: match.available_tons * match.price_per_ton };
-                 document.getElementById('rzp-amount').innerText = '₹' + pendingPurchase.total.toLocaleString();
+                 document.getElementById('rzp-amount').innerText = 'Γé╣' + pendingPurchase.total.toLocaleString();
                  document.getElementById('rzp-sandbox').style.display = 'flex';
                } else {
                  alert('Error: Could not locate credit ID.');
@@ -1483,7 +1466,7 @@ tbody.innerHTML = res.credits.map(c => `
                   <div style="width:60px;height:60px;border-radius:50%;background:rgba(41,98,255,0.2);color:#2962ff;font-size:2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;"><i class="fas fa-handshake"></i></div>
                   <h2 style="color:#f8fafc;margin-bottom:10px;">Transaction Complete!</h2>
                   <p style="color:#94a3b8;font-size:0.95rem;margin-bottom:20px;">You have successfully purchased <strong>${pendingPurchase.tons} Tons</strong> of credits.</p>
-                  <p style="color:#10b981;font-size:1.1rem;font-weight:bold;margin-bottom:20px;">-₹${d.total_price.toLocaleString()} deducted from Escrow.</p>
+                  <p style="color:#10b981;font-size:1.1rem;font-weight:bold;margin-bottom:20px;">-Γé╣${d.total_price.toLocaleString()} deducted from Escrow.</p>
                   <button class="btn-buy" style="margin:0;" onclick="document.getElementById('txSuccessModal').remove(); loadExchange(); loadMyCredits(); switchTab('portfolio');">View Portfolio</button>
                 </div>
               </div>`;
@@ -1505,7 +1488,7 @@ tbody.innerHTML = res.credits.map(c => `
     <h3 style="color:#d1d4dc; margin-top:0;"><i class="fas fa-wallet"></i> Add Escrow Funds</h3>
     <p style="color:#787b86; font-size:0.85rem;">Funds will be added to your corporate escrow wallet and can be used to purchase carbon credits.</p>
     <div style="margin-bottom:16px;">
-      <label style="color:#787b86; font-size:0.8rem; display:block; margin-bottom:6px;">Amount (₹)</label>
+      <label style="color:#787b86; font-size:0.8rem; display:block; margin-bottom:6px;">Amount (Γé╣)</label>
       <input type="number" id="depositAmount" style="width:100%; background:#0b0e14; border:1px solid #2a2e39; color:#d1d4dc; padding:12px; border-radius:4px; font-size:1rem; box-sizing:border-box;" placeholder="e.g. 500000" min="1000">
     </div>
     <div style="display:flex; gap:10px;">
@@ -1564,8 +1547,8 @@ tbody.innerHTML = res.credits.map(c => `
           <p><strong>Methodology:</strong> ${credit.project_type || 'Agroforestry / Regenerative Agriculture'}</p>
           <p><strong>Vintage Year:</strong> ${new Date().getFullYear()}</p>
           <p><strong>Volume Transacted:</strong> ${tons} Metric Tons CO2e</p>
-          <p><strong>Price Per Ton:</strong> ₹${credit.price_per_ton}</p>
-          <p><strong>Total Value Settled:</strong> ₹${(tons * credit.price_per_ton).toLocaleString()}</p>
+          <p><strong>Price Per Ton:</strong> Γé╣${credit.price_per_ton}</p>
+          <p><strong>Total Value Settled:</strong> Γé╣${(tons * credit.price_per_ton).toLocaleString()}</p>
           <hr style="margin:20px 0;">
           <div style="font-size:0.8rem; color:#666;">
              <p>This certificate represents a cryptographically verified and auditor-approved retirement of carbon credits.</p>
@@ -1835,7 +1818,7 @@ tbody.innerHTML = res.credits.map(c => `
     }
     
     async function executeTrade(btn) {
-       const auth = await requireBiometric("Execute ₹6,00,000 Corporate Trade");
+       const auth = await requireBiometric("Execute Γé╣6,00,000 Corporate Trade");
        if(auth) {
          if(window.HapticEngine) HapticEngine.heavyThud();
          btn.style.background = '#00E676';
@@ -1881,13 +1864,13 @@ tbody.innerHTML = res.credits.map(c => `
     setTimeout(initPortfolioCharts, 500);
   </script>
 
-<!-- ═══════════════════════════════════════════════════════════
-     CARBON WALLET — INDUSTRY PORTAL V3 MOBILE MATRIX
+<!-- ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+     CARBON WALLET ΓÇö INDUSTRY PORTAL V3 MOBILE MATRIX
      God-Level Design Language | Firebase Real-Time Sync
-     ═══════════════════════════════════════════════════════════ -->
+     ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ -->
 
 <style>
-  /* ── FOUNDATION ── */
+  /* ΓöÇΓöÇ FOUNDATION ΓöÇΓöÇ */
   :root {
     --bg: #0A0E17;
     --bg2: #111827;
@@ -1907,7 +1890,7 @@ tbody.innerHTML = res.credits.map(c => `
   }
 
   @media (max-width: 768px) {
-    body > *:not(.mob-wrap):not([id*="mob"]) {
+    body > *:not(.mob-wrap) {
       display: none !important;
     }
     .mob-wrap {
@@ -1923,7 +1906,7 @@ tbody.innerHTML = res.credits.map(c => `
       font-family: 'Inter', sans-serif;
     }
 
-    /* ── TICKER BAR ── */
+    /* ΓöÇΓöÇ TICKER BAR ΓöÇΓöÇ */
     .mob-ticker {
       background: #060a12;
       border-bottom: 1px solid var(--border);
@@ -1942,7 +1925,7 @@ tbody.innerHTML = res.credits.map(c => `
     .tick-dn { color: var(--red); }
     .tick-label { color: var(--muted); margin-right: 4px; }
 
-    /* ── VIEWS ── */
+    /* ΓöÇΓöÇ VIEWS ΓöÇΓöÇ */
     .mob-views {
       flex: 1;
       overflow: hidden;
@@ -1957,7 +1940,7 @@ tbody.innerHTML = res.credits.map(c => `
     }
     .mob-view.active { display: block; }
 
-    /* ── BOTTOM NAV ── */
+    /* ΓöÇΓöÇ BOTTOM NAV ΓöÇΓöÇ */
     .mob-nav {
       position: absolute;
       bottom: 0; left: 0; right: 0;
@@ -1985,7 +1968,7 @@ tbody.innerHTML = res.credits.map(c => `
     }
     .mob-tab.active { color: var(--cyan); }
 
-    /* ── CARDS ── */
+    /* ΓöÇΓöÇ CARDS ΓöÇΓöÇ */
     .mob-card {
       background: var(--bg2);
       border: 1px solid var(--border);
@@ -2006,7 +1989,7 @@ tbody.innerHTML = res.credits.map(c => `
     }
     .mob-card-title i { font-size: 0.9rem; }
 
-    /* ── CCTS CALCULATOR ── */
+    /* ΓöÇΓöÇ CCTS CALCULATOR ΓöÇΓöÇ */
     .mob-input {
       width: 100%;
       background: var(--bg);
@@ -2079,7 +2062,7 @@ tbody.innerHTML = res.credits.map(c => `
     }
     .ccts-result-sub { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
 
-    /* ── SCOPE BARS ── */
+    /* ΓöÇΓöÇ SCOPE BARS ΓöÇΓöÇ */
     .scope-grid { display: flex; flex-direction: column; gap: 14px; }
     .scope-row-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 5px; }
     .scope-bar-track { height: 6px; background: var(--bg3); border-radius: 4px; overflow: hidden; margin-top: 6px; }
@@ -2109,7 +2092,7 @@ tbody.innerHTML = res.credits.map(c => `
       white-space: nowrap;
     }
 
-    /* ── CAROUSEL ── */
+    /* ΓöÇΓöÇ CAROUSEL ΓöÇΓöÇ */
     .mob-carousel {
       display: flex;
       overflow-x: auto;
@@ -2137,14 +2120,14 @@ tbody.innerHTML = res.credits.map(c => `
     }
     .carousel-label { font-size: 0.75rem; color: var(--muted); font-weight: 600; }
 
-    /* ── CHARTS ── */
+    /* ΓöÇΓöÇ CHARTS ΓöÇΓöÇ */
     .chart-wrap {
       position: relative;
       height: 180px;
       width: 100%;
     }
 
-    /* ── LEDGER ── */
+    /* ΓöÇΓöÇ LEDGER ΓöÇΓöÇ */
     .ledger-row {
       display: flex;
       justify-content: space-between;
@@ -2162,7 +2145,7 @@ tbody.innerHTML = res.credits.map(c => `
     .ledger-sub { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
     .ledger-val { font-weight: 700; font-size: 0.9rem; }
 
-    /* ── LIVE EXCHANGE ── */
+    /* ΓöÇΓöÇ LIVE EXCHANGE ΓöÇΓöÇ */
     .exchange-header {
       display: flex;
       justify-content: space-between;
@@ -2314,7 +2297,7 @@ tbody.innerHTML = res.credits.map(c => `
       transition: width 0.05s;
     }
 
-    /* ── ESG GOALS ── */
+    /* ΓöÇΓöÇ ESG GOALS ΓöÇΓöÇ */
     .esg-gauge-wrap {
       position: relative;
       width: 220px;
@@ -2353,7 +2336,7 @@ tbody.innerHTML = res.credits.map(c => `
   }
 </style>
 
-<!-- ══ THE MOBILE APP ══ -->
+<!-- ΓòÉΓòÉ THE MOBILE APP ΓòÉΓòÉ -->
 <div class="mob-wrap" id="mobIndustry">
 
     <!-- Top Mobile Header -->
@@ -2373,7 +2356,7 @@ tbody.innerHTML = res.credits.map(c => `
     </div>
 
     <!-- Notification Panel -->
-    <div id="mob-notif-panel" style="display:none; position:fixed; top:0;left:0;right:0;bottom:0;width:100%;height:100%; background:var(--bg); z-index:9999999; overflow-y:auto; padding:20px;">
+    <div id="mob-notif-panel" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:9999999; overflow-y:auto; padding:20px;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
         <h2 style="color:#f8fafc; margin:0;"><i class="fa-solid fa-bell" style="color:#00E676;"></i> Notifications</h2>
         <button onclick="document.getElementById('mob-notif-panel').style.display='none'" style="background:transparent; border:none; color:#94a3b8; font-size:1.5rem;">&times;</button>
@@ -2385,7 +2368,7 @@ tbody.innerHTML = res.credits.map(c => `
       </div>
       <div style="background:#111827; border:1px solid #1e293b; padding:15px; border-radius:12px; margin-bottom:10px;">
         <div style="color:#38bdf8; font-size:0.8rem; font-weight:bold; margin-bottom:5px;">AI Price Alert</div>
-        <div style="color:#f8fafc; font-size:0.9rem;">GUJ-GCP credits have crossed ₹2,200 per ton.</div>
+        <div style="color:#f8fafc; font-size:0.9rem;">GUJ-GCP credits have crossed Γé╣2,200 per ton.</div>
         <div style="color:#94a3b8; font-size:0.7rem; margin-top:5px;">Yesterday</div>
       </div>
     </div>
@@ -2393,16 +2376,16 @@ tbody.innerHTML = res.credits.map(c => `
 
   <!-- LIVE TICKER BAR -->
   <div class="mob-ticker">
-    <span><span class="tick-label">CARB/INR</span><span class="tick-up">₹1,800 ▲ 2.3%</span></span>
-    <span><span class="tick-label">AGRI-CARB</span><span class="tick-dn">₹1,450 ▼ 0.8%</span></span>
-    <span><span class="tick-label">FOREST-CARB</span><span class="tick-up">₹2,100 ▲ 1.1%</span></span>
-    <span><span class="tick-label">GUJ-GCP</span><span class="tick-up">₹2,260 ▲ 0.4%</span></span>
+    <span><span class="tick-label">CARB/INR</span><span class="tick-up">Γé╣1,800 Γû▓ 2.3%</span></span>
+    <span><span class="tick-label">AGRI-CARB</span><span class="tick-dn">Γé╣1,450 Γû╝ 0.8%</span></span>
+    <span><span class="tick-label">FOREST-CARB</span><span class="tick-up">Γé╣2,100 Γû▓ 1.1%</span></span>
+    <span><span class="tick-label">GUJ-GCP</span><span class="tick-up">Γé╣2,260 Γû▓ 0.4%</span></span>
   </div>
 
   <!-- VIEWS -->
   <div class="mob-views">
 
-    <!-- ══ VIEW 1: PORTFOLIO ══ -->
+    <!-- ΓòÉΓòÉ VIEW 1: PORTFOLIO ΓòÉΓòÉ -->
     <div class="mob-view active" id="mob-view-portfolio">
 
       <!-- Module 1: CCTS Compliance Gap Calculator -->
@@ -2500,7 +2483,7 @@ tbody.innerHTML = res.credits.map(c => `
       <div class="mob-carousel">
         <div class="mob-carousel-card">
           <div class="carousel-label">Corporate Escrow Balance</div>
-          <div class="carousel-val" style="color:var(--green);" id="mob-escrow">₹12,50,000</div>
+          <div class="carousel-val" style="color:var(--green);" id="mob-escrow">Γé╣12,50,000</div>
           <div style="display:flex; gap:8px; margin-top:10px;">
             <button style="flex:1; background:var(--green); color:var(--bg); border:none; padding:8px; border-radius:8px; font-weight:700; font-size:0.8rem;" onclick="document.getElementById('depositModal') &amp;&amp; (document.getElementById('depositModal').style.display='flex')">+ Deposit</button>
             <button style="flex:1; background:transparent; color:var(--muted); border:1px solid var(--border); padding:8px; border-radius:8px; font-weight:700; font-size:0.8rem;">- Withdraw</button>
@@ -2537,7 +2520,7 @@ tbody.innerHTML = res.credits.map(c => `
       
     </div>
     
-    <!-- ══ VIEW 5: PROFILE (LEDGER & TRANSACTIONS) ══ -->
+    <!-- ΓòÉΓòÉ VIEW 5: PROFILE (LEDGER & TRANSACTIONS) ΓòÉΓòÉ -->
     <div class="mob-view" id="mob-view-profile">
         <div style="background: #0d131f; padding: 25px 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
             <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #000;">
@@ -2569,7 +2552,7 @@ tbody.innerHTML = res.credits.map(c => `
       </div>
     </div>
 
-    <!-- ══ VIEW 2: LIVE EXCHANGE ══ -->
+    <!-- ΓòÉΓòÉ VIEW 2: LIVE EXCHANGE ΓòÉΓòÉ -->
     <div class="mob-view" id="mob-view-exchange">
       <div class="exchange-header">
         <h2><i class="fa-solid fa-bolt" style="color:var(--green); font-size:0.9rem;"></i> Live Order Book</h2>
@@ -2586,7 +2569,7 @@ tbody.innerHTML = res.credits.map(c => `
       <!-- Live Sync Indicator -->
       <div style="display:flex; align-items:center; gap:6px; margin-bottom:14px; font-size:0.72rem; color:var(--green);">
         <span style="width:6px; height:6px; background:var(--green); border-radius:50%; animation: pulse 1.5s infinite;"></span>
-        WebSocket Active — Syncing with web dashboard
+        WebSocket Active ΓÇö Syncing with web dashboard
       </div>
 
       
@@ -2620,10 +2603,10 @@ tbody.innerHTML = res.credits.map(c => `
       </div>
     </div>
 
-    <!-- ══ VIEW 3: ESG GOALS ══ -->
+    <!-- ΓòÉΓòÉ VIEW 3: ESG GOALS ΓòÉΓòÉ -->
     <div class="mob-view" id="mob-view-esg">
       <div class="mob-card">
-        <div class="mob-card-title"><i class="fa-solid fa-leaf" style="color:var(--green);"></i> Net Zero 2030 — Progress</div>
+        <div class="mob-card-title"><i class="fa-solid fa-leaf" style="color:var(--green);"></i> Net Zero 2030 ΓÇö Progress</div>
         <div class="esg-gauge-wrap">
           <canvas id="mob-esg-gauge"></canvas>
           <div class="esg-gauge-center">
@@ -2654,7 +2637,7 @@ tbody.innerHTML = res.credits.map(c => `
   </div><!-- /mob-views -->
 
   <!-- BOTTOM NAV -->
-  <div id="mob-nav" class="mob-nav">
+  <div class="mob-nav">
     <div class="mob-tab" data-view="history" onclick="mobSwitchTab('history', this)">
       <i class="fa-solid fa-file-invoice-dollar"></i> History
     </div>
@@ -2698,7 +2681,7 @@ tbody.innerHTML = res.credits.map(c => `
       <div style="background:#111827; border:1px solid #1e293b; padding:15px; border-radius:12px; margin-bottom:80px;">
         <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #1e293b; padding-bottom:10px;">
           <span style="color:#94a3b8;">Price</span>
-          <span id="dd-price" style="color:#00E676; font-weight:bold;">₹0</span>
+          <span id="dd-price" style="color:#00E676; font-weight:bold;">Γé╣0</span>
         </div>
         <div style="display:flex; justify-content:space-between;">
           <span style="color:#94a3b8;">Available Volume</span>
@@ -2715,11 +2698,11 @@ tbody.innerHTML = res.credits.map(c => `
   <div style="background:#111827; border-radius:20px 20px 0 0; padding:24px; width:100%; max-width:480px; border-top:1px solid #1e293b;">
     <div style="width:40px; height:4px; background:#1e293b; border-radius:2px; margin:0 auto 20px;"></div>
     <h3 style="color:#f8fafc; margin:0 0 6px; font-family:monospace;" id="mob-trade-ticker">GUJ-GCP-26-101</h3>
-    <p style="color:#94a3b8; font-size:0.85rem; margin:0 0 20px;" id="mob-trade-desc">GCP Afforestation — Ananya</p>
+    <p style="color:#94a3b8; font-size:0.85rem; margin:0 0 20px;" id="mob-trade-desc">GCP Afforestation ΓÇö Ananya</p>
     <div style="background:#0A0E17; border-radius:10px; padding:14px; margin-bottom:20px;">
       <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
         <span style="color:#94a3b8; font-size:0.8rem;">Price Per Ton</span>
-        <span style="color:#00E676; font-weight:700; font-family:monospace;" id="mob-trade-price">₹2,260</span>
+        <span style="color:#00E676; font-weight:700; font-family:monospace;" id="mob-trade-price">Γé╣2,260</span>
       </div>
       <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
         <span style="color:#94a3b8; font-size:0.8rem;">Volume Available</span>
@@ -2727,7 +2710,7 @@ tbody.innerHTML = res.credits.map(c => `
       </div>
       <div style="display:flex; justify-content:space-between;">
         <span style="color:#94a3b8; font-size:0.8rem;">Total Cost</span>
-        <span style="color:#00E5FF; font-weight:700; font-family:monospace;" id="mob-trade-total">₹2,12,49,320</span>
+        <span style="color:#00E5FF; font-weight:700; font-family:monospace;" id="mob-trade-total">Γé╣2,12,49,320</span>
       </div>
     </div>
     <div class="swipe-track" id="mob-swipe-track">
@@ -2747,14 +2730,14 @@ tbody.innerHTML = res.credits.map(c => `
 </style>
 
 <script>
-// ═══════════════════════════════════════════════
-// CARBON WALLET MOBILE V3 — MAIN CONTROLLER
-// ═══════════════════════════════════════════════
+// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+// CARBON WALLET MOBILE V3 ΓÇö MAIN CONTROLLER
+// ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
 
 let mobCharts = {};
 let pendingMobTrade = null;
 
-// ── TAB SWITCHING ──
+// ΓöÇΓöÇ TAB SWITCHING ΓöÇΓöÇ
 function mobSwitchTab(viewId, el) {
   if(window.HapticEngine) HapticEngine.lightTick();
   document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'));
@@ -2768,7 +2751,7 @@ function mobSwitchTab(viewId, el) {
   if(viewId === 'esg') mobInitESGGauge();
 }
 
-// ── CCTS CALCULATOR (EXACT MATCH WITH WEB) ──
+// ΓöÇΓöÇ CCTS CALCULATOR (EXACT MATCH WITH WEB) ΓöÇΓöÇ
 function mobCalcGap() {
   if(window.HapticEngine) HapticEngine.lightTick();
   const s = parseFloat(document.getElementById('mob-calc-sector').value);
@@ -2780,7 +2763,7 @@ function mobCalcGap() {
   document.getElementById('mob-calc-cars').textContent = (gap / 4.6).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-// ── SCOPE 1,2,3 CALCULATOR (EXACT MATCH WITH WEB) ──
+// ΓöÇΓöÇ SCOPE 1,2,3 CALCULATOR (EXACT MATCH WITH WEB) ΓöÇΓöÇ
 function mobCalcScope() {
   const scope1 = Number(document.getElementById('mob-scope1').value) || 0;
   const scope2 = Number(document.getElementById('mob-scope2').value) || 0;
@@ -2802,7 +2785,7 @@ function mobCalcScope() {
   document.getElementById('mob-scope-total').textContent = total.toLocaleString('en-IN') + ' Tons CO2e';
 }
 
-// ── LOAD EXCHANGE (LIVE DATA FROM SAME API AS WEBSITE) ──
+// ΓöÇΓöÇ LOAD EXCHANGE (LIVE DATA FROM SAME API AS WEBSITE) ΓöÇΓöÇ
 async function mobLoadExchange() {
   var region = '';
   try { region = document.getElementById('mob-region-filter').value || ''; } catch(x){}
@@ -2845,7 +2828,6 @@ async function mobLoadExchange() {
   }
 
   // Render cards using string concatenation (not template literals)
-  window._mobExchangeCredits = credits;
   var cardsHtml = '';
   for (var i = 0; i < credits.length; i++) {
     var c = credits[i];
@@ -2859,79 +2841,38 @@ async function mobLoadExchange() {
     var state = c.location_state || 'India';
     var volStr = volume.toLocaleString('en-IN');
     var priceStr = price.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
-    var cid = String(c.id);
-    cardsHtml += '<div class="market-card" id="mc-' + cid + '" onclick="window.mobOpenTradeById(\''  + cid + '\')">';
+    var totalStr = total.toLocaleString('en-IN', {minimumFractionDigits:2});
+
+    cardsHtml += '<div class="market-card" id="mc-' + c.id + '" onclick="mobExpandCard(' + c.id + ', \'' + ticker + '\', \'' + methodType + '\', \'' + seller + '\', ' + volume + ', ' + price + ', ' + total + ', ' + c.id + ')">';
     cardsHtml += '<div class="mc-top"><div>';
     cardsHtml += '<div class="mc-ticker">' + ticker + '</div>';
     cardsHtml += '<div style="font-size:0.7rem; color:var(--muted); font-family:monospace;">' + state + '</div>';
     cardsHtml += '</div>';
     cardsHtml += '<div class="mc-vintage">Vint. ' + vintage + '</div></div>';
-    cardsHtml += '<div class="mc-method">' + methodType + ' — ' + seller + ' <span>✓ Verified</span></div>';
+    cardsHtml += '<div class="mc-method">' + methodType + ' ΓÇö ' + seller + ' <span>Γ£ô Verified</span></div>';
     cardsHtml += '<div class="mc-bottom">';
     cardsHtml += '<div class="mc-volume"><strong>' + volStr + '</strong> Tons Available</div>';
-    cardsHtml += '<div><div class="mc-price">₹' + priceStr + '</div><div class="mc-price-sub">per Ton</div></div>';
-    cardsHtml += '</div>';
-    cardsHtml += '<button class="mob-trade-btn" onclick="window.mobOpenTradeById(\''  + cid + '\')" style="width:100%;margin-top:12px;padding:13px;background:linear-gradient(135deg,#00E676,#00BCD4);color:#071820;font-weight:900;font-size:1rem;border:none;border-radius:12px;cursor:pointer;letter-spacing:1.5px;font-family:monospace;text-transform:uppercase;box-shadow:0 4px 20px rgba(0,230,118,0.35);">&#x26A1; TRADE NOW</button>';
-    cardsHtml += '</div>';
+    cardsHtml += '<div><div class="mc-price">Γé╣' + priceStr + '</div><div class="mc-price-sub">per Ton</div></div>';
+    cardsHtml += '</div></div>';
   }
 
-    listEl.innerHTML = cardsHtml;
+  listEl.innerHTML = cardsHtml;
 }
 
-// ── EXPAND CARD → SHOW TRADE MODAL ──
+// ΓöÇΓöÇ EXPAND CARD ΓåÆ SHOW TRADE MODAL ΓöÇΓöÇ
 function mobExpandCard(id, ticker, method, seller, volume, price, total, creditId) {
-  if(window.HapticEngine) try{ HapticEngine.lightTick(); }catch(e){}
-  // Show the mobile trade bottom sheet
-  var sheet = document.getElementById('mobTradeSheet');
-  if (!sheet) { console.error('mobTradeSheet not found!'); alert('Trade modal missing. Please refresh.'); return; }
-  var basePrice = parseFloat(price) || 2260;
-  var vol = parseInt(volume) || 0;
-  // Set content
-  var elT = document.getElementById('mts-ticker'); if(elT) elT.textContent = ticker || '--';
-  var elM = document.getElementById('mts-meta'); if(elM) elM.textContent = (method||'GCP Afforestation') + ' · ' + (seller||'India') + ' · ✔ Verified';
-  var elP = document.getElementById('mts-price'); if(elP) elP.textContent = '₹' + basePrice.toLocaleString('en-IN', {minimumFractionDigits:2});
-  var elV = document.getElementById('mts-vol'); if(elV) elV.textContent = vol.toLocaleString('en-IN') + ' Tons';
-  var elQ = document.getElementById('mts-qty'); if(elQ){ elQ.value = Math.min(100, vol); elQ.max = vol; }
-  mtsCalcTotal();
-  // Store credit data globally
-  window._mtsActiveCreditId = creditId || id;
-  window._mtsActiveTicker = ticker;
-  window._mtsActivePrice = basePrice;
-  // Show sheet
-  sheet.style.display = 'block';
-  document.body.style.overflow = 'hidden';
-  // Start price ticker
-  if(window._mtsTicker) clearInterval(window._mtsTicker);
-  window._mtsTicker = setInterval(function(){
-    var delta = (Math.random()-0.45)*12;
-    var newP = Math.max(basePrice*0.95, basePrice+delta);
-    var pEl = document.getElementById('mts-price');
-    var cEl = document.getElementById('mts-change');
-    if(pEl) pEl.textContent = '₹' + newP.toLocaleString('en-IN',{minimumFractionDigits:2});
-    if(cEl){ var pct=Math.abs((delta/basePrice)*100).toFixed(2); cEl.textContent=(delta>=0?'▲':'▼')+' '+pct+'%'; cEl.style.color=delta>=0?'#00e676':'#ef4444'; }
-    window._mtsActivePrice = newP;
-    mtsCalcTotal();
-  }, 2000);
-  // Init map
-  setTimeout(function(){
-    var el = document.getElementById('mts-map');
-    if (!el || typeof L === 'undefined') return;
-    try {
-      if(window._mtsMap){ window._mtsMap.remove(); window._mtsMap=null; }
-      var lat = 17 + Math.random()*8;
-      var lng = 72 + Math.random()*8;
-      window._mtsMap = L.map('mts-map',{zoomControl:false,attributionControl:false}).setView([lat,lng],12);
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(window._mtsMap);
-      L.circle([lat,lng],{color:'#00e676',fillColor:'#00e676',fillOpacity:0.25,radius:2500}).addTo(window._mtsMap);
-      var loading = document.getElementById('mts-map-loading');
-      if(loading) loading.style.display='none';
-    } catch(e){ console.warn('Map init failed:', e); }
-  }, 400);
+  if(window.HapticEngine) HapticEngine.lightTick();
+  document.getElementById('mob-trade-ticker').textContent = ticker;
+  document.getElementById('mob-trade-desc').textContent = method + ' ΓÇö ' + seller;
+  document.getElementById('mob-trade-price').textContent = 'Γé╣' + price.toLocaleString('en-IN', {minimumFractionDigits:2});
+  document.getElementById('mob-trade-volume').textContent = volume.toLocaleString('en-IN') + ' Tons';
+  document.getElementById('mob-trade-total').textContent = 'Γé╣' + total.toLocaleString('en-IN');
+  pendingMobTrade = { id: creditId, tons: volume, price, total };
+  document.getElementById('mob-trade-modal').style.display = 'flex';
+  mobInitSwipe();
 }
 
-
-
-// ── SWIPE TO TRADE SLIDER ──
+// ΓöÇΓöÇ SWIPE TO TRADE SLIDER ΓöÇΓöÇ
 function mobInitSwipe() {
   const track = document.getElementById('mob-swipe-track');
   const thumb = document.getElementById('mob-swipe-thumb');
@@ -2990,7 +2931,7 @@ async function mobExecuteTrade() {
   if(track) { track.style.background = 'rgba(0,230,118,0.3)'; track.innerHTML = '<span style="color:var(--green); font-weight:800; font-size:0.9rem;">PROCESSING...</span>'; }
 
   if(!pendingMobTrade) return;
-  const auth = await requireBiometric("Execute ₹" + pendingMobTrade.total.toLocaleString() + " Corporate Trade");
+  const auth = await requireBiometric("Execute Γé╣" + pendingMobTrade.total.toLocaleString() + " Corporate Trade");
   if(!auth) {
     document.getElementById('mob-trade-modal').style.display = 'none';
     return;
@@ -3018,7 +2959,7 @@ async function mobExecuteTrade() {
   }
 }
 
-// ── LOAD PORTFOLIO DATA ──
+// ΓöÇΓöÇ LOAD PORTFOLIO DATA ΓöÇΓöÇ
 async function mobLoadPortfolioData() {
   const token = localStorage.getItem('cw_token');
   if(!token) return;
@@ -3041,7 +2982,7 @@ async function mobLoadPortfolioData() {
   }
 }
 
-// ── PORTFOLIO CHARTS (Exact match with web data) ──
+// ΓöÇΓöÇ PORTFOLIO CHARTS (Exact match with web data) ΓöÇΓöÇ
 function mobInitPortfolioCharts() {
   if(mobCharts.traj) return;
   const ctx1 = document.getElementById('mob-traj-chart');
@@ -3127,7 +3068,7 @@ function mobInitPortfolioCharts() {
   });
 }
 
-// ── ESG GAUGE ──
+// ΓöÇΓöÇ ESG GAUGE ΓöÇΓöÇ
 function mobInitESGGauge() {
   if(mobCharts.esg) {
     // Update with real data
@@ -3164,7 +3105,7 @@ function mobInitESGGauge() {
   });
 }
 
-// ── INIT ON LOAD ──
+// ΓöÇΓöÇ INIT ON LOAD ΓöÇΓöÇ
 document.addEventListener('DOMContentLoaded', () => {
   if(window.innerWidth > 768) return; // Desktop: don't run
 
@@ -3188,7 +3129,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const isUp = Math.random() > 0.4;
       const change = (Math.random() * 2).toFixed(1);
       val.className = isUp ? 'tick-up' : 'tick-dn';
-      val.textContent = (val.textContent.split(' ')[0]) + ' ' + (isUp ? '▲' : '▼') + ' ' + change + '%';
+      val.textContent = (val.textContent.split(' ')[0]) + ' ' + (isUp ? 'Γû▓' : 'Γû╝') + ' ' + change + '%';
     });
   }, 4000);
 
@@ -3306,365 +3247,4 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 </script>
     
-
-
-
-<!-- ═══════════ CW TRADE POPUP MODAL ═══════════ -->
-<div id="cwTradeModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
-  <div style="background:#0f1117;border:1px solid #1e2535;border-radius:20px;width:92%;max-width:880px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 30px 80px rgba(0,0,0,0.7);">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid #1e2535;">
-      <div>
-        <div style="font-family:monospace;font-size:1.2rem;font-weight:700;color:#00bcd4;" id="ctm-ticker">--</div>
-        <div style="font-size:0.78rem;color:#64748b;margin-top:3px;" id="ctm-meta">--</div>
-      </div>
-      <button onclick="closeCwTradeModal()" style="background:transparent;border:1px solid #334155;color:#94a3b8;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.1rem;">&#10005;</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
-      <div style="border-right:1px solid #1e2535;">
-        <div id="ctm-map" style="height:220px;background:#0a0e17;"></div>
-        <div style="padding:16px 20px;background:#080b10;border-bottom:1px solid #1e2535;">
-          <div style="font-size:0.7rem;color:#64748b;letter-spacing:1px;margin-bottom:6px;">LIVE PRICE FEED</div>
-          <div style="display:flex;align-items:baseline;gap:10px;">
-            <span style="font-size:2rem;font-weight:700;color:#00e676;font-family:monospace;" id="ctm-price">&#8377;0.00</span>
-            <span style="font-size:0.85rem;font-weight:600;color:#00e676;" id="ctm-change">&#9650; 0.0%</span>
-          </div>
-          <div style="font-size:0.75rem;color:#64748b;margin-top:4px;">Vol: <span style="color:#94a3b8;font-weight:600;" id="ctm-vol">0 Tons</span></div>
-        </div>
-        <div style="padding:16px 20px;">
-          <div style="font-size:0.7rem;color:#64748b;margin-bottom:10px;letter-spacing:1px;">ORDER TYPE</div>
-          <div style="display:flex;gap:8px;">
-            <button id="ctm-btn-market" onclick="ctmSetOrder('market')" style="flex:1;padding:10px;border-radius:8px;border:none;background:#38bdf8;color:#0f1117;font-weight:700;cursor:pointer;">Market</button>
-            <button id="ctm-btn-limit" onclick="ctmSetOrder('limit')" style="flex:1;padding:10px;border-radius:8px;border:1px solid #334155;background:transparent;color:#94a3b8;font-weight:700;cursor:pointer;">Limit</button>
-          </div>
-          <div id="ctm-limit-row" style="display:none;margin-top:12px;">
-            <div style="font-size:0.72rem;color:#64748b;margin-bottom:5px;">TARGET PRICE (&#8377;/TON)</div>
-            <input type="number" id="ctm-limit-price" style="width:100%;background:#131722;border:1px solid #334155;color:#e2e8f0;padding:10px;border-radius:8px;font-size:1rem;box-sizing:border-box;" placeholder="Enter limit price">
-          </div>
-        </div>
-      </div>
-      <div style="padding:20px 24px;">
-        <div style="background:#131722;border:1px solid #1e2535;border-radius:10px;padding:14px 18px;margin-bottom:14px;">
-          <div style="font-size:0.7rem;color:#64748b;margin-bottom:6px;letter-spacing:1px;">QUANTITY (TONS)</div>
-          <input type="number" id="ctm-qty" min="1" oninput="ctmUpdateTotal()" style="width:100%;background:transparent;border:none;color:#e2e8f0;font-size:1.4rem;font-weight:700;outline:none;box-sizing:border-box;" value="100">
-        </div>
-        <div style="background:#131722;border:1px solid #1e2535;border-radius:10px;padding:14px 18px;margin-bottom:14px;font-size:0.85rem;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="color:#64748b;">Price/Ton</span><span style="color:#e2e8f0;font-family:monospace;" id="ctm-unit-price">&#8377;0.00</span></div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="color:#64748b;">Platform Fee (0.5%)</span><span style="color:#e2e8f0;font-family:monospace;" id="ctm-fee">&#8377;0</span></div>
-          <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid #1e2535;"><span style="color:#94a3b8;font-weight:600;">Total Cost</span><span style="color:#00e5ff;font-size:1.1rem;font-weight:700;font-family:monospace;" id="ctm-total">&#8377;0</span></div>
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;">
-          <span style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#10b981;padding:4px 10px;border-radius:20px;font-size:0.7rem;">&#10004; AI 7/12 Verified</span>
-          <span style="background:rgba(41,98,255,0.1);border:1px solid rgba(41,98,255,0.3);color:#60a5fa;padding:4px 10px;border-radius:20px;font-size:0.7rem;">&#128752; Satellite dMRV</span>
-          <span style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:#f59e0b;padding:4px 10px;border-radius:20px;font-size:0.7rem;">&#128274; Buffer Pool</span>
-        </div>
-        <div style="display:flex;gap:10px;">
-          <button onclick="ctmExecute('hold',event)" style="flex:1;background:#2962ff;color:#fff;border:none;border-radius:12px;padding:18px 10px;font-size:0.9rem;font-weight:700;cursor:pointer;">
-            <div>&#128188; BUY &amp; HOLD</div>
-            <div style="font-size:0.72rem;font-weight:400;margin-top:3px;opacity:0.8;">Portfolio &amp; Resale</div>
-          </button>
-          <button onclick="ctmExecute('retire',event)" style="flex:1;background:#ef4444;color:#fff;border:2px solid #7f1d1d;border-radius:12px;padding:18px 10px;font-size:0.9rem;font-weight:700;cursor:pointer;">
-            <div>&#128293; BUY &amp; RETIRE</div>
-            <div style="font-size:0.72rem;font-weight:400;margin-top:3px;opacity:0.8;">ESG &amp; Burn Protocol</div>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-(function() {
-  var _ctmCredit = null;
-  var _ctmOrderType = 'market';
-  var _ctmMap = null;
-  var _ctmTicker = null;
-
-  window.openCwTradeModal = function(credit) {
-    _ctmCredit = credit;
-    _ctmOrderType = 'market';
-    document.getElementById('ctm-ticker').textContent = credit.ticker || credit.id || '--';
-    document.getElementById('ctm-meta').textContent = (credit.project_type||'GCP Afforestation') + ' · ' + (credit.location_state||'India') + ' · ✔ Verified';
-    var price = parseFloat(credit.price_per_ton) || 0;
-    var vol = parseInt(credit.available_tons) || 0;
-    document.getElementById('ctm-price').textContent = '₹' + price.toLocaleString('en-IN', {minimumFractionDigits:2});
-    document.getElementById('ctm-vol').textContent = vol.toLocaleString('en-IN') + ' Tons';
-    document.getElementById('ctm-unit-price').textContent = '₹' + price.toLocaleString('en-IN', {minimumFractionDigits:2});
-    var qtyEl = document.getElementById('ctm-qty');
-    qtyEl.value = Math.min(100, vol);
-    qtyEl.max = vol;
-    ctmUpdateTotal();
-    ctmSetOrder('market');
-    document.getElementById('cwTradeModal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    setTimeout(function() { ctmInitMap(credit); }, 150);
-    if (_ctmTicker) clearInterval(_ctmTicker);
-    _ctmTicker = setInterval(function() {
-      var base = parseFloat(credit.price_per_ton) || 2260;
-      var delta = (Math.random() - 0.45) * 8;
-      var newP = base + delta;
-      var pEl = document.getElementById('ctm-price');
-      var cEl = document.getElementById('ctm-change');
-      if (pEl) pEl.textContent = '₹' + newP.toLocaleString('en-IN', {minimumFractionDigits:2});
-      if (cEl) { var pct = Math.abs((delta/base)*100).toFixed(2); cEl.textContent = (delta>=0?'▲':'▼')+' '+pct+'%'; cEl.style.color = delta>=0?'#00e676':'#ef4444'; }
-    }, 1800);
-  };
-
-  function ctmInitMap(credit) {
-    var el = document.getElementById('ctm-map');
-    if (!el) return;
-    if (typeof L === 'undefined') { el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#475569;font-size:0.85rem;">Map loading...</div>'; return; }
-    if (_ctmMap) { try { _ctmMap.remove(); } catch(e) {} _ctmMap = null; }
-    var lat = credit.lat || (19 + Math.random()*6);
-    var lng = credit.lng || (72 + Math.random()*6);
-    _ctmMap = L.map('ctm-map', {zoomControl:false, attributionControl:false}).setView([lat, lng], 13);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(_ctmMap);
-    L.circle([lat, lng], {color:'#00e676', fillColor:'#00e676', fillOpacity:0.2, radius:2000}).addTo(_ctmMap);
-    L.marker([lat, lng]).addTo(_ctmMap);
-  }
-
-  window.ctmSetOrder = function(type) {
-    _ctmOrderType = type;
-    var mBtn = document.getElementById('ctm-btn-market');
-    var lBtn = document.getElementById('ctm-btn-limit');
-    mBtn.style.cssText = 'flex:1;padding:10px;border-radius:8px;font-weight:700;cursor:pointer;' + (type==='market'?'background:#38bdf8;color:#0f1117;border:none;':'background:transparent;color:#94a3b8;border:1px solid #334155;');
-    lBtn.style.cssText = 'flex:1;padding:10px;border-radius:8px;font-weight:700;cursor:pointer;' + (type==='limit'?'background:#38bdf8;color:#0f1117;border:none;':'background:transparent;color:#94a3b8;border:1px solid #334155;');
-    document.getElementById('ctm-limit-row').style.display = type==='limit'?'block':'none';
-  };
-
-  window.ctmUpdateTotal = function() {
-    if (!_ctmCredit) return;
-    var price = parseFloat(_ctmCredit.price_per_ton)||0;
-    var qty = parseInt(document.getElementById('ctm-qty').value)||0;
-    var sub = qty*price;
-    var fee = sub*0.005;
-    document.getElementById('ctm-fee').textContent = '₹'+fee.toLocaleString('en-IN',{maximumFractionDigits:0});
-    document.getElementById('ctm-total').textContent = '₹'+(sub+fee).toLocaleString('en-IN',{maximumFractionDigits:0});
-  };
-
-  window.closeCwTradeModal = function() {
-    document.getElementById('cwTradeModal').style.display = 'none';
-    document.body.style.overflow = '';
-    if (_ctmTicker) { clearInterval(_ctmTicker); _ctmTicker = null; }
-    if (_ctmMap) { try { _ctmMap.remove(); } catch(e) {} _ctmMap = null; }
-  };
-
-  document.getElementById('cwTradeModal').addEventListener('click', function(e) { if (e.target===this) window.closeCwTradeModal(); });
-
-  window.ctmExecute = async function(action, evt) {
-    if (!_ctmCredit) return;
-    var qty = parseInt(document.getElementById('ctm-qty').value);
-    if (!qty||qty<=0) { alert('Enter a valid quantity'); return; }
-    var btn = evt && evt.currentTarget ? evt.currentTarget : (evt && evt.target ? evt.target.closest('button') : null);
-    var orig = btn ? btn.innerHTML : '';
-    if (btn) { btn.innerHTML = '⏳ Processing...'; btn.disabled = true; }
-    var payload = {credit_id:_ctmCredit.id, tons:qty, action:action, order_type:_ctmOrderType};
-    if (_ctmOrderType==='limit') payload.target_price = parseFloat(document.getElementById('ctm-limit-price').value);
-    try {
-      var res = await fetch('/api/credits/purchase', {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+(localStorage.getItem('cw_token')||'')}, credentials:'include', body:JSON.stringify(payload)});
-      var data = await res.json();
-      if (!res.ok) throw new Error(data.error||'Trade failed');
-      window.closeCwTradeModal();
-      if (typeof showToast==='function') showToast('✅ Trade executed! '+qty+' tons '+(action==='retire'?'retired':'added to portfolio'), 'success');
-      if (typeof loadExchange==='function') setTimeout(loadExchange, 800);
-      if (typeof loadPortfolio==='function') setTimeout(loadPortfolio, 800);
-      if (typeof mobLoadPortfolio==='function') setTimeout(mobLoadPortfolio, 800); // Mobile refresh
-    } catch(e) {
-      alert('Error: '+e.message);
-      if (btn) { btn.innerHTML = orig; btn.disabled = false; }
-    }
-  };
-
-  // ── OVERRIDE openMobTrade FOR MOBILE BUTTONS ──
-  window.openMobTrade = function(id, price, volume, ticker, method, seller, state) {
-    if (typeof window.openCwTradeModal === 'function') {
-      window.openCwTradeModal({
-        id: id,
-        price_per_ton: price,
-        available_tons: volume,
-        ticker: ticker,
-        project_type: method,
-        seller_name: seller,
-        location_state: state
-      });
-    }
-  };
-
-  // ── EVENT DELEGATION: intercept clicks on the exchange table action buttons ──
-  // This fires regardless of when the table renders
-  document.addEventListener('click', async function(e) {
-    var btn = e.target.closest('#exchangeTable button, #exchangeTable td a, .action-cell button');
-    if (!btn) return;
-    var tr = btn.closest('tr');
-    if (!tr || !tr.cells || tr.cells.length < 2) return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-
-    var ticker = tr.cells[0] ? tr.cells[0].innerText.trim() : '';
-    if (!ticker) return;
-
-    try {
-      var r = await fetch('/api/credits/marketplace', {headers:{'Authorization':'Bearer '+(localStorage.getItem('cw_token')||'')}});
-      var d = await r.json();
-      var match = (d.credits||[]).find(function(c){ return c.ticker === ticker; });
-      if (match) {
-        window.openCwTradeModal(match);
-      } else {
-        // Build from row cells as fallback
-        var priceText = tr.cells[4] ? tr.cells[4].innerText.replace(/[^0-9.]/g,'') : '2260';
-        var volText = tr.cells[3] ? tr.cells[3].innerText.replace(/[^0-9]/g,'') : '1000';
-        window.openCwTradeModal({
-          id: 'EX-'+Date.now(),
-          ticker: ticker,
-          price_per_ton: parseFloat(priceText)||2260,
-          available_tons: parseInt(volText)||1000,
-          project_type: tr.cells[1] ? tr.cells[1].innerText.trim() : 'GCP Afforestation',
-          location_state: tr.cells[2] ? tr.cells[2].innerText.trim() : 'India'
-        });
-      }
-    } catch(err) {
-      console.error('CW Trade Modal error:', err);
-    }
-  }, true); // use capture so we fire before any other handler
-
-})();
-</script>
-
-
-
-
-
-<!-- MOBILE TRADE SHEET -->
-<div id="mobTradeSheet" onclick="if(window.event && window.event.target===this)window.closeMobTradeSheet()" style="display:none;position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,0.75);">
-  <div style="position:absolute;bottom:0;left:0;right:0;background:#0f1117;border-radius:24px 24px 0 0;border-top:1px solid #1e2535;max-height:92vh;overflow-y:auto;">
-    <div style="width:40px;height:4px;background:#334155;border-radius:2px;margin:14px auto 0;"></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px 12px;">
-      <div>
-        <div id="mts-ticker" style="font-family:monospace;font-size:1.1rem;font-weight:800;color:#00bcd4;">--</div>
-        <div id="mts-meta" style="font-size:0.72rem;color:#64748b;margin-top:3px;">--</div>
-      </div>
-      <button onclick="window.closeMobTradeSheet()" style="background:#1e2535;border:none;color:#94a3b8;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1rem;flex-shrink:0;">X</button>
-    </div>
-    <div id="mts-map" style="height:180px;background:#0a1628;margin:0 16px;border-radius:12px;overflow:hidden;position:relative;">
-      <div id="mts-map-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#475569;font-size:0.85rem;">Loading satellite view...</div>
-    </div>
-    <div style="margin:12px 16px;background:#131722;border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;">
-      <div>
-        <div style="font-size:0.65rem;color:#64748b;letter-spacing:1px;margin-bottom:4px;">LIVE PRICE / TON</div>
-        <div id="mts-price" style="font-family:monospace;font-size:1.6rem;font-weight:800;color:#00e676;">0.00</div>
-      </div>
-      <div style="text-align:right;">
-        <div id="mts-change" style="font-size:0.8rem;font-weight:700;color:#00e676;">0.00%</div>
-        <div id="mts-vol" style="font-size:0.7rem;color:#64748b;margin-top:3px;">0 Tons</div>
-      </div>
-    </div>
-    <div style="margin:0 16px 12px;background:#131722;border-radius:12px;padding:14px 16px;">
-      <div style="font-size:0.65rem;color:#64748b;letter-spacing:1px;margin-bottom:8px;">QUANTITY (TONS)</div>
-      <input id="mts-qty" type="number" min="1" value="100" oninput="window.mtsCalcTotal()" style="width:100%;background:transparent;border:none;color:#e2e8f0;font-size:1.5rem;font-weight:700;outline:none;box-sizing:border-box;">
-      <div style="border-top:1px solid #1e2535;margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;">
-        <span style="color:#64748b;font-size:0.82rem;">Total Cost</span>
-        <span id="mts-total" style="color:#00e5ff;font-weight:700;font-family:monospace;">0</span>
-      </div>
-    </div>
-    <div style="margin:0 16px 14px;display:flex;gap:6px;flex-wrap:wrap;">
-      <span style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#10b981;padding:4px 10px;border-radius:20px;font-size:0.68rem;">AI Verified</span>
-      <span style="background:rgba(41,98,255,0.1);border:1px solid rgba(41,98,255,0.3);color:#60a5fa;padding:4px 10px;border-radius:20px;font-size:0.68rem;">Satellite dMRV</span>
-      <span style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:#f59e0b;padding:4px 10px;border-radius:20px;font-size:0.68rem;">Buffer Pool</span>
-    </div>
-    <div style="display:flex;gap:10px;padding:0 16px 28px;">
-      <button onclick="window.mtsExecute('hold')" style="flex:1;background:#2962ff;color:#fff;border:none;border-radius:14px;padding:18px 8px;font-size:0.85rem;font-weight:800;cursor:pointer;">BUY and HOLD</button>
-      <button onclick="window.mtsExecute('retire')" style="flex:1;background:#dc2626;color:#fff;border:none;border-radius:14px;padding:18px 8px;font-size:0.85rem;font-weight:800;cursor:pointer;">BUY and RETIRE</button>
-    </div>
-  </div>
-</div>
-<script>
-var _mtsCredit=null, _mtsTicker=null, _mtsMap=null;
-window.mtsCalcTotal = function() {
-  var p=document.getElementById('mts-price'), q=document.getElementById('mts-qty'), t=document.getElementById('mts-total');
-  if(!p||!q||!t) return;
-  var priceText=(p.textContent||'').replace(/Rs\.?/i,'').replace(/,/g,'');
-    var price=parseFloat(priceText)||0;
-  var qty=parseInt(q.value)||0;
-  t.textContent='Rs.'+(qty*price).toLocaleString('en-IN',{maximumFractionDigits:0});
-};
-window.closeMobTradeSheet = function() {
-  var s=document.getElementById('mobTradeSheet'); if(s) s.style.display='none';
-  document.body.style.overflow='';
-  if(_mtsTicker){clearInterval(_mtsTicker);_mtsTicker=null;}
-  if(_mtsMap){try{_mtsMap.remove();}catch(e){}_mtsMap=null;}
-};
-window.openMobTradeSheet = function(credit) {
-  _mtsCredit=credit;
-  var sheet=document.getElementById('mobTradeSheet');
-  if(!sheet){alert('Refresh the page and try again.');return;}
-  var price=parseFloat(credit.price_per_ton)||0;
-  var vol=parseInt(credit.available_tons)||0;
-  var el;
-  el=document.getElementById('mts-ticker'); if(el) el.textContent=credit.ticker||'--';
-  el=document.getElementById('mts-meta'); if(el) el.textContent=(credit.project_type||'GCP')+'  '+( credit.location_state||'India')+'  Verified';
-  el=document.getElementById('mts-price'); if(el) el.textContent='Rs.'+price.toLocaleString('en-IN',{minimumFractionDigits:2});
-  el=document.getElementById('mts-vol'); if(el) el.textContent=vol.toLocaleString('en-IN')+' Tons';
-  el=document.getElementById('mts-qty'); if(el){el.value=Math.min(100,vol);el.max=vol;}
-  window.mtsCalcTotal();
-  sheet.style.display='block';
-  document.body.style.overflow='hidden';
-  if(_mtsTicker) clearInterval(_mtsTicker);
-  _mtsTicker=setInterval(function(){
-    var base=parseFloat(credit.price_per_ton)||2260;
-    var delta=(Math.random()-0.45)*12;
-    var newP=Math.max(base*0.95,base+delta);
-    var pEl=document.getElementById('mts-price');
-    var cEl=document.getElementById('mts-change');
-    if(pEl) pEl.textContent='Rs.'+newP.toLocaleString('en-IN',{minimumFractionDigits:2});
-    if(cEl){var pct=Math.abs((delta/base)*100).toFixed(2);cEl.textContent=(delta>=0?'up ':'dn ')+pct+'%';cEl.style.color=delta>=0?'#00e676':'#ef4444';}
-    window.mtsCalcTotal();
-  },2000);
-  setTimeout(function(){
-    var mapEl=document.getElementById('mts-map');
-    if(!mapEl||typeof L==='undefined') return;
-    try{
-      if(_mtsMap){_mtsMap.remove();_mtsMap=null;}
-      var lat=credit.lat||(17+Math.random()*8), lng=credit.lng||(72+Math.random()*8);
-      _mtsMap=L.map('mts-map',{zoomControl:false,attributionControl:false}).setView([lat,lng],12);
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(_mtsMap);
-      L.circle([lat,lng],{color:'#00e676',fillColor:'#00e676',fillOpacity:0.25,radius:2500}).addTo(_mtsMap);
-      var ld=document.getElementById('mts-map-loading'); if(ld) ld.style.display='none';
-    }catch(e){console.warn('Map err:',e);}
-  },400);
-};
-window.mtsExecute = async function(action) {
-  if(!_mtsCredit){alert('No credit selected');return;}
-  var qty=parseInt((document.getElementById('mts-qty')||{}).value)||0;
-  if(qty<=0){alert('Please enter quantity');return;}
-  var token=localStorage.getItem('cw_token')||'';
-  try{
-    var res=await fetch('/api/credits/purchase',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({credit_id:_mtsCredit.id,tons:qty,action:(action==='hold'?'buy':action)})});
-    var d=await res.json();
-    if(d.success||d.message){window.closeMobTradeSheet();alert('Done! '+qty+' tons purchased.');if(typeof mobLoadExchange==='function')setTimeout(mobLoadExchange,800);}
-    else{throw new Error(d.error||'Failed');}
-  }catch(e){alert('Error: '+e.message);}
-};
-window.mobExpandCard = function(id,ticker,method,seller,volume,price,total,creditId) {
-  try{if(window.HapticEngine)HapticEngine.lightTick();}catch(e){}
-  window.openMobTradeSheet({id:creditId,ticker:ticker,project_type:method,seller_name:seller,available_tons:volume,price_per_ton:price,location_state:seller});
-};
-</script>
-
-<script>
-window.mobOpenTradeById = function(id) {
-  try { if(window.HapticEngine) HapticEngine.lightTick(); } catch(e){}
-  if (!window._mobExchangeCredits) { alert('Marketplace data missing. Refreshing...'); window.location.reload(); return; }
-  
-  var credit = window._mobExchangeCredits.find(function(c) { return String(c.id) === String(id); });
-  if (!credit) { alert('Credit details not found.'); return; }
-  
-  if (window.openMobTradeSheet) {
-    window.openMobTradeSheet(credit);
-  } else {
-    alert('Trade sheet system not initialized.');
-  }
-};
-</script>
-
 </body></html>
-
-

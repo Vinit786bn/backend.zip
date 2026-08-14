@@ -59,7 +59,29 @@
       margin-bottom: 0 !important;
     }
   }
-</style>
+
+    /* Enhanced Mobile App & Mobile Browser Compatibility */
+    @media (max-width: 768px) {
+      .main-content { padding: 65px 12px 30px !important; }
+      .grid-2 { grid-template-columns: 1fr !important; gap: 16px !important; }
+      .sg { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; margin-top: 10px !important; }
+      .sc { padding: 8px 6px !important; font-size: 0.68rem !important; border-radius: 6px !important; }
+      .sc .v { font-size: 0.85rem !important; margin-top: 3px !important; }
+      .g3 { grid-template-columns: 1fr 1fr 1fr !important; gap: 8px !important; }
+      #geoMap { height: 320px !important; border-radius: 8px !important; }
+      #pipeBtn, #submitAdminBtn {
+        min-height: 48px !important;
+        font-size: 0.95rem !important;
+        padding: 12px !important;
+        border-radius: 8px !important;
+        touch-action: manipulation;
+      }
+      .ps { padding: 12px 14px !important; margin-bottom: 10px !important; border-radius: 8px !important; }
+      .si { width: 32px !important; height: 32px !important; font-size: 0.9rem !important; }
+      .st { font-size: 0.9rem !important; }
+      .sd { font-size: 0.72rem !important; }
+    }
+  </style>
 
     <style>
       @media (max-width: 1400px) {
