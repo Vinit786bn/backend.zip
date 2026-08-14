@@ -42,24 +42,7 @@
     @keyframes sIn{from{transform:translateX(100%);}to{transform:translateX(0);}}
     .live-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.65rem;font-weight:bold;background:rgba(239,68,68,0.2);color:#ef4444;animation:livePulse 2s infinite;}
     @keyframes livePulse{0%, 100%{opacity:1;}50%{opacity:0.5;}}
-  
-  @media (max-width: 768px) {
-    #tab-ai-advisor {
-      padding: 0 !important;
-      margin: 0 !important;
-    }
-    #tab-ai-advisor > div {
-      /* 100vh minus ~80px for the top header minus 65px for bottom nav */
-      height: calc(100vh - 150px) !important;
-      min-height: auto !important;
-      border-radius: 0 !important;
-      border: none !important;
-      box-shadow: none !important;
-      padding-bottom: 0 !important;
-      margin-bottom: 0 !important;
-    }
-  }
-</style>
+  </style>
 
     <style>
       @media (max-width: 1400px) {
@@ -141,7 +124,7 @@
   .step-tracker { text-align: center; margin-top: 15px; margin-bottom: 8px; }
   .step-tracker-text { color: #00E676; font-weight: 700; font-size: 0.85rem; letter-spacing: 1px; }
   .progress-bar-bg { height: 3px; background: #1E293B; width: 100%; position: relative; margin-bottom: 25px; }
-  .progress-bar-fill { height: 100%; background: #00E676; flex: 1; transition: width 0.3s ease; }
+  .progress-bar-fill { height: 100%; background: #00E676; width: 25%; transition: width 0.3s ease; }
   .step-container { padding: 0 20px; }
   .step-title { font-size: 1.8rem; font-weight: 800; color: #FFFFFF; margin-bottom: 25px; }
   .field-group { margin-bottom: 20px; }
@@ -152,7 +135,7 @@
     .prev-btn { flex: 0 0 35%; height: 54px; background: #1E293B; color: #F8FAFC; border-radius: 14px; font-weight: 700; font-size: 1.1rem; border: none; cursor: pointer; display: none; align-items: center; justify-content: center; margin: 0; padding: 0; }
     .next-btn { flex: 1; height: 54px; background: #00E676; color: #0A0E17; border-radius: 14px; font-weight: 800; font-size: 1.1rem; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(0, 230, 118, 0.35); display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0; padding: 0; }
   .app-bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background: #0A0E17; border-top: 1px solid #1E293B; display: flex; justify-content: space-around; align-items: center; z-index: 1000; max-width: 500px; margin: 0 auto; }
-  .nav-item { display: flex; flex-direction: column; align-items: center; color: #64748B; font-size: 0.72rem; font-weight: 600; cursor: pointer; gap: 4px; flex: 1; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; color: #64748B; font-size: 0.72rem; font-weight: 600; cursor: pointer; gap: 4px; width: 25%; }
   .nav-item.active { color: #00E676; }
   .nav-item i { font-size: 1.25rem; }
 </style>
@@ -175,7 +158,7 @@
     <div class="step-tracker-text" id="mStepText">STEP 1 OF 4</div>
   </div>
   <div class="progress-bar-bg">
-    <div class="progress-bar-fill" id="mProgressFill" style="flex: 1;"></div>
+    <div class="progress-bar-fill" id="mProgressFill" style="width: 25%;"></div>
   </div>
 
   <div class="step-container" id="mStep1">
@@ -400,7 +383,7 @@
       
       <!-- Withdraw Modal -->
       <div id="mobileWithdrawModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 1000; align-items: flex-end; justify-content: center;">
-        <div style="background: #151A24; width: 100%; border-radius: 25px 25px 0 0; padding: 30px 25px 95px 25px; box-shadow: 0 -5px 25px rgba(0,0,0,0.5); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);" id="mobileWithdrawModalContent">
+        <div style="background: #151A24; width: 100%; border-radius: 25px 25px 0 0; padding: 30px 25px; box-shadow: 0 -5px 25px rgba(0,0,0,0.5); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);" id="mobileWithdrawModalContent">
            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
              <h3 style="color: #FFFFFF; font-weight: 900; font-size: 1.4rem; margin: 0;">Bank Transfer</h3>
              <button onclick="closeMobileWithdraw()" style="background: rgba(255,255,255,0.1); border: none; color: #FFFFFF; width: 35px; height: 35px; border-radius: 50%; font-size: 1rem; display: flex; align-items: center; justify-content: center; cursor: pointer;"><i class="fa-solid fa-times"></i></button>
@@ -529,12 +512,7 @@
       <div class="nav-item" id="mNavProfile" onclick="showMobileTab('profile')">
         <i class="fa-solid fa-user-circle" style="font-size:1.4rem;"></i>
         <span>Profile</span>
-    </div>
-    <div class="nav-item" id="mNavAi" onclick="showMobileTab('ai')">
-      <i class="fa-solid fa-brain" style="font-size:1.4rem;"></i>
-      <span>AI Advisor</span>
-    </div>
-  </div>
+      </div>
   </div>
 </div>
 
@@ -689,7 +667,7 @@
 </script><div class="desktop-dashboard">
   <nav class="nb navbar">
     <div style="font-weight:800;font-size:1.2rem;color:#f8fafc;display:flex;align-items:center;"><a href="index.html" style="color: #94A3B8; font-size: 1.2rem; margin-right: 15px; text-decoration: none;"><i class="fa-solid fa-arrow-left"></i></a><img src="assets/logo.png" style="width:24px; height:24px; border-radius:4px; vertical-align:middle; margin-right:8px;">Carbon Wallet</div>
-    <div><a href="#" class="active" onclick="switchTab('onboard')">Land Onboarding</a><a href="#" onclick="switchTab('mylands')">My Lands</a><a href="#" onclick="switchTab('credits')">My Credits</a><a href="#" onclick="switchTab('payouts')">Payouts</a><a href="#" onclick="switchTab('documents')">Documents</a><a href="#" onclick="switchTab('ai-advisor')"><i class="fas fa-brain"></i> AI ADVISOR</a></div>
+    <div><a href="#" class="active" onclick="switchTab('onboard')">Land Onboarding</a><a href="#" onclick="switchTab('mylands')">My Lands</a><a href="#" onclick="switchTab('credits')">My Credits</a><a href="#" onclick="switchTab('payouts')">Payouts</a><a href="#" onclick="switchTab('documents')">Documents</a></div>
     <div style="cursor:pointer;position:relative;" onclick="toggleProfile(event)">
       <div style="text-align:right;"><div style="font-size:0.85rem;" id="nav-user-name">Landowner</div><div style="font-size:0.7rem;color:#10b981;">Landowner Portal</div></div>
       <div class="pd" id="profileDropdown"><button class="di" onclick="switchTab('settings')"><i class="fas fa-cog"></i> Settings</button><button class="di"><i class="fas fa-wallet"></i> Balance</button><button class="di" onclick="handleLogout()" style="color:#ef4444;"><i class="fas fa-sign-out-alt"></i> 
@@ -816,47 +794,6 @@ Logout</div>
       </div>
     </div>
 
-    
-<div id="tab-ai-advisor" style="display:none; animation: fadeIn 0.3s ease;">
-  <div style="height:calc(100vh - 280px); min-height:500px; display:flex; flex-direction:column; background:var(--card-bg, #1e293b); border-radius:16px; border:1px solid var(--border-color, #334155); overflow:hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-    
-    <div style="padding:20px; border-bottom:1px solid var(--border-color, #334155); display:flex; align-items:center; gap:15px; background:rgba(15, 23, 42, 0.4);">
-      <div style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg, #10b981, #3b82f6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.4rem; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
-        <i class="fas fa-brain"></i>
-      </div>
-      <div>
-        <h2 style="margin:0; font-size:1.3rem; color:#f8fafc; font-weight:600;">AI ADVISOR</h2>
-        <div style="font-size:0.85rem; color:#10b981; margin-top:2px; font-weight:500;"><i class="fas fa-circle" style="font-size:0.5rem; vertical-align:middle; margin-right:6px; animation: pulse 2s infinite;"></i>Online - Smart Crop Advisor</div>
-      </div>
-    </div>
-    
-    <div id="ai-chat-history" style="flex:1; padding:25px; overflow-y:auto; display:flex; flex-direction:column; gap:20px; background:#0f172a;">
-      <div style="display:flex; gap:15px; max-width:85%;">
-        <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #10b981, #3b82f6); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0;">
-          <i class="fas fa-brain" style="font-size:1rem;"></i>
-        </div>
-        <div style="background:rgba(30, 41, 59, 0.9); padding:16px 20px; border-radius:0 16px 16px 16px; color:#e2e8f0; font-size:1rem; line-height:1.6; border:1px solid rgba(51, 65, 85, 0.5);">
-          Hello! I am Nemotron, your AI Smart Crop Advisor. Tell me about your farm's location and size, and I can analyze soil data and climate trends to recommend the most profitable crops for Carbon Sequestration.
-        </div>
-      </div>
-    </div>
-
-    <div style="padding:20px; border-top:1px solid var(--border-color, #334155); background:rgba(15, 23, 42, 0.95);">
-      <div style="display:flex; gap:15px; align-items:flex-end; max-width:1000px; margin:0 auto;">
-        <div style="flex:1; background:#1e293b; border:1px solid #334155; border-radius:24px; padding:8px 20px; display:flex; align-items:center; gap:10px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);">
-          <textarea id="ai-chat-input" placeholder="Ask about crop yield, carbon credits, or farm planning..." style="flex:1; background:transparent; border:none; color:#f8fafc; font-family:inherit; font-size:1rem; resize:none; padding:12px 0; max-height:150px; outline:none;" rows="1" oninput="this.style.height = ''; this.style.height = Math.min(this.scrollHeight, 150) + 'px';"></textarea>
-          <button id="ai-mic-btn" style="background:transparent; border:none; color:#94a3b8; font-size:1.3rem; cursor:pointer; padding:10px; transition:all 0.2s; border-radius:50%;" onclick="toggleMic()" onmouseover="this.style.color='#f8fafc'; this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.color=(typeof isRecording !== 'undefined' && isRecording)?'#ef4444':'#94a3b8'; this.style.background='transparent'">
-            <i class="fas fa-microphone"></i>
-          </button>
-        </div>
-        <button onclick="sendAiMessage()" style="background:linear-gradient(135deg, #10b981, #3b82f6); border:none; width:56px; height:56px; border-radius:50%; color:#fff; font-size:1.3rem; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 15px rgba(16, 185, 129, 0.4); transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-          <i class="fas fa-paper-plane"></i>
-        </button>
-      </div>
-    </div>
-    
-  </div>
-</div>
     <div id="tab-documents" style="display:none;">
       <div class="g2">
         <div class="cd">
@@ -1378,43 +1315,31 @@ async function submitListing() {
     document.addEventListener('DOMContentLoaded',init);
   
     async function uploadDocument() {
-        var fileInput = document.getElementById('landDoc');
-        if(!fileInput || fileInput.files.length === 0) return;
-
-        var statusDiv = document.getElementById('docUploadStatus');
-        var previewDiv = document.getElementById('fileListPreview');
-        var progressDiv = document.getElementById('uploadProgress');
-
-        if(previewDiv) previewDiv.innerHTML = Array.from(fileInput.files).map(function(f) {
-          return '<div style="padding:4px 0;"><i class="fas fa-file" style="color:#38bdf8;"></i> ' + f.name + ' <span style="color:#94a3b8;font-size:0.75rem;">(' + (f.size/1024).toFixed(1) + ' KB)</span></div>';
-        }).join('');
-
-        var formData = new FormData();
-        Array.from(fileInput.files).forEach(function(f){ formData.append('documents', f); });
-        formData.append('doc_type', 'land_deed');
-
-        statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
-        if(progressDiv) progressDiv.style.display = 'block';
-
-        fetch('/api/land/upload-docs', {
+      const fileInput = document.getElementById('landDoc');
+      if(fileInput.files.length === 0) return;
+      const formData = new FormData();
+      formData.append('documents', fileInput.files[0]);
+      
+      const statusDiv = document.getElementById('docUploadStatus');
+      statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading to secure vault...';
+      
+      try {
+        const res = await fetch('/api/land/upload-docs', {
           method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('cw_token') || '') },
+          headers: { 'Authorization': 'Bearer ' + TK() },
           body: formData
-        }).then(function(res){ return res.json(); }).then(function(data){
-          if(progressDiv) progressDiv.style.display = 'none';
-          var docs = data.documents || data.files || [];
-          if(docs.length > 0) {
-            var el = document.getElementById('uploadedDocId');
-            if(el) el.value = docs[0].id;
-            statusDiv.innerHTML = '<span style="color:#10b981;"><i class="fas fa-check"></i> ' + docs.length + ' file(s) uploaded successfully!</span>';
-          } else {
-            statusDiv.innerHTML = '<span style="color:#10b981;"><i class="fas fa-check"></i> Files staged for submission.</span>';
-          }
-        }).catch(function(e){
-          if(progressDiv) progressDiv.style.display = 'none';
-          statusDiv.innerHTML = '<span style="color:#ef4444;"><i class="fas fa-times"></i> Upload failed: ' + e.message + '</span>';
         });
+        const data = await res.json();
+        if(data.files && data.files.length > 0) {
+          document.getElementById('uploadedDocId').value = data.files[0].id;
+          statusDiv.innerHTML = '<span style="color:#10b981;"><i class="fas fa-check"></i> 7/12 Uploaded Successfully. Ready for AI Scan.</span>';
+        } else {
+          throw new Error('Upload failed');
+        }
+      } catch (e) {
+        statusDiv.innerHTML = '<span style="color:#ef4444;"><i class="fas fa-times"></i> Upload error</span>';
       }
+    }
 
 
   window.submitToAdmin = async function(tons) {
@@ -1509,7 +1434,7 @@ async function submitListing() {
     if (!header) return;
     
     const impactHtml = `
-      <div id="global-stats-bar" style="background:#0a0a0a; border-bottom:1px solid #1e293b; padding:12px 20px; transition: all 0.3s ease;">
+      <div style="background:#0a0a0a; border-bottom:1px solid #1e293b; padding:12px 20px;">
         <div style="max-width:1400px; margin:0 auto; display:flex; justify-content:space-around; align-items:center;">
           <div style="text-align:center;">
             <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; letter-spacing:1px;">Live CO2 Sequestered</div>
@@ -1880,248 +1805,6 @@ async function submitListing() {
 
     
     
-
-
-<script>
-var isRecording = false;
-function toggleMic() {
-  const micBtn = document.getElementById('ai-mic-btn');
-  isRecording = !isRecording;
-  if(isRecording) {
-    micBtn.style.color = '#ef4444';
-    micBtn.innerHTML = '<i class="fas fa-stop-circle"></i>';
-    document.getElementById('ai-chat-input').placeholder = "Listening...";
-  } else {
-    micBtn.style.color = '#94a3b8';
-    micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-    document.getElementById('ai-chat-input').placeholder = "Ask about crop yield, carbon credits, or farm planning...";
-    document.getElementById('ai-chat-input').value = "I have a 5 acre sugarcane farm in Maharashtra. What should I plant instead?";
-  }
-}
-
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    const aiInput = document.getElementById('ai-chat-input');
-    if (aiInput) {
-        aiInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendAiMessage();
-            }
-        });
-    }
-});
-</script>
-
-
-<script>
-var isRecording = false;
-function toggleMic() {
-  const micBtn = document.getElementById('ai-mic-btn');
-  isRecording = !isRecording;
-  if(isRecording) {
-    micBtn.style.color = '#ef4444';
-    micBtn.innerHTML = '<i class="fas fa-stop-circle"></i>';
-    document.getElementById('ai-chat-input').placeholder = "Listening...";
-  } else {
-    micBtn.style.color = '#94a3b8';
-    micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-    document.getElementById('ai-chat-input').placeholder = "Ask about crop yield, carbon credits, or farm planning...";
-    document.getElementById('ai-chat-input').value = "I have a 5 acre sugarcane farm in Maharashtra. What should I plant instead?";
-  }
-}
-
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    const aiInput = document.getElementById('ai-chat-input');
-    if (aiInput) {
-        aiInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendAiMessage();
-            }
-        });
-    }
-});
-
-window.generateTransitionPlan = function(btn) {
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
-  btn.style.opacity = '0.7';
-  btn.style.cursor = 'not-allowed';
-
-  const history = document.getElementById('ai-chat-history');
-  
-  const typingId = 'typing-' + Date.now();
-  setTimeout(() => {
-    history.insertAdjacentHTML('beforeend', `
-      <div id="${typingId}" style="display:flex; gap:15px; max-width:80%; animation: fadeIn 0.3s ease;">
-        <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #10b981, #3b82f6); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0;">
-          <i class="fas fa-brain" style="font-size:1rem;"></i>
-        </div>
-        <div style="background:rgba(30, 41, 59, 0.8); padding:16px 20px; border-radius:0 16px 16px 16px; color:#94a3b8; font-size:0.95rem; font-style:italic;">
-          Compiling Agroforestry Transition Plan...
-        </div>
-      </div>
-    `);
-    history.scrollTop = history.scrollHeight;
-    
-    setTimeout(() => {
-      document.getElementById(typingId).remove();
-      btn.innerHTML = '<i class="fas fa-check"></i> Plan Generated';
-      btn.style.background = '#10b981';
-      btn.style.color = '#fff';
-      
-      const planHtml = `
-        <div style="display:flex; gap:15px; max-width:90%; animation: fadeIn 0.4s ease;">
-          <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #10b981, #3b82f6); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0;">
-            <i class="fas fa-file-alt" style="font-size:1rem;"></i>
-          </div>
-          <div style="background:rgba(30, 41, 59, 0.9); padding:25px; border-radius:0 16px 16px 16px; color:#e2e8f0; font-size:0.95rem; line-height:1.6; border:1px solid rgba(16, 185, 129, 0.4); width:100%; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
-            <h3 style="margin-top:0; color:#10b981; border-bottom:1px solid rgba(16, 185, 129, 0.2); padding-bottom:12px; margin-bottom:20px; display:flex; align-items:center; gap:10px;">
-              <i class="fas fa-leaf"></i> Transition Plan: Bamboo & Neem Integration
-            </h3>
-            
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:25px;">
-              <div style="background:rgba(15, 23, 42, 0.8); padding:15px; border-radius:12px; border:1px solid #334155; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);">
-                <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; font-weight:600;">Estimated Cost</div>
-                <div style="font-size:1.5rem; font-weight:bold; color:#f8fafc;">₹12,500</div>
-                <div style="font-size:0.8rem; color:#10b981; margin-top:8px; display:flex; align-items:center; gap:5px;"><i class="fas fa-check-circle"></i> Eligible for 80% Govt Subsidy</div>
-              </div>
-              <div style="background:rgba(15, 23, 42, 0.8); padding:15px; border-radius:12px; border:1px solid #334155; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);">
-                <div style="font-size:0.75rem; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; font-weight:600;">Projected Carbon ROI</div>
-                <div style="font-size:1.5rem; font-weight:bold; color:#10b981;">+35%</div>
-                <div style="font-size:0.8rem; color:#94a3b8; margin-top:8px;">~ ₹45,000 extra per year</div>
-              </div>
-            </div>
-
-            <h4 style="color:#f8fafc; margin-bottom:12px; font-size:1.05rem;">Implementation Steps:</h4>
-            <ol style="padding-left:20px; margin-bottom:25px; color:#cbd5e1; display:flex; flex-direction:column; gap:10px;">
-              <li><strong>Month 1:</strong> Intercrop 100 Beema Bamboo saplings along the western border of the 1-acre plot.</li>
-              <li><strong>Month 2:</strong> Plant 50 Neem trees in a grid pattern to act as natural pest deterrents and windbreaks.</li>
-              <li><strong>Month 3-6:</strong> Deploy AI drip-irrigation sensors (provided by the seed grant) to minimize water usage.</li>
-            </ol>
-
-            <button onclick="applyForGrant(this)" style="width:100%; background:linear-gradient(135deg, #10b981, #3b82f6); color:#fff; border:none; padding:15px; border-radius:10px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; font-size:1.05rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(16, 185, 129, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(16, 185, 129, 0.3)'">
-              <i class="fas fa-paper-plane"></i> Submit Grant Application
-            </button>
-          </div>
-        </div>
-      `;
-      history.insertAdjacentHTML('beforeend', planHtml);
-      history.scrollTop = history.scrollHeight;
-    }, 2500);
-  }, 500);
-};
-
-window.applyForGrant = function(btn) {
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting via Blockchain...';
-  
-  setTimeout(() => {
-    btn.style.background = '#10b981';
-    btn.style.transform = 'translateY(0)';
-    btn.innerHTML = '<i class="fas fa-check-circle"></i> Application Submitted! ID: #AGRO-9824';
-    if(window.Capacitor && window.Capacitor.Plugins.Haptics) {
-       window.Capacitor.Plugins.Haptics.notification({ type: "Success" });
-    }
-  }, 2000);
-};
-
-</script>
-<script>
-async function sendAiMessage() {
-  const input = document.getElementById('ai-chat-input');
-  const text = input.value.trim();
-  if(!text) return;
-  
-  const history = document.getElementById('ai-chat-history');
-  history.insertAdjacentHTML('beforeend', `<div style="display:flex; gap:15px; max-width:80%; align-self:flex-end; flex-direction:row-reverse;"><div style="width:32px; height:32px; border-radius:50%; background:#334155; display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0;"><i class="fas fa-user" style="font-size:0.9rem;"></i></div><div style="background:#2563eb; padding:15px; border-radius:16px 0 16px 16px; color:#fff; font-size:0.95rem; line-height:1.5;">${text}</div></div>`);
-  input.value = '';
-  input.style.height = 'auto';
-  history.scrollTop = history.scrollHeight;
-  
-  const typingId = 'typing-' + Date.now();
-  history.insertAdjacentHTML('beforeend', `<div id="${typingId}" style="display:flex; gap:15px; max-width:80%; animation: fadeIn 0.3s ease;"><div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, #10b981, #3b82f6); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0;"><i class="fas fa-brain" style="font-size:0.9rem;"></i></div><div style="background:rgba(30, 41, 59, 0.8); padding:16px 20px; border-radius:0 16px 16px 16px; color:#94a3b8; font-size:0.95rem; font-style:italic;">AI ADVISOR is typing...</div></div>`);
-  history.scrollTop = history.scrollHeight;
-  
-  try {
-    const res = await fetch('/api/ai/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ message: text })
-    });
-    const data = await res.json();
-    document.getElementById(typingId).remove();
-    let formattedReply = (data.reply || "Error: No response").replace(/\n/g, '<br>');
-    formattedReply = formattedReply.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-    
-    history.insertAdjacentHTML('beforeend', `<div style="display:flex; gap:15px; max-width:85%; animation: fadeIn 0.4s ease;"><div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #10b981, #3b82f6); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0;"><i class="fas fa-brain" style="font-size:1rem;"></i></div><div style="background:rgba(30, 41, 59, 0.9); padding:16px 20px; border-radius:0 16px 16px 16px; color:#e2e8f0; font-size:1rem; line-height:1.6; border:1px solid rgba(51, 65, 85, 0.5);">${formattedReply}</div></div>`);
-    history.scrollTop = history.scrollHeight;
-  } catch(e) {
-    document.getElementById(typingId).remove();
-    history.insertAdjacentHTML('beforeend', '<div style="color:#ef4444; padding:10px; background:rgba(239,68,68,0.1); border-radius:8px; margin-top:10px;"><i class="fas fa-exclamation-triangle"></i> Failed to contact Nemotron Supercloud Model. Make sure Ollama is running.</div>');
-  }
-}
-</script>
-
-<script>
-// Patch switchTab to hide stats bar for AI Advisor
-const originalSwitchTab = switchTab;
-window.switchTab = function(id) {
-  originalSwitchTab(id);
-  const statsBar = document.getElementById('global-stats-bar');
-  if (statsBar) {
-    if (id === 'ai-advisor') {
-      statsBar.style.display = 'none';
-      const chatContainer = document.querySelector('#tab-ai-advisor > div');
-      if (chatContainer) chatContainer.style.height = 'calc(100vh - 150px)';
-    } else {
-      statsBar.style.display = 'block';
-    }
-  }
-};
-</script>
-
-
-<script>
-  if (typeof showMobileTab !== 'undefined') {
-    const originalShowMobileTab = showMobileTab;
-    window.showMobileTab = function(tab) {
-      originalShowMobileTab(tab);
-      
-      document.querySelectorAll('[id^=tab-]').forEach(e => e.style.display='none');
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-      
-      if (tab === 'ai') {
-        const navEl = document.getElementById('mNavAi');
-        if (navEl) navEl.classList.add('active');
-        
-        const aiTab = document.getElementById('tab-ai-advisor');
-        if (aiTab) {
-          // MOVE the element out of the hidden desktop container into the visible mobile container!
-          const mobileApp = document.querySelector('.mobile-landowner-app');
-          if (mobileApp && aiTab.parentNode !== mobileApp) {
-             mobileApp.appendChild(aiTab);
-             // Tweak some styles for mobile fitting
-             aiTab.style.paddingBottom = '80px'; 
-          }
-          
-          aiTab.style.display = 'block';
-          const chatContainer = document.querySelector('#tab-ai-advisor > div');
-          if (chatContainer) chatContainer.style.height = 'calc(100vh - 120px)';
-        }
-      } else {
-        const desktopTab = document.getElementById('tab-' + tab);
-        if(desktopTab) desktopTab.style.display = 'block';
-      }
-    };
-  }
-</script>
-
 </body></html>
 
 
