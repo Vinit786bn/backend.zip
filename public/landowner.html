@@ -1277,10 +1277,10 @@ async function submitListing() {
       if(document.getElementById('cSource')) document.getElementById('cSource').textContent = 'Source: ' + (d4a.source || 'SoilGrids API');
 
       await delay(300);
-      showToast('All 4 satellite & AI stages verified! Ready for Phase 1 Lock.', 'success');
+      showToast('All 4 satellite & AI stages verified! Ready to submit plot.', 'success');
 
       var mintBtnHtml = '<button type="button" class="bp" id="submitAdminBtn" style="width:100%;margin-top:16px;background:#10b981;color:#ffffff;font-size:1rem;font-weight:800;padding:14px;border-radius:8px;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(16,185,129,0.4);display:flex;align-items:center;justify-content:center;gap:10px;animation:fadeIn 0.5s ease;" onclick="submitToAdmin(\'' + annualCreds + '\')">' +
-        '<i class="fas fa-lock"></i> Submit Plot for Verification (Phase 1 Lock)' +
+        '<i class="fas fa-lock"></i> Submit Plot for Verification' +
       '</button>';
       d4El.insertAdjacentHTML('beforeend', mintBtnHtml);
 
